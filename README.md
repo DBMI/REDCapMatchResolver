@@ -1,4 +1,4 @@
-# REDCapReportWriter ![image info](./pictures/logo.png) 
+# REDCapReportWriter ![image info](./pictures/report_logo.png) 
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 ![Pylint](./.github/badges/pylint-badge.svg?dummy=8484744)
@@ -13,7 +13,7 @@
 
 ---
 
-Produces a nicely-formatted text-only report suitable for email listing which patient matches need to be checked by the Clinical Research Coordinators (CRCs).
+Produces a nicely-formatted text-only report suitable for email, listing which patient matches need to be checked by the Clinical Research Coordinators (CRCs).
 
 ## Installation
 
