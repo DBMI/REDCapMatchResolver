@@ -13,7 +13,7 @@
 
 ---
 
-Produces a nicely-formatted text-only report suitable for email listing which patient matches need to be checked by the Clinical Research Coordinators (CRCs).
+Produces a nicely-formatted text-only report suitable for email, listing which patient matches need to be checked by the Clinical Research Coordinators (CRCs).
 
 ## Installation
 
