@@ -1,0 +1,26 @@
+
+    ---------------
+    Common Name         Epic Val               RedCap Val           Score
+	C_MRN               123                    123                   1.0
+    C_FIRST             John                   Jon                   0.8
+    C_LAST              Smith                  Smythe                0.9
+	C_DOB               2022-11-01 	           Nov 1, 2022           1.0
+    C_ADDR_CALCULATED   1313 Mockingbird Lane  1313 Mockingbird Ln   1.0
+    C_PHONE_CALCULATED  800-555-1212           800-555-1212          1.0
+    ---------------
+    CRC Review: Patients are
+    x Same
+    ☐ NOT Same
+
+    ---------------
+    Common Name         Epic Val               RedCap Val           Score
+	C_MRN               456                    789                   0.0
+    C_FIRST             Jane                   Jan                   0.8
+    C_LAST              Jones                  Jonez                 0.9
+	C_DOB               2021-12-02 	           Dec 2, 2021           1.0
+    C_ADDR_CALCULATED   10 Downing Street      10 Downing St         1.0
+    C_PHONE_CALCULATED  800-555-1212           800-555-1212          1.0
+    ---------------
+    CRC Review: Patients are
+    ☐ Same
+    X NOT Same
