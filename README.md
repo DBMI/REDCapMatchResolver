@@ -1,4 +1,4 @@
-# REDCapReportWriter ![image info](./pictures/report_logo.png) 
+# REDCapMatchResolver ![image info](./pictures/report_logo.png) 
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 ![Pylint](./.github/badges/pylint-badge.svg?dummy=8484744)
@@ -13,12 +13,18 @@
 
 ---
 
-Produces a nicely-formatted text-only report suitable for email, listing which patient matches need to be checked by the Clinical Research Coordinators (CRCs).
+Assists with human expert review of possible patient matches.
+When software identifies a pair of patient records that *might* refer to the
+same patient, the `REDCapReportWriter` class writes human-readable,
+machine-parseable reports showing potential patient matches that need review by
+a Clinical Research Coordinator (CRC). Once the CRC has reviewed the patient info
+and have marked up the reports with their decisions, the `REDCapReportReader` class
+reads/parses the marked-up reports, producing a pandas DataFrame output.
 
 ## Installation
 
 ```sh
-pip install git+https://github.com/DBMI/REDCapReportWriter.git
+pip install git+https://github.com/DBMI/REDCapMatchResolver.git
 ```
 
 ## Development
