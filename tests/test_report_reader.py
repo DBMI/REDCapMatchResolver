@@ -16,48 +16,45 @@ def figure_report_filename():
 
 def test_reader(report_filename) -> None:
     # Default report name.
-    obj = REDCapReportReader(report_filename=report_filename)
+    obj = REDCapReportReader()
     assert obj is not None
     assert isinstance(obj, REDCapReportReader)
 
-    test_df = obj.read()
+    test_df = obj.read(report_filename=report_filename)
     assert test_df is not None
     assert isinstance(test_df, pandas.DataFrame)
 
 
 def test_reader_errors() -> None:
     my_location = os.path.dirname(os.path.realpath(__file__))
+    obj = REDCapReportReader()
 
     # Supply bad report name.
     with pytest.raises(TypeError):
-        REDCapReportReader(report_filename=None)
+        obj.read(report_filename=None)
 
     with pytest.raises(TypeError):
-        REDCapReportReader(report_filename=1979)
+        obj.read(report_filename=1979)
 
     with pytest.raises(FileNotFoundError):
-        REDCapReportReader(report_filename="C:/unobtanium/report.txt")
+        obj.read(report_filename="C:/unobtanium/report.txt")
 
     with pytest.raises(RuntimeError):
         bad_filename = os.path.join(my_location, "bogus_patient_report_partial_header.txt")
-        obj = REDCapReportReader(report_filename=bad_filename)
+        obj = obj.read(report_filename=bad_filename)
         obj.read()
 
     bad_filename = os.path.join(my_location, "bogus_patient_report_ends_before_data.txt")
-    obj = REDCapReportReader(report_filename=bad_filename)
-    obj.read()
+    obj.read(report_filename=bad_filename)
 
     bad_filename = os.path.join(my_location, "bogus_patient_report_ends_too_soon.txt")
-    obj = REDCapReportReader(report_filename=bad_filename)
-    obj.read()
+    obj.read(report_filename=bad_filename)
 
     bad_filename = os.path.join(my_location, "bogus_patient_report_CRC_partial.txt")
-    obj = REDCapReportReader(report_filename=bad_filename)
-    obj.read()
+    obj.read(report_filename=bad_filename)
 
     bad_filename = os.path.join(my_location, "bogus_patient_report_CRC_partial_II.txt")
-    obj = REDCapReportReader(report_filename=bad_filename)
-    obj.read()
+    obj.read(report_filename=bad_filename)
 
 
 if __name__ == "__main__":

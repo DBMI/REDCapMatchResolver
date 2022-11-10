@@ -30,37 +30,15 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
     Parses formatted patient report.
     """
 
-    def __init__(
-        self, report_filename: str = None
-    ):  # pylint: disable=logging-fstring-interpolation
-        """
-        Parameters
-        ----------
-        report_filename : str Full path to location of report to be read.
-        """
+    def __init__(self):
         Utilities.setup_logging()
         self.__log = logging.getLogger(__name__)
-
-        if report_filename is None or not isinstance(report_filename, str):
-            self.__log.error("Need to know the name of the report file to be read.")
-            raise TypeError("Need to know the name of the report file to be read.")
-
-        if not os.path.exists(report_filename):
-            self.__log.error(f"Unable to find file '{report_filename}'.")
-            raise FileNotFoundError(f"Unable to find file '{report_filename}'.")
-
-        self.__report_filename = report_filename
-        self.__log.info(f"Initialized with report filename '{self.__report_filename}'.")
         self.__report_contents = None
-        self.__report_index = 0
-
-        with open(file=self.__report_filename, encoding="utf-8") as file_obj:
-            #   Reads all the lines into a list.
-            self.__report_contents = file_obj.readlines()
+        self.__row_index = 0
 
     def _at_end(self) -> bool:
         """Are we at the END of the report?"""
-        return self.__report_index >= len(self.__report_contents) - 1
+        return self.__row_index >= len(self.__report_contents) - 1
 
     @staticmethod
     def _break_into_pieces(data_line: str) -> list:
@@ -131,11 +109,42 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
         if self._at_end():
             return None
 
-        self.__report_index += 1
-        return self.__report_contents[self.__report_index]
+        self.__row_index += 1
+        return self.__report_contents[self.__row_index]
 
-    def read(self) -> pandas.DataFrame:
-        """Parses the report & forms a pandas DataFrame from the text."""
+    def _open(self, report_filename: str = None) -> None:
+        """Handles opening the input file.
+
+        Parameters
+        ----------
+        report_filename : str Full path to location of report to be read.
+        """
+        if report_filename is None or not isinstance(report_filename, str):
+            self.__log.error("Need to know the name of the report file to be read.")
+            raise TypeError("Need to know the name of the report file to be read.")
+
+        # pylint: disable=logging-fstring-interpolation
+        if not os.path.exists(report_filename):
+            self.__log.error(f"Unable to find file '{report_filename}'.")
+            raise FileNotFoundError(f"Unable to find file '{report_filename}'.")
+
+        # pylint: disable=logging-fstring-interpolation
+        self.__log.info(f"Initialized with report filename '{report_filename}'.")
+        self.__report_contents = None
+        self.__row_index = 0
+
+        with open(file=report_filename, encoding="utf-8") as file_obj:
+            #   Reads all the lines into a list.
+            self.__report_contents = file_obj.readlines()
+
+    def read(self, report_filename: str = None) -> pandas.DataFrame:
+        """Parses the report & forms a pandas DataFrame from the text.
+
+        Parameters
+        ----------
+        report_filename : str Full path to location of report to be read.
+        """
+        self._open(report_filename)
         reviewed_matches = None
         separator = "------"
         next_line = self._next_line()
@@ -245,11 +254,7 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
         if not same_checked and different_checked:
             return CrcReview.NOT_SAME
 
-        if not same_checked and not different_checked:
-            error_stmt = f"Unable to parse decision from lines '{same_line}'\
-             and '{different_line}'."
-            self.__log.error(error_stmt)
-            return None
+        return None
 
 
 if __name__ == "__main__":
