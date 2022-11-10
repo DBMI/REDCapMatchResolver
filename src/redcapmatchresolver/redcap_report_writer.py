@@ -41,7 +41,7 @@ class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
             try:
                 num_char_written = self.__file_obj.write(match + addendum)
                 success = num_char_written == len(match) + len(addendum)
-            except Exception as file_write_error:
+            except Exception as file_write_error:  # pragma: no cover
                 self.__log.error(
                     f"Unable to write match to log because {str(file_write_error)}."
                 )
@@ -53,9 +53,6 @@ class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
         """Closes the output file."""
         self.__file_obj.close()
 
-    def __del__(self) -> None:
-        self.__file_obj.close()
-
     def _ensure_output_path(self, report_filename: str = None) -> None:
         """Make sure the directory to hold the report file is prepared.
 
@@ -63,7 +60,7 @@ class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
         ----------
         report_filename : str Full path to location of desired report.
         """
-        if report_filename is None:
+        if report_filename is None:  # pragma: no cover
             raise RuntimeError("Report filename not supplied.")
 
         try:
@@ -87,7 +84,7 @@ class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
         try:  # pylint: disable=consider-using-with
             self.__file_obj = open(self.__report_filename, mode="w", encoding="utf-8")
 
-            if self.__file_obj is None:
+            if self.__file_obj is None:  # pragma: no cover
                 self.__log.error(
                     f"Unable to open file '{self.__report_filename}' for output."
                 )
@@ -95,7 +92,7 @@ class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
             self.__log.info(
                 f"Initialized with report filename '{self.__report_filename}'."
             )
-        except FileNotFoundError as file_open_error:
+        except FileNotFoundError as file_open_error:  # pragma: no cover
             self.__log.error(
                 f"Unable to open file '{self.__report_filename}' for output "
                 + f"because {str(file_open_error)}."

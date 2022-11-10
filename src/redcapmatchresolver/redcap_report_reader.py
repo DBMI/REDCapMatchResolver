@@ -91,26 +91,6 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
         raise RuntimeError(f"Unable to find '{keyword}' in line.")
 
     @staticmethod
-    def _get_column(data_line: str, column_index: int) -> str:
-        """Split the line into columns and return the Nth column.
-
-        Parameters
-        ----------
-        data_line : str Line read from the report.
-        column_index : int Index of desired column.
-
-        Returns
-        -------
-        piece : str The desired column value.
-        """
-        pieces = REDCapReportReader._break_into_pieces(data_line)
-
-        if column_index < len(pieces):
-            return pieces[column_index]
-
-        raise RuntimeError(f"Unable to find column '{column_index}' in line.")
-
-    @staticmethod
     def _parse_line(data_line: str, epic_index: int, redcap_index: int) -> ReportLine:
         """Reads a line like 'C_MRN   123    456' and returns the ReportLine named tuple
         with fields 'name': 'MRN', 'epic_value': 123, 'redcap_value': 456.
@@ -204,18 +184,12 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
             if next_line is None or not isinstance(next_line, str):
                 break
 
-            #   Skip ahead to the next separator.
-            while next_line is not None and separator not in next_line:
-                next_line = self._next_line()
-
-            if next_line is None:
-                break
-
             #   Read "Same/Not Same" lines.
             crc_decision = self._read_crc_decision()
 
             if crc_decision is None:
                 #   Then there was no decision recorded.
+                next_line = self._next_line()
                 continue
 
             match_dict["crc_decision"] = str(crc_decision)
@@ -272,13 +246,10 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
             return CrcReview.NOT_SAME
 
         if not same_checked and not different_checked:
+            error_stmt = f"Unable to parse decision from lines '{same_line}'\
+             and '{different_line}'."
+            self.__log.error(error_stmt)
             return None
-
-        error_stmt = (
-            f"Unable to parse decision from lines '{same_line}' and '{different_line}'."
-        )
-        self.__log.error(error_stmt)
-        raise RuntimeError(error_stmt)
 
 
 if __name__ == "__main__":
