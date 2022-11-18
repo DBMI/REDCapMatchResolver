@@ -3,10 +3,36 @@ Module: contains utility functions.
 """
 from datetime import datetime
 import logging
+import os
 
 
 class Utilities:  # pylint: disable=too-few-public-methods
     """Contains useful static methods."""
+
+    @staticmethod
+    def ensure_output_path(report_filename: str = None) -> None:
+        """Make sure the directory to hold the report file is prepared.
+
+        Parameters
+        ----------
+        report_filename : str Full path to location of desired report.
+        """
+        if report_filename is None:  # pragma: no cover
+            raise RuntimeError("Report filename not supplied.")
+
+        try:
+            report_path = os.path.dirname(report_filename)
+
+            if not report_path:
+                report_path = os.getcwd()
+
+            if not os.path.exists(report_path):
+                os.makedirs(report_path)
+        except OSError as create_path_error:
+            raise OSError(
+                f"Unable to create path: '{report_path}' "
+                + f"because{str(create_path_error)}."
+            ) from create_path_error
 
     @staticmethod
     def setup_logging() -> None:

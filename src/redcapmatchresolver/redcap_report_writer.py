@@ -53,33 +53,9 @@ class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
         """Closes the output file."""
         self.__file_obj.close()
 
-    def _ensure_output_path(self, report_filename: str = None) -> None:
-        """Make sure the directory to hold the report file is prepared.
-
-        Parameters
-        ----------
-        report_filename : str Full path to location of desired report.
-        """
-        if report_filename is None:  # pragma: no cover
-            raise RuntimeError("Report filename not supplied.")
-
-        try:
-            report_path = os.path.dirname(report_filename)
-
-            if not report_path:
-                report_path = os.getcwd()
-
-            if not os.path.exists(report_path):
-                os.makedirs(report_path)
-        except OSError as create_path_error:
-            self.__log.error(
-                f"Unable to create path: '{report_path}' because {str(create_path_error)}."
-            )
-            raise
-
     def _setup_output(self) -> None:
         """Initialize the output report file."""
-        self._ensure_output_path(self.__report_filename)
+        Utilities.ensure_output_path(self.__report_filename)
 
         try:  # pylint: disable=consider-using-with
             self.__file_obj = open(self.__report_filename, mode="w", encoding="utf-8")

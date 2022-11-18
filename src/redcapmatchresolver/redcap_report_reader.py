@@ -21,8 +21,9 @@ class CrcReview(Enum):  # pylint: disable=too-few-public-methods
     What did the CRC decide? The same or not?
     """
 
-    SAME = 1
-    NOT_SAME = 2
+    MATCH= 1
+    NO_MATCH = 2
+    NOT_SURE = 3
 
 
 class REDCapReportReader:  # pylint: disable=too-few-public-methods
@@ -249,10 +250,10 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
         different_checked = any(elem in different_line for elem in positive_marks)
 
         if same_checked and not different_checked:
-            return CrcReview.SAME
+            return CrcReview.MATCH
 
         if not same_checked and different_checked:
-            return CrcReview.NOT_SAME
+            return CrcReview.NO_MATCH
 
         return None
 
