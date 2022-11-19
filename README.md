@@ -21,6 +21,9 @@ a Clinical Research Coordinator (CRC). Once the CRC has reviewed the patient inf
 and have marked up the reports with their decisions, the `REDCapReportReader` class
 reads/parses the marked-up reports, producing a pandas DataFrame output.
 
+Finally, the `REDCapMatchResolver` class reads all the reviewed reports into a temporary database.
+Its `lookup_potential_match` method allows external software to submit a block of text showing the patient information from both REDCap and Epic & see if CRCs have already made a decision whether these records are a match.
+
 ## Installation
 
 ```sh
