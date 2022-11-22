@@ -1,16 +1,16 @@
 [tool.poetry]
-name = "REDCapReportWriter"
-version = "0.0.1"
-description = "Produces a nicely-formatted text-only report suitable for email listing which patient matches need to be checked by the Clinical Research Coordinators (CRCs)."
+name = "REDCapReportMatchResolver"
+version = "0.1.1"
+description = "Assists with human expert review of possible patient matches."
 authors = [
     "Kevin J. Delaney <kjdelaney@ucsd.edu>",
 ]
 license = "MIT"
 readme = "README.md"
 
-documentation = "https://github.com/DBMI/REDCapReportWriter"
-homepage = "https://github.com/DBMI/REDCapReportWriter"
-repository = "https://github.com/DBMI/REDCapReportWriter"
+documentation = "https://github.com/DBMI/REDCapMatchResolver"
+homepage = "https://github.com/DBMI/REDCapMatchResolver"
+repository = "https://github.com/DBMI/REDCapMatchResolver"
 
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -26,7 +26,7 @@ classifiers = [
 ]
 
 packages = [
-    { include = "redcapreportwriter", from = "src" }
+    { include = "redcapmatchresolver", from = "src" }
 ]
 
 [tool.poetry.dependencies]
@@ -48,6 +48,7 @@ mkdocs = "*"
 mkdocstrings = "*"
 mkdocs-material = "*"
 mypy = "*"
+pandas = "*"
 pep8-naming = "*"
 pre-commit = "*"
 pymdown-extensions = "*"
@@ -56,8 +57,10 @@ pytest-github-actions-annotate-failures = "*"
 pytest-cov = "*"
 python-kacl = "*"
 pyupgrade = "*"
+setuptools = "*"
 sphinx = "*"
 sphinx_markdown_builder = "*"
+sqlite = "*"
 tryceratops = "*"
 typing = "*"
 wheel = "*"
