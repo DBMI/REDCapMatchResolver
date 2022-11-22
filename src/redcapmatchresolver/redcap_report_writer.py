@@ -3,7 +3,6 @@ Module: contains class REDCapReportWriter
 used to produce list of patient matches to be reviewed.
 """
 import logging
-import os
 from .utilities import Utilities
 
 

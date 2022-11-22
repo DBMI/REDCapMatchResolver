@@ -10,6 +10,7 @@ and have marked up the reports with their decisions, the REDCapReportReader clas
 reads/parses the marked-up reports, producing a pandas DataFrame output.
 
 Classes:
+    REDCap Match Resolver
     REDCap Report Reader
     REDCap Report Writer
 """

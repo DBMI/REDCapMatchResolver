@@ -8,14 +8,22 @@ from redcapmatchresolver.redcap_match_resolver import REDCapMatchResolver
 from redcapmatchresolver.redcap_report_reader import CrcReview
 
 
-@pytest.fixture(name="temp_database")
-def temp_database():
-    return os.path.join(os.path.dirname(os.path.realpath(__file__)), "temp_database.db")
+@pytest.fixture(name="bad_reports_directory")
+def fixture_bad_reports_directory():
+    """Defines temporary bad reports directory."""
+    return os.path.join(os.path.dirname(os.path.realpath(__file__)), "bad_reports")
 
 
 @pytest.fixture(name="reports_directory")
-def reports_directory():
+def fixture_reports_directory():
+    """Defines temporary reports directory."""
     return os.path.dirname(os.path.realpath(__file__))
+
+
+@pytest.fixture(name="temp_database")
+def fixture_temp_database():
+    """Defines temporary database filename."""
+    return os.path.join(os.path.dirname(os.path.realpath(__file__)), "temp_database.db")
 
 
 def test_match_resolver_creation(temp_database) -> None:
@@ -29,7 +37,7 @@ def test_match_resolver_creation(temp_database) -> None:
 def test_match_resolver_db_operation(
     temp_database, reports_directory, matching_patients, non_matching_patients
 ) -> None:
-    """Tests read_reports() method of REDCapMatchResolver object."""
+    """Tests lookup_potential_match() method of REDCapMatchResolver object."""
     mr_obj = REDCapMatchResolver(db_filename=temp_database)
 
     #   Can we read the already-reviewed report files & populate the temp database?
@@ -41,8 +49,44 @@ def test_match_resolver_db_operation(
     assert isinstance(past_decision, CrcReview)
     assert past_decision == CrcReview.MATCH
 
-    #   Can we query the db with a match not present in the database?
+    #   Can we query the db with a match NOT present in the database?
     past_decision = mr_obj.lookup_potential_match(match_block=non_matching_patients)
     assert past_decision is not None
     assert isinstance(past_decision, CrcReview)
     assert past_decision == CrcReview.NOT_SURE
+
+
+def test_match_resolver_corner_cases(temp_database, bad_reports_directory) -> None:
+    """Tests lookup_potential_match() method of REDCapMatchResolver object."""
+    mr_obj = REDCapMatchResolver(db_filename=temp_database)
+
+    #   Exercise section in _insert_reports that fills in missing fields.
+    assert mr_obj.read_reports(import_folder=bad_reports_directory)
+
+    #   Exercise section in _insert_reports that fills in missing fields.
+    #   Exercise section in _insert_reports that skips if CRC decision not shown.
+    assert mr_obj.read_reports(import_folder=bad_reports_directory)
+
+
+def test_match_resolver_errors(
+    temp_database, reports_directory, malformed_match_block, missing_fields_match_block
+):
+    """Exercises error cases."""
+    mr_obj = REDCapMatchResolver(db_filename=temp_database)
+
+    #   Read the already-reviewed report files & populate the temp database.
+    assert mr_obj.read_reports(import_folder=reports_directory)
+
+    #   Send improper inputs.
+    with pytest.raises(TypeError):
+        mr_obj.lookup_potential_match(match_block=None)
+
+    with pytest.raises(RuntimeError):
+        mr_obj.lookup_potential_match(match_block=malformed_match_block)
+
+    with pytest.raises(RuntimeError):
+        mr_obj.lookup_potential_match(match_block=missing_fields_match_block)
+
+
+if __name__ == "__main__":
+    pass
