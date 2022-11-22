@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='REDCapMatchResolver',
-    version='0.1',
+    version='0.1.1',
     packages=['redcapmatchresolver'],
     package_dir={'': 'src'},
     url='https://github.com/DBMI/REDCapMatchResolver',
