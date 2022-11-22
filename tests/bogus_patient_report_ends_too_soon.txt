@@ -1,0 +1,6 @@
+
+    ---------------
+    Common Name         Epic Val               RedCap Val            Score
+	C_MRN               123                    123                   1.0
+    C_FIRST             John                   Jon                   0.8
+    C_LAST              Smith                  Smythe                0.9

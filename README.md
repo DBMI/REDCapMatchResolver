@@ -1,4 +1,4 @@
-# REDCapReportWriter ![image info](./pictures/report_logo.png) 
+# REDCapMatchResolver ![image info](./pictures/report_logo.png) 
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 ![Pylint](./.github/badges/pylint-badge.svg?dummy=8484744)
@@ -7,18 +7,27 @@
 
 ---
 
-**Documentation**: [https://github.com/DBMI/REDCapReportWriter](https://github.com/DBMI/REDCapReportWriter)
+**Documentation**: [https://github.com/DBMI/REDCapMatchResolver](https://github.com/DBMI/REDCapMatchResolver)
 
-**Source Code**: [https://github.com/DBMI/REDCapReportWriter](https://github.com/DBMI/REDCapReportWriter)
+**Source Code**: [https://github.com/DBMI/REDCapMatchResolver](https://github.com/DBMI/REDCapMatchResolver)
 
 ---
 
-Produces a nicely-formatted text-only report suitable for email, listing which patient matches need to be checked by the Clinical Research Coordinators (CRCs).
+Assists with human expert review of possible patient matches.
+When software identifies a pair of patient records that *might* refer to the
+same patient, the `REDCapReportWriter` class writes human-readable,
+machine-parseable reports showing potential patient matches that need review by
+a Clinical Research Coordinator (CRC). Once the CRC has reviewed the patient info
+and have marked up the reports with their decisions, the `REDCapReportReader` class
+reads/parses the marked-up reports, producing a pandas DataFrame output.
+
+Finally, the `REDCapMatchResolver` class reads all the reviewed reports into a temporary database.
+Its `lookup_potential_match` method allows external software to submit a block of text showing the patient information from both REDCap and Epic & see if CRCs have already made a decision whether these records are a match.
 
 ## Installation
 
 ```sh
-pip install git+https://github.com/DBMI/REDCapReportWriter.git
+pip install git+https://github.com/DBMI/REDCapMatchResolver.git
 ```
 
 ## Development
@@ -53,12 +62,12 @@ The documentation is automatically generated from the content of the [docs direc
 
 ### Releasing
 
-Trigger the [Draft release workflow](https://github.com/DBMI/REDCapReportWriter/actions/workflows/draft_release.yml)
+Trigger the [Draft release workflow](https://github.com/DBMI/REDCapMatchResolver/actions/workflows/draft_release.yml)
 (press _Run workflow_). This will update the changelog & version and create a GitHub release which is in _Draft_ state.
 
 Find the draft release from the
-[GitHub releases](https://github.com/DBMI/REDCapReportWriter/releases) and publish it. When
- a release is published, it'll trigger [release](https://github.com/DBMI/REDCapReportWriter/blob/master/.github/workflows/release.yml) workflow which creates PyPI
+[GitHub releases](https://github.com/DBMI/REDCapMatchResolver/releases) and publish it. When
+ a release is published, it'll trigger [release](https://github.com/DBMI/REDCapMatchResolver/blob/master/.github/workflows/release.yml) workflow which creates PyPI
  release and deploys updated documentation.
 
 ### Pre-commit
