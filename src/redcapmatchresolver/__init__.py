@@ -14,6 +14,7 @@ Classes:
     REDCap Report Reader
     REDCap Report Writer
 """
+from .redcap_match_resolver import REDCapMatchResolver
 from .redcap_report_reader import REDCapReportReader
 from .redcap_report_writer import REDCapReportWriter
 from .utilities import Utilities
