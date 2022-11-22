@@ -43,7 +43,9 @@ class CrcReview(Enum):  # pylint: disable=too-few-public-methods
         object : CrcReview object
         """
         if decisions is None:
-            raise TypeError("Input 'decisions' is not the expected string, list or tuple.")
+            raise TypeError(
+                "Input 'decisions' is not the expected string, list or tuple."
+            )
 
         if isinstance(decisions, List):
             decision_list = []
@@ -52,17 +54,20 @@ class CrcReview(Enum):  # pylint: disable=too-few-public-methods
                 decision_list.append(CrcReview.convert(this_decision))
 
             return decision_list
-        elif isinstance(decisions, Tuple) and len(decisions) == 1:
+
+        if isinstance(decisions, Tuple) and len(decisions) == 1:
             return CrcReview.convert(decisions[0])
-        elif not isinstance(decisions, str):
+
+        if not isinstance(decisions, str):
             raise TypeError("Input 'decisions' is not the expected string.")
 
-        if decisions == 'MATCH':
+        if decisions == "MATCH":
             return CrcReview.MATCH
-        elif decisions == "NO_MATCH":
+
+        if decisions == "NO_MATCH":
             return CrcReview.NO_MATCH
-        else:
-            return CrcReview.NOT_SURE
+
+        return CrcReview.NOT_SURE
 
     def __eq__(self, other) -> bool:
         """Defines the == method."""
@@ -78,24 +83,10 @@ class CrcReview(Enum):  # pylint: disable=too-few-public-methods
 
         return False
 
-    def __gte__(self, other) -> bool:
-        """Defines the >= method."""
-        if isinstance(other, CrcReview):
-            return self.value >= other.value
-
-        return False
-
     def __lt__(self, other) -> bool:
         """Defines the < method."""
         if isinstance(other, CrcReview):
             return self.value < other.value
-
-        return False
-
-    def __lte__(self, other) -> bool:
-        """Defines the <= method."""
-        if isinstance(other, CrcReview):
-            return self.value <= other.value
 
         return False
 
@@ -125,10 +116,20 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def convert_nulls(value: str) -> Union[str, None]:
+        """Turn strings that SAY 'NULL' into Python Nones that will become NULL db values.
+
+        Parameters
+        ----------
+        value : str String to be converted.
+
+        Returns
+        -------
+        value_converted : str or None
+        """
         if value is None or not isinstance(value, str):
             return None
 
-        if value.upper() == 'NULL':
+        if value.upper() == "NULL":
             return None
 
         return value
@@ -177,6 +178,7 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
             self.__log.error("Need to know the name of the report file to be read.")
             raise TypeError("Need to know the name of the report file to be read.")
 
+        # pylint: disable=logging-fstring-interpolation
         if os.path.exists(report_filename):
             #   Open as FILE.
             with open(file=report_filename, encoding="utf-8") as file_obj:
@@ -283,8 +285,12 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
 
                 #   Don't insert strings that SAY 'NULL'.
                 #   Convert to actual NULL value.
-                match_dict["EPIC_" + this_line.name] = REDCapReportReader.convert_nulls(this_line.epic_value)
-                match_dict["REDCAP_" + this_line.name] = REDCapReportReader.convert_nulls(this_line.redcap_value)
+                match_dict["EPIC_" + this_line.name] = REDCapReportReader.convert_nulls(
+                    this_line.epic_value
+                )
+                match_dict[
+                    "REDCAP_" + this_line.name
+                ] = REDCapReportReader.convert_nulls(this_line.redcap_value)
 
             #   Did we get here because we ran out of data?
             if next_line is None or not isinstance(next_line, str):

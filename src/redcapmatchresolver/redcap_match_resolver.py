@@ -6,10 +6,9 @@ CRC-reviewed match reports.
 import glob
 import logging
 import os
-import pandas
 import sqlite3
-from sqlite3 import Connection, Error
-from typing import List
+from sqlite3 import Connection
+import pandas
 from .utilities import Utilities
 from .redcap_report_reader import CrcReview, REDCapReportReader
 
@@ -62,7 +61,7 @@ class REDCapMatchResolver:
         -------
         success : bool
         """
-        if not self._create_decisions_table():
+        if not self._create_decisions_table():  # pragma: no cover
             self.__log.error("Unable to create 'decisions' table.")
             raise RuntimeError("Unable to create 'decisions' table.")
 
@@ -90,18 +89,22 @@ class REDCapMatchResolver:
         success : boolean
         """
 
-        if db_filename is None or not isinstance(db_filename, str):
+        if db_filename is None or not isinstance(db_filename, str):  # pragma: no cover
             self.__log.error("Input 'db_filename' is not the expected string.")
             raise TypeError("Input 'db_filename' is not the expected string.")
 
         Utilities.ensure_output_path(db_filename)
 
+        # pylint: disable=logging-fstring-interpolation
         try:
             self.__conn = sqlite3.connect(db_filename)
             success = self.__conn is not None and isinstance(self.__conn, Connection)
-        except Error as e:
-            self.__log.error(f"Unable to open file '{db_filename}' because '{str(e)}'.")
-            raise e
+        except sqlite3.Error as database_error:  # pragma: no cover
+            self.__log.error(
+                f"Unable to open file '{db_filename}'"
+                + f" because '{str(database_error)}'."
+            )
+            raise database_error
 
         return success
 
@@ -112,7 +115,7 @@ class REDCapMatchResolver:
         -------
         success : bool
         """
-        if not self._is_connected():
+        if not self._is_connected():  # pragma: no cover
             self.__log.error(
                 "Called '_create_decisions_table' method but database is not connected."
             )
@@ -120,7 +123,7 @@ class REDCapMatchResolver:
                 "Called '_create_decisions_table' method but database is not connected."
             )
 
-        if not self._drop_decisions_table():
+        if not self._drop_decisions_table():  # pragma: no cover
             self.__log.error('Unable to drop "decisions" table.')
             raise RuntimeError('Unable to drop "decisions" table.')
 
@@ -129,14 +132,17 @@ class REDCapMatchResolver:
                                     decision text NOT NULL
                                 );"""
 
+        # pylint: disable=logging-fstring-interpolation
         try:
-            c = self.__conn.cursor()
-            c.execute(create_table_sql)
+            database_cursor = self.__conn.cursor()
+            database_cursor.execute(create_table_sql)
             self.__conn.commit()
             success = True
-        except Error as e:
-            self.__log.error(f"Unable to run 'create_table_sql' because '{str(e)}'.")
-            raise e
+        except sqlite3.Error as database_error:  # pragma: no cover
+            self.__log.error(
+                f"Unable to run 'create_table_sql' because '{str(database_error)}'."
+            )
+            raise
 
         return success
 
@@ -147,7 +153,7 @@ class REDCapMatchResolver:
         -------
         success : bool
         """
-        if not self._is_connected():
+        if not self._is_connected():  # pragma: no cover
             self.__log.error(
                 "Called '_create_matches_table' method but database is not connected."
             )
@@ -155,7 +161,7 @@ class REDCapMatchResolver:
                 "Called '_create_matches_table' method but database is not connected."
             )
 
-        if not self._drop_matches_table():
+        if not self._drop_matches_table():  # pragma: no cover
             self.__log.error('Unable to drop "matches" table.')
             raise RuntimeError('Unable to drop "matches" table.')
 
@@ -176,14 +182,17 @@ class REDCapMatchResolver:
                                     crc_decision text
                                 );"""
 
+        # pylint: disable=logging-fstring-interpolation
         try:
-            c = self.__conn.cursor()
-            c.execute(create_table_sql)
+            database_cursor = self.__conn.cursor()
+            database_cursor.execute(create_table_sql)
             self.__conn.commit()
             success = True
-        except Error as e:
-            self.__log.error(f"Unable to run 'create_table_sql' because '{str(e)}'.")
-            raise e
+        except sqlite3.Error as database_error:  # pragma: no cover
+            self.__log.error(
+                f"Unable to run 'create_table_sql' because '{str(database_error)}'."
+            )
+            raise database_error
 
         return success
 
@@ -194,7 +203,7 @@ class REDCapMatchResolver:
         -------
         success : bool
         """
-        if not self._is_connected():
+        if not self._is_connected():  # pragma: no cover
             self.__log.error(
                 "Called '_drop_decisions_table' method but database is not connected."
             )
@@ -204,16 +213,17 @@ class REDCapMatchResolver:
 
         drop_table_sql = """ DROP TABLE IF EXISTS decisions; """
 
+        # pylint: disable=logging-fstring-interpolation
         try:
-            c = self.__conn.cursor()
-            c.execute(drop_table_sql)
+            database_cursor = self.__conn.cursor()
+            database_cursor.execute(drop_table_sql)
             self.__conn.commit()
             success = True
-        except Error as e:
+        except sqlite3.Error as database_error:  # pragma: no cover
             self.__log.error(
-                f"Unable to run 'drop_decisions_table' because '{str(e)}'."
+                f"Unable to run 'drop_decisions_table' because '{str(database_error)}'."
             )
-            raise e
+            raise database_error
 
         return success
 
@@ -224,7 +234,7 @@ class REDCapMatchResolver:
         -------
         success : bool
         """
-        if not self._is_connected():
+        if not self._is_connected():  # pragma: no cover
             self.__log.error(
                 "Called '_drop_matches_table' method but database is not connected."
             )
@@ -234,33 +244,38 @@ class REDCapMatchResolver:
 
         drop_table_sql = """ DROP TABLE IF EXISTS matches; """
 
+        # pylint: disable=logging-fstring-interpolation
         try:
-            c = self.__conn.cursor()
-            c.execute(drop_table_sql)
+            database_cursor = self.__conn.cursor()
+            database_cursor.execute(drop_table_sql)
             self.__conn.commit()
             success = True
-        except Error as e:
-            self.__log.error(f"Unable to run 'drop_matches_table' because '{str(e)}'.")
-            raise e
+        except sqlite3.Error as database_error:  # pragma: no cover
+            self.__log.error(
+                f"Unable to run 'drop_matches_table' because '{str(database_error)}'."
+            )
+            raise database_error
 
         return success
 
-    def _insert_report(self, df: pandas.DataFrame = None) -> bool:
+    def _insert_report(self, report_df: pandas.DataFrame = None) -> bool:
         """Inserts the report's DataFrame as a row in the database.
 
         Parameters
         ----------
-        df : pandas.DataFrame
+        report_df : pandas.DataFrame
 
         Returns
         -------
         success : bool
         """
-        if df is None or not isinstance(df, pandas.DataFrame):
+        if report_df is None or not isinstance(
+            report_df, pandas.DataFrame
+        ):  # pragma: no cover
             self.__log.error("Input 'df' is not a pandas.DataFrame.")
             raise TypeError("Input 'df' is not a pandas.DataFrame.")
 
-        if not self._is_connected():
+        if not self._is_connected():  # pragma: no cover
             self.__log.error(
                 "Called '_insert_report' method but database is not connected."
             )
@@ -270,8 +285,8 @@ class REDCapMatchResolver:
 
         #   Ensure all expected fields are present.
         for field in self.__dataframe_fields_list:
-            if field not in df.columns:
-                df[field] = None
+            if field not in report_df.columns:
+                report_df[field] = None
 
         all_database_fields_string = ",".join(self.__database_fields_list)
         insert_sql = (
@@ -281,33 +296,36 @@ class REDCapMatchResolver:
         )
         cur = self.__conn.cursor()
 
-        for index in range(len(df)):
+        for index in range(len(report_df)):
             values_list = []
 
-            for dataframe_field in [name for name in self.__dataframe_fields_list if name != "CRC_DECISION"]:
-                values_list.append(df[dataframe_field][index])
+            for dataframe_field in [
+                name for name in self.__dataframe_fields_list if name != "CRC_DECISION"
+            ]:
+                values_list.append(report_df[dataframe_field][index])
 
-            if "CRC_DECISION" not in df.columns:
+            if (
+                "CRC_DECISION" not in report_df.columns
+                or report_df["CRC_DECISION"] is None
+                or report_df["CRC_DECISION"][index] is None
+                or report_df["CRC_DECISION"][index] == "None"
+            ):
                 #   Then there's no point in inserting this row into the database.
                 continue
 
-            crc_decision_string = df["CRC_DECISION"][index]
-
-            if crc_decision_string == 'None':
-                #   Then there's no point in inserting this row into the database.
-                continue
-
+            crc_decision_string = report_df["CRC_DECISION"][index]
             crc_decision_code = self._translate_crc_decision(crc_decision_string)
             values_list.append(str(crc_decision_code))
 
+            # pylint: disable=logging-fstring-interpolation
             try:
                 cur.execute(insert_sql, values_list)
                 self.__conn.commit()
-            except Error as e:
+            except sqlite3.Error as database_error:  # pragma: no cover
                 self.__log.error(
-                    f"Error in running table insert method because '{str(e)}'."
+                    f"Error in running table insert method because '{str(database_error)}'."
                 )
-                raise e
+                raise database_error
 
         return True
 
@@ -332,7 +350,7 @@ class REDCapMatchResolver:
         -------
         decision : CrcReview Reports whether CRCs said match, no match (or not sure).
         """
-        if not self._is_connected():
+        if not self._is_connected():  # pragma: no cover
             self.__log.error(
                 "Called 'lookup_potential_match' method but database is not connected."
             )
@@ -344,20 +362,23 @@ class REDCapMatchResolver:
             self.__log.error("Input 'match_block' is not the expected str.")
             raise TypeError("Input 'match_block' is not the expected str.")
 
-        if not self._reader_ready():
+        if not self._reader_ready():  # pragma: no cover
             self.__log.error("REDCapReader object isn't ready.")
             raise RuntimeError("REDCapReader object isn't ready.")
 
         match_df = self.__redcap_reader.read_text(block_txt=match_block)
 
-        if match_df is None or not isinstance(match_df, pandas.DataFrame):
+        if match_df is None or not isinstance(
+            match_df, pandas.DataFrame
+        ):  # pragma: no cover
             self.__log.error("Unable to read text block.")
             raise RuntimeError("Unable to read text block.")
 
-        if not all([item in match_df.columns for item in self.__dataframe_fields_list]):
+        if not all(item in match_df.columns for item in self.__dataframe_fields_list):
             self.__log.error("Text block does not contain required fields.")
             raise RuntimeError("Text block does not contain required fields.")
 
+        # pylint: disable=line-too-long
         query_sql = (
             "SELECT decision FROM matches "
             + "JOIN decisions on matches.crc_decision = decisions.id"
@@ -393,6 +414,7 @@ class REDCapMatchResolver:
                 match_df["REDCAP_PHONE_CALCULATED"][index],
             ]
 
+            # pylint: disable=logging-fstring-interpolation
             try:
                 cur.execute(query_sql, values_list)
                 rows = cur.fetchall()
@@ -401,13 +423,13 @@ class REDCapMatchResolver:
                     #   We allow for multiple hits from the database.
                     #   If any of them report MATCH, we'll go with that.
                     return max(CrcReview.convert(rows))
-                else:
-                    return CrcReview.NOT_SURE
-            except Error as e:
+
+                return CrcReview.NOT_SURE
+            except sqlite3.Error as database_error:  # pragma: no cover
                 self.__log.error(
-                    f"Error in running table query method because '{str(e)}'."
+                    f"Error in running table query method because '{str(database_error)}'."
                 )
-                raise e
+                raise database_error
 
     def read_reports(self, import_folder: str = None) -> bool:
         """Read all the report files & imports into db.
@@ -420,24 +442,27 @@ class REDCapMatchResolver:
         -------
         success : bool
         """
-        if not self._reader_ready():
+        if not self._reader_ready():  # pragma: no cover
             self.__log.error("Unable to create REDCapReportReader object.")
             raise RuntimeError("Unable to create REDCapReportReader object.")
 
         reports_directory = os.path.join(import_folder, "*_patient_report.txt")
 
         for file in glob.glob(reports_directory):
-            df = self.__redcap_reader.read_file(report_filename=file)
+            report_df = self.__redcap_reader.read_file(report_filename=file)
 
-            if df is None or not isinstance(df, pandas.DataFrame):
+            # pylint: disable=logging-fstring-interpolation
+            if report_df is None or not isinstance(
+                report_df, pandas.DataFrame
+            ):  # pragma: no cover
                 self.__log.error(f"Unable to read '{file}'.")
                 raise TypeError(f"Unable to read '{file}'.")
 
-            insert_success = self._insert_report(df)
+            insert_success = self._insert_report(report_df)
 
-            if not insert_success:
-                self.__log.error(f"Unable to insert into db.")
-                raise RuntimeError(f"Unable to insert into db.")
+            if not insert_success:  # pragma: no cover
+                self.__log.error("Unable to insert into db.")
+                raise RuntimeError("Unable to insert into db.")
 
         return True
 
@@ -481,7 +506,7 @@ class REDCapMatchResolver:
         id : int
         """
 
-        if not self._is_connected():
+        if not self._is_connected():  # pragma: no cover
             self.__log.error(
                 "Called '_translate_crc_decision' method but database is not connected."
             )
@@ -489,7 +514,7 @@ class REDCapMatchResolver:
                 "Called '_translate_crc_decision' method but database is not connected."
             )
 
-        if crc_enum is None or not isinstance(crc_enum, str):
+        if crc_enum is None or not isinstance(crc_enum, str):  # pragma: no cover
             self.__log.error('Input "crc_review" is not a string')
             raise TypeError('Input "crc_review" is not a string.')
 
@@ -498,12 +523,13 @@ class REDCapMatchResolver:
         query_sql = " SELECT id FROM decisions WHERE decision = (?); "
         cur = self.__conn.cursor()
 
+        # pylint: disable=logging-fstring-interpolation
         try:
             cur.execute(query_sql, [crc_enum_payload])
             rows = cur.fetchall()
             return rows[0][0]
-        except Error as e:
+        except sqlite3.Error as database_error:  # pragma: no cover
             self.__log.error(
-                f"Error in running 'decisions' table query because '{str(e)}'."
+                f"Error in running 'decisions' table query because '{str(database_error)}'."
             )
-            raise e
+            raise database_error

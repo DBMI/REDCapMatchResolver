@@ -9,7 +9,7 @@ from redcapmatchresolver import REDCapReportWriter
 
 
 @pytest.fixture(name="addendum")
-def addendum():
+def fixture_addendum():
     """Defines the additional text report_writer tacks onto each match."""
     return """CRC Review: Patients are\n    ☐ Same\n    ☐ NOT Same\n"""
 
@@ -28,7 +28,7 @@ def test_writer_init(tmp_path) -> None:
     assert isinstance(obj, REDCapReportWriter)
 
     # Unrealizable report name.
-    with pytest.raises(OSError) as e_info:
+    with pytest.raises(OSError):
         bad_filename = str(tmp_path / "name that can't be </parsed.txt")
         REDCapReportWriter(report_filename=bad_filename)
 
