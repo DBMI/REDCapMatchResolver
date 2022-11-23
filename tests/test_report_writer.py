@@ -41,7 +41,6 @@ def test_writing(addendum, matching_patients, tmp_path) -> None:
     assert isinstance(writer_obj, REDCapReportWriter)
 
     assert writer_obj.add_match(matching_patients)
-    writer_obj.close()
 
     # Check that the output file was created.
     assert os.path.exists(output_filename)
