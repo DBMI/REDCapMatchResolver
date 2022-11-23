@@ -10,6 +10,8 @@ def fixture_matching_patients():
     """Defines patient match text that IS present in our database."""
     return """
     ---------------
+    Study ID: 1234
+    Record: 1 of 1000
     Common Name         Epic Val               RedCap Val           Score
     C_MRN               123                    123                   1.0
     C_FIRST             John                   Jon                   0.8
@@ -33,6 +35,8 @@ def fixture_non_matching_patients():
     """Defines patient match text NOT found in database."""
     return """
     ---------------
+    Study ID: 1234
+    Record: 1 of 1000
     Common Name         Epic Val               RedCap Val           Score
     C_MRN               1234                   1235                  0.7
     C_FIRST             Johnnie                Jonfen                0.8
@@ -50,6 +54,8 @@ def fixture_malformed_match_block():
     """Defines a patient match text that's malformed & will cause errors."""
     return """
     ---------------
+    Study ID: 1234
+    Record: 1 of 1000
     Common Name         Epic Val                         Score
     C_MRN               1234                   1235                  0.7
     C_FIRST             Johnnie                Jonfen                0.8
@@ -66,6 +72,8 @@ def fixture_missing_fields_match_block():
     """Defines patient match text that's missing the DOB field."""
     return """
     ---------------
+    Study ID: 1234
+    Record: 1 of 1000
     Common Name         Epic Val               RedCap Val           Score
     C_MRN               1234                   1235                  0.7
     C_FIRST             Johnnie                Jonfen                0.8

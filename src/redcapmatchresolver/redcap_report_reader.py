@@ -248,11 +248,7 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
 
         while True:
             #   Search through to the start of the next match pair.
-            while next_line is not None and separator not in next_line:
-                next_line = self._next_line()
-
-            #   Do we still have data?
-            if next_line is not None:
+            while next_line is not None and "Epic Val" not in next_line:
                 next_line = self._next_line()
 
             if next_line is None:
@@ -266,7 +262,7 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
             match_dict = {}
 
             #   Read/parse each row, staying alert for a new '------' line,
-            #   meaning we've passed through to the next match.
+            #   meaning we've passed through to the end of the match.
             while next_line is not None and separator not in next_line:
                 next_line = self._next_line()
 

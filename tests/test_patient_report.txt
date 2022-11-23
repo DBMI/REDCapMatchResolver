@@ -1,5 +1,7 @@
 
     ---------------
+    Study ID: 1234
+    Record: 1 of 1000
     Common Name         Epic Val               RedCap Val           Score
 	C_MRN               123                    123                   1.0
     C_FIRST             John                   Jon                   0.8
@@ -13,6 +15,8 @@
     ☐ NOT Same
 
     ---------------
+    Study ID: 1234
+    Record: 1 of 1000
     Common Name         Epic Val               RedCap Val           Score
 	C_MRN               123                    123                   0.0
     C_FIRST             John                   Jon                   0.8
@@ -26,6 +30,8 @@
     x NOT Same
 
     ---------------
+    Study ID: 1234
+    Record: 1 of 1000
     Common Name         Epic Val               RedCap Val           Score
 	C_MRN               456                    789                   0.0
     C_FIRST             Jane                   Jan                   0.8
@@ -39,6 +45,8 @@
     ☐ NOT Same
 
     ---------------
+    Study ID: 1234
+    Record: 1 of 1000
     Common Name         Epic Val                RedCap Val           Score
 	C_MRN               345                     345                     0.0
     C_FIRST             Bob                     Robert                  0.8
