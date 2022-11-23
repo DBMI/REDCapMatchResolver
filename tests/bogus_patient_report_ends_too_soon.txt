@@ -1,5 +1,7 @@
 
     ---------------
+    Study ID: 1234
+    Record: 1 of 1000
     Common Name         Epic Val               RedCap Val            Score
 	C_MRN               123                    123                   1.0
     C_FIRST             John                   Jon                   0.8
