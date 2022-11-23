@@ -35,7 +35,9 @@ class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
         success bool Did it work or not?
         """
         success = False
-        addendum = """CRC Review: Patients are\n    ☐ Same\n    ☐ NOT Same\n"""
+        addendum = (
+            """CRC Review: ABOVE (↑) patients are\n    ☐ Same\n    ☐ NOT Same\n"""
+        )
 
         if match is not None and isinstance(match, str):
             try:

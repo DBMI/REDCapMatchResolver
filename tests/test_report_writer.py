@@ -11,7 +11,7 @@ from redcapmatchresolver import REDCapReportWriter
 @pytest.fixture(name="addendum")
 def fixture_addendum():
     """Defines the additional text report_writer tacks onto each match."""
-    return """CRC Review: Patients are\n    ☐ Same\n    ☐ NOT Same\n"""
+    return """CRC Review: ABOVE (↑) patients are\n    ☐ Same\n    ☐ NOT Same\n"""
 
 
 def test_writer_init(tmp_path) -> None:
