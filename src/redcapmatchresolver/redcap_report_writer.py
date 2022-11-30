@@ -17,8 +17,8 @@ class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
         "    ☐ NOT Same: Family members\n"
         "    ☐ NOT Same: Living at same address\n"
         "    ☐ NOT Same: Parent & child\n"
-        "    ☐ NOT Same: Other\n"
-        "Notes:...................................................\n"
+        "    ☐ NOT Same: Other\n\n"
+        "Notes:...................................................\n\n"
     )
 
     def __init__(self, report_filename: str = "patient_report.txt"):
@@ -59,7 +59,7 @@ class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
         -------
         success : bool
         """
-        match_index = 0
+        match_index = 1
         total_number_of_match_reports = len(self.__reports)
 
         with (open(self.__report_filename, mode="a", encoding="utf-8")) as file_obj:
