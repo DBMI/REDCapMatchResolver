@@ -1,8 +1,11 @@
+"""
+Defines packaging information.
+"""
 from setuptools import setup
 
 setup(
     name="REDCapMatchResolver",
-    version="0.1.5",
+    version="0.1.6",
     packages=["redcapmatchresolver"],
     package_dir={"": "src"},
     url="https://github.com/DBMI/REDCapMatchResolver",

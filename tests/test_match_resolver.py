@@ -71,7 +71,6 @@ def test_match_resolver_corner_cases(
     #   Exercise section in _insert_reports that fills in missing fields.
     assert mr_obj.read_reports(import_folder=bad_reports_directory)
 
-    #   Exercise section in _insert_reports that fills in missing fields.
     #   Exercise section in _insert_reports that skips if CRC decision not shown.
     assert mr_obj.read_reports(import_folder=bad_reports_directory)
 
