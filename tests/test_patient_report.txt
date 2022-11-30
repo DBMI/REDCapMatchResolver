@@ -12,7 +12,11 @@
     ---------------
     CRC Review: Patients are
     x Same
-    ☐ NOT Same
+    ☐ NOT Same: Family members
+	☐ NOT Same: Living at same address
+	☐ NOT Same: Parent & child
+	☐ NOT Same: Other
+	Notes:...................................................
 
     ---------------
     Study ID: 1234
@@ -27,7 +31,11 @@
     ---------------
     CRC Review: Patients are
     ☐ Same
-    x NOT Same
+    ☐ NOT Same: Family members
+	☐ NOT Same: Living at same address
+	X NOT Same: Parent & child
+	☐ NOT Same: Other
+	Notes:...................................................
 
     ---------------
     Study ID: 1234
@@ -42,7 +50,11 @@
     ---------------
     CRC Review: Patients are
     ☐ Same
-    ☐ NOT Same
+    X NOT Same: Family members
+	☐ NOT Same: Living at same address
+	☐ NOT Same: Parent & child
+	☐ NOT Same: Other
+	Notes:...................................................
 
     ---------------
     Study ID: 1234
@@ -57,4 +69,8 @@
     ---------------
     CRC Review: Patients are
     ☐ Same
-    X NOT Same
+    ☐ NOT Same: Family members
+	☐ NOT Same: Living at same address
+	☐ NOT Same: Parent & child
+	X NOT Same: Other
+	Notes:...................................................
