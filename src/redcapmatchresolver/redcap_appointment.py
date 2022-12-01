@@ -113,6 +113,14 @@ class REDCapAppointment:
 
         return ret
 
+    def csv(self):
+        if self.valid():
+            csv_summary = f"{self.__department}, {self.date()}"
+        else:
+            csv_summary = " , "
+
+        return csv_summary
+
     def date(self) -> Union[datetime, None]:
         """Convert stored date and time strings into one datetime object.
 

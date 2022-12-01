@@ -8,22 +8,6 @@ from redcapmatchresolver.redcap_appointment import REDCapAppointment
 from redcapmatchresolver.redcap_patient import REDCapPatient
 
 
-def test_appointment_instantiation(
-    appointment_headers, appointment_record, appointment_datetime
-):
-    appointment_obj = REDCapAppointment(
-        appointment_headers=appointment_headers, appointment_info=appointment_record
-    )
-    assert appointment_obj is not None and isinstance(
-        appointment_obj, REDCapAppointment
-    )
-
-    #   Can we parse the date/time from the REDCapAppointment object?
-    extracted_datetime = appointment_obj.date()
-    assert extracted_datetime is not None and isinstance(extracted_datetime, datetime)
-    assert extracted_datetime == appointment_datetime
-
-
 def test_appointment_corner_cases(
     appointment_headers, appointment_record_slashes, appointment_datetime
 ):
@@ -88,6 +72,26 @@ def test_appointment_errors(
 
     with pytest.raises(ValueError):
         appointment_obj.date()
+
+
+def test_appointment_instantiation(
+    appointment_headers, appointment_record, appointment_datetime
+):
+    appointment_obj = REDCapAppointment(
+        appointment_headers=appointment_headers, appointment_info=appointment_record
+    )
+    assert appointment_obj is not None and isinstance(
+        appointment_obj, REDCapAppointment
+    )
+
+    #   Can we parse the date/time from the REDCapAppointment object?
+    extracted_datetime = appointment_obj.date()
+    assert extracted_datetime is not None and isinstance(extracted_datetime, datetime)
+    assert extracted_datetime == appointment_datetime
+
+    #   Test .csv output.
+    csv_summary = appointment_obj.csv()
+    assert csv_summary is not None and isinstance(csv_summary, str)
 
 
 def test_patient_appointments(patient_headers, patient_record_1, patient_record_2):
@@ -163,6 +167,11 @@ def test_patient_instantiation(patient_headers, patient_record_1):
 
     patient_description = str(patient_obj)
     assert patient_description is not None and isinstance(patient_description, str)
+
+    patient_csv_description = patient_obj.csv()
+    assert patient_csv_description is not None and isinstance(
+        patient_csv_description, str
+    )
 
 
 def test_patient_merger(
