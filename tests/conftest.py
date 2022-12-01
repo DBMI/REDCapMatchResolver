@@ -141,7 +141,7 @@ def fixture_patient_headers() -> list:
 
 @pytest.fixture(name="patient_record_1")
 def fixture_patient_record_1():
-    return [
+    return (
         "1234567",
         "2345678",
         "E987654321",
@@ -159,12 +159,12 @@ def fixture_patient_record_1():
         "1799-12-14",
         "OB/GYN",
         "2022-12-25 10:11:12",
-    ]
+    )
 
 
 @pytest.fixture(name="patient_record_2")
 def fixture_patient_record_2():
-    return [
+    return (
         "1234567",
         "2345678",
         "E987654321",
@@ -182,12 +182,12 @@ def fixture_patient_record_2():
         "1799-12-14",
         "DENTAL",
         "2022-12-26 11:12:13",
-    ]
+    )
 
 
 @pytest.fixture(name="patient_record_3")
 def fixture_patient_record_3():
-    return [
+    return (
         "2345678",
         "3456789",
         "E876543210",
@@ -205,12 +205,12 @@ def fixture_patient_record_3():
         "1802-05-22",
         "ORTHO",
         "2022-12-27 13:14:15",
-    ]
+    )
 
 
 @pytest.fixture(name="patient_record_4")
 def fixture_patient_record_4():
-    return [
+    return (
         "2345678",
         "3456789",
         "E876543210",
@@ -228,7 +228,7 @@ def fixture_patient_record_4():
         "1802-05-22",
         "ORTHO",
         "2022-12-27 13:14:15",
-    ]
+    )
 
 
 if __name__ == "__main__":
