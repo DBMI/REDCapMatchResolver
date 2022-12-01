@@ -11,6 +11,18 @@ class REDCapPatient:
     Represents a patient record, allowing for multiple appointments.
     """
 
+    #   We create the patient object with one set of field names,
+    #   but may wish to retrieve the values with slightly different names.
+    __fields_dict = {
+        "FIRST_NAME": "PAT_FIRST_NAME",
+        "LAST_NAME": "PAT_LAST_NAME",
+        "STREET_ADDRESS_LINE_1": "ADD_LINE_1",
+        "STREET_ADDRESS_LINE_2": "ADD_LINE_2",
+        "STATE": "STATE_ABBR",
+        "ZIP_CODE": "ZIP",
+        "PHONE_NUMBER": "HOME_PHONE",
+        "DOB": "BIRTH_DATE",
+    }
     __phone_keywords = ["PHONE"]
 
     def __init__(self, headers: list, row: tuple):
@@ -21,6 +33,9 @@ class REDCapPatient:
 
         if headers is None or not isinstance(headers, list) or len(headers) == 0:
             raise TypeError("Input 'headers' can't be empty.")
+
+        #   Don't want confusion about upper/lower case. Let's set all to uppercase now.
+        headers = [name.upper() for name in headers]
 
         #   Which header fields are NOT part of the appointment?
         (
@@ -124,19 +139,49 @@ class REDCapPatient:
         rest = numeric_string[6:10]
         return f"{prefix}-{exchange}-{rest}"
 
-    def csv(self):
-        csv_summary = ""
+    def csv(self, headers: list = None) -> str:
+        """Creates one line summary of patient record, suitable for a .csv file.
 
-        for key, value in self.__record.items():
-            csv_summary += f"{value}" + ", "
+        Parameters
+        ----------
+        headers : list  Optional list of which fields go where
 
-        #   Append appointment info.
+        Returns
+        -------
+        csv_summary : str
+        """
+        single_appointment = None
+
         if self.__appointments and len(self.__appointments) > 0:
             single_appointment = self.best_appointment()
-            csv_summary += single_appointment.csv()
-        else:
-            #   Append two blanks.
-            csv_summary += " , "
+
+        if headers is None or not isinstance(headers, list):
+            headers = self.__record.keys()
+
+        headers = [name.upper() for name in headers]
+
+        #   Which of these fields need special appointment handling?
+        #   (Need to do this again here because the output fields are different
+        #   from the ones with which the object was instantiated.)
+        appointment_fields = REDCapAppointment.applicable_header_fields(headers)
+        values_list = []
+
+        for field in headers:
+            value = " "
+
+            if field in self.__record:
+                value = self.__record[field]
+            elif field in appointment_fields:
+                value = single_appointment.value(field)
+            elif field in self.__fields_dict:
+                translated_field = self.__fields_dict[field]
+
+                if translated_field in self.__record:
+                    value = self.__record[translated_field]
+
+            values_list.append(value)
+
+        csv_summary = ", ".join(values_list)
 
         return csv_summary
 
@@ -160,6 +205,7 @@ class REDCapPatient:
     @staticmethod
     def _not_appointment_fields(headers: list) -> tuple:
         appointment_fields = REDCapAppointment.applicable_header_fields(headers)
+        appointment_fields = [field.upper() for field in appointment_fields]
         non_appointment_fields = [
             term for term in headers if term not in appointment_fields
         ]

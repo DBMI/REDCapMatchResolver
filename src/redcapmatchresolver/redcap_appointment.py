@@ -11,8 +11,9 @@ class REDCapAppointment:
     Represents a single patient appointment.
     """
 
-    __appointment_date_keywords = ["APPT_DATE"]
-    __department_keywords = ["DEPARTMENT", "DEPT"]
+    __appointment_date_keywords = ["APPOINTMENT_DATE", "APPT_DATE"]
+    __appointment_time_keywords = ["APPOINTMENT_TIME", "APPT_TIME"]
+    __department_keywords = ["CLINIC", "DEPARTMENT", "DEPT"]
 
     def __init__(self, appointment_headers: list = None, appointment_info: list = None):
         if (
@@ -68,14 +69,22 @@ class REDCapAppointment:
         applicable_headers = []
 
         for header in headers:
+            header_upper_case = header.upper()
+
             is_appointment_date = any(
-                name in header for name in REDCapAppointment.__appointment_date_keywords
+                name in header_upper_case
+                for name in REDCapAppointment.__appointment_date_keywords
             )
             is_appointment_department = any(
-                name in header for name in REDCapAppointment.__department_keywords
+                name in header_upper_case
+                for name in REDCapAppointment.__department_keywords
+            )
+            is_appointment_time = any(
+                name in header_upper_case
+                for name in REDCapAppointment.__appointment_time_keywords
             )
 
-            if is_appointment_date or is_appointment_department:
+            if is_appointment_date or is_appointment_department or is_appointment_time:
                 applicable_headers.append(header)
 
         return applicable_headers
@@ -113,7 +122,13 @@ class REDCapAppointment:
 
         return ret
 
-    def csv(self):
+    def csv(self) -> str:
+        """Returns department and date in a comma-separated format.
+
+        Returns
+        -------
+        csv_summary : str
+        """
         if self.valid():
             csv_summary = f"{self.__department}, {self.date()}"
         else:
@@ -156,6 +171,32 @@ class REDCapAppointment:
             and date_value is not None
             and isinstance(date_value, datetime)
         )
+
+    def value(self, field: str) -> str:
+        """Retrieves either the department or date as requested.
+
+        Parameters
+        ----------
+        field : str     Like 'dept' or 'date'
+
+        Returns
+        -------
+        value_string : str
+
+        """
+        if field is None or not isinstance(field, str):
+            return ""
+
+        if "date" in field.lower():
+            return self.__date
+
+        if any(name in field.lower() for name in ["clinic", "dept", "department"]):
+            return self.__department
+
+        if "time" in field.lower():
+            return self.__time
+
+        return ""
 
 
 if __name__ == "__main__":
