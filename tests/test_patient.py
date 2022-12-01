@@ -64,6 +64,12 @@ def test_appointment_errors(
         appointment_info=appointment_record_partial,
     )
     assert appointment_obj.date() is None
+    partial_csv = appointment_obj.csv()
+    assert (
+        partial_csv is not None
+        and isinstance(partial_csv, str)
+        and partial_csv == " , "
+    )
 
     appointment_obj = REDCapAppointment(
         appointment_headers=appointment_headers,
@@ -93,15 +99,31 @@ def test_appointment_instantiation(
     csv_summary = appointment_obj.csv()
     assert csv_summary is not None and isinstance(csv_summary, str)
 
+    #   Ask for clinic, date, time.
+    value = appointment_obj.value("appointment_clinic")
+    assert value is not None and isinstance(value, str) and value == "OPTICAL"
+
+    value = appointment_obj.value("appointment_date")
+    assert value is not None and isinstance(value, str) and value == "2022-12-01"
+
+    value = appointment_obj.value("appointment_time")
+    assert value is not None and isinstance(value, str) and value == "10:40:00"
+
+    value = appointment_obj.value("not_valid_name")
+    assert value is not None and isinstance(value, str) and len(value) == 0
+
+    value = appointment_obj.value(1979)
+    assert value is not None and isinstance(value, str) and len(value) == 0
+
 
 def test_patient_appointments(patient_headers, patient_record_1, patient_record_2):
     #   Patient with NO appointments.
-    patient_record_no_appointments = patient_record_1.copy()
-    patient_record_no_appointments = patient_record_no_appointments[
-        : len(patient_record_no_appointments) - 2
+    patient_record_no_appointments_list = list(patient_record_1)
+    patient_record_no_appointments_list = patient_record_no_appointments_list[
+        : len(patient_record_no_appointments_list) - 2
     ]
     patient_with_no_appointments = REDCapPatient(
-        headers=patient_headers, row=patient_record_no_appointments
+        headers=patient_headers, row=tuple(patient_record_no_appointments_list)
     )
     assert patient_with_no_appointments is not None and isinstance(
         patient_with_no_appointments, REDCapPatient
@@ -155,11 +177,11 @@ def test_patient_errors(patient_headers, patient_record_1):
         REDCapPatient(headers=None, row=patient_record_1)
 
 
-def test_patient_instantiation(patient_headers, patient_record_1):
+def test_patient_instantiation(patient_headers, patient_record_1, export_fields):
     patient_obj = REDCapPatient(headers=patient_headers, row=patient_record_1)
     assert patient_obj is not None and isinstance(patient_obj, REDCapPatient)
 
-    patient_obj.set_study_id("654321")
+    patient_obj.set_study_id(study_id="654321")
 
     #   Try retrieving values.
     assert patient_obj.value("STUDY_ID") == "654321"
@@ -169,6 +191,11 @@ def test_patient_instantiation(patient_headers, patient_record_1):
     assert patient_description is not None and isinstance(patient_description, str)
 
     patient_csv_description = patient_obj.csv()
+    assert patient_csv_description is not None and isinstance(
+        patient_csv_description, str
+    )
+
+    patient_csv_description = patient_obj.csv(headers=export_fields)
     assert patient_csv_description is not None and isinstance(
         patient_csv_description, str
     )
