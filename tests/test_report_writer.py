@@ -46,7 +46,10 @@ def test_writing(matching_patients, tmp_path) -> None:
     with open(file=output_filename, encoding="utf-8") as file_obj:
         retrieved_contents = file_obj.read()
         record_read_line = "Record 0 of 1\n"
-        assert retrieved_contents == matching_patients + record_read_line + REDCapReportWriter.addendum
+        assert (
+            retrieved_contents
+            == matching_patients + record_read_line + REDCapReportWriter.addendum
+        )
 
 
 if __name__ == "__main__":

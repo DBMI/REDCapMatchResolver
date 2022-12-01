@@ -6,7 +6,11 @@ testing of the REDCapReportReader class.
 import os
 import pandas
 import pytest
-from redcapmatchresolver.redcap_report_reader import CrcReason, CrcReview, REDCapReportReader
+from redcapmatchresolver.redcap_report_reader import (
+    CrcReason,
+    CrcReview,
+    REDCapReportReader,
+)
 
 
 @pytest.fixture(name="report_filename")
@@ -29,7 +33,9 @@ def test_crc_reason_class() -> None:
         CrcReason.convert(1979)
 
     assert CrcReason.convert("NOT Same: Family members") == CrcReason.FAMILY
-    assert CrcReason.convert("NOT Same: Living at same address") == CrcReason.SAME_ADDRESS
+    assert (
+        CrcReason.convert("NOT Same: Living at same address") == CrcReason.SAME_ADDRESS
+    )
     assert CrcReason.convert("NOT Same: Parent & child") == CrcReason.PARENT_CHILD
     assert CrcReason.convert("") == CrcReason.OTHER
 
