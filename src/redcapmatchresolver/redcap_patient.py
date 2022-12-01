@@ -13,7 +13,7 @@ class REDCapPatient:
 
     __phone_keywords = ["PHONE"]
 
-    def __init__(self, headers: list = None, row: list = None):
+    def __init__(self, headers: list, row: tuple):
         #   Build a dictionary, where the keys come from 'headers' and
         #   the values come from 'row'.
         self.__record = {}
@@ -30,7 +30,7 @@ class REDCapPatient:
         appointment_data = []
 
         for index, field_name in enumerate(headers):
-            if row is None or not isinstance(row, list) or len(row) <= index:
+            if row is None or not isinstance(row, tuple) or len(row) <= index:
                 #   Then this field is not present in the 'row' structure.
                 #   Leave a blank.
                 if field_name in appointment_fields:
