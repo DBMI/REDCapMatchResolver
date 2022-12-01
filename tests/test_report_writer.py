@@ -45,7 +45,7 @@ def test_writing(matching_patients, tmp_path) -> None:
     # Check its contents.
     with open(file=output_filename, encoding="utf-8") as file_obj:
         retrieved_contents = file_obj.read()
-        record_read_line = "Record 0 of 1\n"
+        record_read_line = "Record 1 of 1\n"
         assert (
             retrieved_contents
             == matching_patients + record_read_line + REDCapReportWriter.addendum

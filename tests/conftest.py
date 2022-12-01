@@ -6,14 +6,14 @@ import os
 import pytest
 
 
-@pytest.fixture(name="appointment_headers")
-def fixture_appointment_headers() -> list:
-    return ["DEPARTMENT_NAME", "APPT_DATE_TIME"]
-
-
 @pytest.fixture(name="appointment_datetime")
 def fixture_appointment_datetime() -> datetime:
     return datetime.strptime("2022-12-01 10:40:00", "%Y-%m-%d %H:%M:%S")
+
+
+@pytest.fixture(name="appointment_headers")
+def fixture_appointment_headers() -> list:
+    return ["DEPARTMENT_NAME", "APPT_DATE_TIME"]
 
 
 @pytest.fixture(name="appointment_record")
@@ -34,6 +34,29 @@ def fixture_appointment_record_partial() -> list:
 @pytest.fixture(name="appointment_record_slashes")
 def fixture_appointment_record_slashes() -> list:
     return ["OPTICAL", "12/01/2022 10:40:00"]
+
+
+@pytest.fixture(name="export_fields")
+def fixture_export_fields() -> list:
+    return """
+        study_id
+        mrn
+        first_name
+        last_name
+        dob
+        street_address_line_1
+        street_address_line_2
+        city
+        state
+        zip_code
+        email_address
+        phone_number
+        appointment_clinic
+        appointment_date
+        appointment_time
+        primary_consent_date
+        paired_status
+    """.split()
 
 
 @pytest.fixture(name="matching_patients")
