@@ -133,7 +133,7 @@ def test_patient_appointments(patient_headers, patient_record_1, patient_record_
     )
 
 
-def test_patient_corner_cases(patient_headers, patient_record_1):
+def test_patient_corner_cases(patient_headers, patient_record_1, patient_record_4):
     REDCapPatient(headers=patient_headers, row=None)
     patient_obj = REDCapPatient(headers=patient_headers, row=patient_record_1[:-1])
     assert patient_obj.best_appointment() is None
@@ -141,6 +141,9 @@ def test_patient_corner_cases(patient_headers, patient_record_1):
     patient_obj.same_as(None)
 
     assert patient_obj.value("field_not_present") is None
+
+    #   Exercise more of _clean_up_phone method.
+    REDCapPatient(headers=patient_headers, row=patient_record_4)
 
 
 def test_patient_errors(patient_headers, patient_record_1):
@@ -152,7 +155,10 @@ def test_patient_instantiation(patient_headers, patient_record_1):
     patient_obj = REDCapPatient(headers=patient_headers, row=patient_record_1)
     assert patient_obj is not None and isinstance(patient_obj, REDCapPatient)
 
-    #   Try retrieving a value.
+    patient_obj.set_study_id("654321")
+
+    #   Try retrieving values.
+    assert patient_obj.value("STUDY_ID") == "654321"
     assert patient_obj.value("PAT_ID") == "1234567"
 
     patient_description = str(patient_obj)
