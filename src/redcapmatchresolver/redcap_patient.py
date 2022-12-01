@@ -124,6 +124,22 @@ class REDCapPatient:
         rest = numeric_string[6:10]
         return f"{prefix}-{exchange}-{rest}"
 
+    def csv(self):
+        csv_summary = ""
+
+        for key, value in self.__record.items():
+            csv_summary += f"{value}" + ", "
+
+        #   Append appointment info.
+        if self.__appointments and len(self.__appointments) > 0:
+            single_appointment = self.best_appointment()
+            csv_summary += single_appointment.csv()
+        else:
+            #   Append two blanks.
+            csv_summary += " , "
+
+        return csv_summary
+
     def merge(self, other_patient: REDCapPatient) -> None:
         """Combines the appointments from two copies of the same patient.
         If the other patient is actually a different patient, does not modify itself.
