@@ -11,6 +11,8 @@ class REDCapPatient:
     Represents a patient record, allowing for multiple appointments.
     """
 
+    __phone_keywords = ["PHONE"]
+
     def __init__(self, headers: list = None, row: list = None):
         #   Build a dictionary, where the keys come from 'headers' and
         #   the values come from 'row'.
@@ -39,7 +41,13 @@ class REDCapPatient:
                 if field_name in appointment_fields:
                     appointment_data.append(row[index])
                 else:
-                    self.__record[field_name] = row[index]
+                    if any(word in field_name for word in self.__phone_keywords):
+                        self.__record[field_name] = self._clean_up_phone(row[index])
+                    else:
+                        self.__record[field_name] = row[index]
+
+        #   Save room for study_id field.
+        self.__record["STUDY_ID"] = None
 
         if appointment_fields and appointment_data:
             appointment_object = REDCapAppointment(appointment_fields, appointment_data)
@@ -84,6 +92,37 @@ class REDCapPatient:
             ]
 
         return best_appointment
+
+    @staticmethod
+    def _clean_up_phone(phone_number_string: str) -> str:
+        if not phone_number_string or phone_number_string.upper().strip() == "NULL":
+            return ""
+
+        if not phone_number_string or phone_number_string.upper().strip() == "NONE":
+            return ""
+
+        numeric_filter = filter(str.isdigit, phone_number_string)
+        numeric_string = "".join(numeric_filter)
+
+        if numeric_string in (
+            "0000000000",
+            "10000000000",
+            "9999999999",
+            "19999999999",
+            "1111111111",
+        ):
+            return ""
+
+        if numeric_string.startswith("1") and len(numeric_string) == 11:  # 1YYYXXXZZZZ
+            numeric_string = numeric_string[1:]
+
+        if len(numeric_string) != 10:
+            return phone_number_string
+
+        prefix = numeric_string[0:3]
+        exchange = numeric_string[3:6]
+        rest = numeric_string[6:10]
+        return f"{prefix}-{exchange}-{rest}"
 
     def merge(self, other_patient: REDCapPatient) -> None:
         """Combines the appointments from two copies of the same patient.
@@ -137,6 +176,16 @@ class REDCapPatient:
                 return False
 
         return True
+
+    def set_study_id(self, study_id: str) -> None:
+        """Allows external code to set the patient's study_id after the object is instantiated.
+
+        Parameters
+        ----------
+        study_id : str
+        """
+        if study_id is not None and isinstance(study_id, str):
+            self.__record["STUDY_ID"] = study_id
 
     def __str__(self):
         nice_summary = ""
