@@ -16,7 +16,12 @@ class REDCapAppointment:
     __appointment_time_keywords = ["APPOINTMENT_TIME", "APPT_TIME"]
     __department_keywords = ["CLINIC", "DEPARTMENT", "DEPT"]
 
-    def __init__(self, appointment_headers: list = None, appointment_info: list = None):
+    def __init__(
+        self,
+        appointment_headers: list = None,
+        appointment_info: list = None,
+        clinics: REDCapClinic = None,
+    ):
         if (
             appointment_headers is None
             or not isinstance(appointment_headers, list)
@@ -55,7 +60,7 @@ class REDCapAppointment:
                 self.__date = REDCapAppointment._clean_up_date(appointment_info[index])
                 self.__time = REDCapAppointment._clean_up_time(appointment_info[index])
 
-        self.__priority = self._assign_priority()
+        self.__priority = self._assign_priority(clinics=clinics)
 
     @staticmethod
     def applicable_header_fields(headers: list = None) -> list:
@@ -92,8 +97,11 @@ class REDCapAppointment:
 
         return applicable_headers
 
-    def _assign_priority(self) -> int:
-        clinics = REDCapClinic()
+    def _assign_priority(self, clinics: REDCapClinic) -> int:
+
+        if clinics is None or not isinstance(clinics, REDCapClinic):
+            clinics = REDCapClinic()
+
         priority = clinics.priority(self.__department)
         return priority
 
