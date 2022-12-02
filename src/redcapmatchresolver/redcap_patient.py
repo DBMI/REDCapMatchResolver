@@ -181,6 +181,10 @@ class REDCapPatient:
 
             values_list.append(value)
 
+        #   Eliminate Nones from the list.
+        values_list = ["None" if v is None else v for v in values_list]
+
+        #   Join with comma and space.
         csv_summary = ", ".join(values_list)
 
         return csv_summary
