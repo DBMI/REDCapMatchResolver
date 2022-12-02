@@ -5,9 +5,11 @@ from setuptools import setup
 
 setup(
     name="REDCapMatchResolver",
-    version="0.2.5",
+    version="0.3.0",
     packages=["redcapmatchresolver"],
     package_dir={"": "src"},
+    include_package_data=True,
+    package_data={"": ["data/*.xlsx"]},
     url="https://github.com/DBMI/REDCapMatchResolver",
     license="",
     author="Kevin J. Delaney",

@@ -18,22 +18,22 @@ def fixture_appointment_headers() -> list:
 
 @pytest.fixture(name="appointment_record")
 def fixture_appointment_record() -> list:
-    return ["OPTICAL", "2022-12-01 10:40:00"]
+    return ["LWC CARDIOLOGY", "2022-12-01 10:40:00"]
 
 
 @pytest.fixture(name="appointment_record_malformed")
 def fixture_appointment_record_malformed() -> list:
-    return ["OPTICAL", "20220-12-01 100:40:00"]
+    return ["LWC CARDIOLOGY", "20220-12-01 100:40:00"]
 
 
 @pytest.fixture(name="appointment_record_partial")
 def fixture_appointment_record_partial() -> list:
-    return ["OPTICAL", ""]
+    return ["LWC CARDIOLOGY", ""]
 
 
 @pytest.fixture(name="appointment_record_slashes")
 def fixture_appointment_record_slashes() -> list:
-    return ["OPTICAL", "12/01/2022 10:40:00"]
+    return ["LWC CARDIOLOGY", "12/01/2022 10:40:00"]
 
 
 @pytest.fixture(name="export_fields")
@@ -180,8 +180,8 @@ def fixture_patient_record_1():
         "george.washington@whitehouse.gov",
         "1732-02-22",
         "1799-12-14",
-        "OB/GYN",
-        "2022-12-25 10:11:12",
+        "UPC DRAW STATION",
+        "2022-12-26 10:11:12",
     )
 
 
@@ -203,8 +203,8 @@ def fixture_patient_record_2():
         "george.washington@whitehouse.gov",
         "1732-02-22",
         "1799-12-14",
-        "DENTAL",
-        "2022-12-26 11:12:13",
+        "UPC INTERNAL MEDICINE",
+        "2022-12-25 11:12:13",
     )
 
 
@@ -226,7 +226,7 @@ def fixture_patient_record_3():
         "marthae.washington@whitehouse.gov",
         "1731-06-02",
         "1802-05-22",
-        "ORTHO",
+        "UNC ORTHOPAEDICS",
         "2022-12-27 13:14:15",
     )
 
@@ -249,8 +249,31 @@ def fixture_patient_record_4():
         "marthae.washington@whitehouse.gov",
         "1731-06-02",
         "1802-05-22",
-        "ORTHO",
+        "UNC ORTHOPAEDICS",
         "2022-12-27 13:14:15",
+    )
+
+
+@pytest.fixture(name="patient_record_5")
+def fixture_patient_record_5():
+    return (
+        "1234567",
+        "2345678",
+        "E987654321",
+        "George",
+        "Washington",
+        "1600 Pennsylvania Ave. NW",
+        "Null",
+        "Washington",
+        "DC",
+        "20500",
+        "NULL",
+        "202-456-11111",
+        "george.washington@whitehouse.gov",
+        "1732-02-22",
+        "1799-12-14",
+        "UPC INTERNAL MEDICINE",
+        "2022-12-26 11:12:13",
     )
 
 

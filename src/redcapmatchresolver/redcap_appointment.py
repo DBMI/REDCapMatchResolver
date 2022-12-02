@@ -4,6 +4,7 @@ Module: contains class REDCapAppointment.
 from datetime import datetime
 import re
 from typing import Union
+from redcapmatchresolver.redcap_clinic import REDCapClinic
 
 
 class REDCapAppointment:
@@ -54,6 +55,8 @@ class REDCapAppointment:
                 self.__date = REDCapAppointment._clean_up_date(appointment_info[index])
                 self.__time = REDCapAppointment._clean_up_time(appointment_info[index])
 
+        self.__priority = self._assign_priority()
+
     @staticmethod
     def applicable_header_fields(headers: list = None) -> list:
         """Which of the fields listed apply to the appointment?
@@ -88,6 +91,11 @@ class REDCapAppointment:
                 applicable_headers.append(header)
 
         return applicable_headers
+
+    def _assign_priority(self) -> int:
+        clinics = REDCapClinic()
+        priority = clinics.priority(self.__department)
+        return priority
 
     # Cleanup specific to dates.  We want a 2022-04-12 format.
     @staticmethod
@@ -156,6 +164,15 @@ class REDCapAppointment:
 
         return datetime_value
 
+    def priority(self) -> int:
+        """Allows querying of self.__priority value.
+
+        Returns
+        -------
+        priority : int
+        """
+        return self.__priority
+
     def valid(self) -> bool:
         """Tests to see if department, date both available.
 
@@ -190,7 +207,11 @@ class REDCapAppointment:
         if "date" in field.lower():
             return self.__date
 
-        if any(name in field.lower() for name in ["clinic", "dept", "department"]):
+        clinic_keywords = [
+            keyword.lower() for keyword in REDCapAppointment.__department_keywords
+        ]
+
+        if any(name in field.lower() for name in clinic_keywords):
             return self.__department
 
         if "time" in field.lower():
