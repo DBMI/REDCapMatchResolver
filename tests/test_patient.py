@@ -101,7 +101,7 @@ def test_appointment_instantiation(
 
     #   Ask for clinic, date, time.
     value = appointment_obj.value("appointment_clinic")
-    assert value is not None and isinstance(value, str) and value == "OPTICAL"
+    assert value is not None and isinstance(value, str) and value == "LWC CARDIOLOGY"
 
     value = appointment_obj.value("appointment_date")
     assert value is not None and isinstance(value, str) and value == "2022-12-01"
@@ -115,8 +115,14 @@ def test_appointment_instantiation(
     value = appointment_obj.value(1979)
     assert value is not None and isinstance(value, str) and len(value) == 0
 
+    #   Ask for appointment priority.
+    priority = appointment_obj.priority()
+    assert priority is not None and isinstance(priority, int) and priority == 14
 
-def test_patient_appointments(patient_headers, patient_record_1, patient_record_2):
+
+def test_patient_appointments(
+    patient_headers, patient_record_1, patient_record_2, patient_record_5
+):
     #   Patient with NO appointments.
     patient_record_no_appointments_list = list(patient_record_1)
     patient_record_no_appointments_list = patient_record_no_appointments_list[
@@ -152,10 +158,26 @@ def test_patient_appointments(patient_headers, patient_record_1, patient_record_
     assert patient_obj_1 is not None and isinstance(patient_obj_1, REDCapPatient)
     assert len(patient_obj_1.appointments()) == 2
 
-    #   Two appointments--ask for the "best".
+    #   Two appointments at different clinics--ask for the "best".
+    #   In this case, best will be determined by clinic location.
+    best_appointment = patient_obj_1.best_appointment()
+    assert (
+        best_appointment is not None
+        and isinstance(best_appointment, REDCapAppointment)
+        and best_appointment.value("department") == "UPC DRAW STATION"
+    )
+
+    #   Two appointments at the same clinic. Best is earliest.
+    patient_obj_5 = REDCapPatient(headers=patient_headers, row=patient_record_5)
+    assert patient_obj_5 is not None and isinstance(patient_obj_5, REDCapPatient)
+    patient_obj_2.merge(patient_obj_5)
+    assert patient_obj_2 is not None and isinstance(patient_obj_2, REDCapPatient)
+    assert len(patient_obj_2.appointments()) == 2
     best_appointment = patient_obj_2.best_appointment()
-    assert best_appointment is not None and isinstance(
-        best_appointment, REDCapAppointment
+    assert (
+        best_appointment is not None
+        and isinstance(best_appointment, REDCapAppointment)
+        and best_appointment.value("date") == "2022-12-25"
     )
 
 
