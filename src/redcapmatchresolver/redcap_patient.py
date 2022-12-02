@@ -4,6 +4,7 @@ Module: contains class REDCapPatient.
 from __future__ import annotations
 from typing import Union
 from redcapmatchresolver.redcap_appointment import REDCapAppointment
+from redcapmatchresolver.redcap_clinic import REDCapClinic
 
 
 class REDCapPatient:
@@ -25,7 +26,7 @@ class REDCapPatient:
     }
     __phone_keywords = ["PHONE"]
 
-    def __init__(self, headers: list, row: tuple):
+    def __init__(self, headers: list, row: tuple, clinics: REDCapClinic):
         #   Build a dictionary, where the keys come from 'headers' and
         #   the values come from 'row'.
         self.__record = {}
@@ -65,7 +66,11 @@ class REDCapPatient:
         self.__record["STUDY_ID"] = None
 
         if appointment_fields and appointment_data:
-            appointment_object = REDCapAppointment(appointment_fields, appointment_data)
+            appointment_object = REDCapAppointment(
+                appointment_headers=appointment_fields,
+                appointment_info=appointment_data,
+                clinics=clinics,
+            )
 
             if appointment_object.valid():
                 self.__appointments.append(appointment_object)
