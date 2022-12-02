@@ -23,7 +23,9 @@ class REDCapClinic:  # pylint: disable=too-few-public-methods
 
             clinic_specs = pandas.read_excel(excel_filename)
 
-            if clinic_specs is None or not isinstance(clinic_specs, pandas.DataFrame):  # pragma: no cover
+            if clinic_specs is None or not isinstance(
+                clinic_specs, pandas.DataFrame
+            ):  # pragma: no cover
                 raise OSError(f"Unable to read {excel_filename}.")
 
             self.__members = {}
