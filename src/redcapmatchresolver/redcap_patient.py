@@ -82,7 +82,7 @@ class REDCapPatient:
         ]
 
     def best_appointment(self) -> Union[REDCapAppointment, None]:
-        """Selects the 'best' contact opportunity according to heuristics.
+        """Selects the 'best' contact opportunity according to clinic priority & schedule.
         Returns
         -------
         best_appointment : REDCapAppointment
@@ -95,18 +95,32 @@ class REDCapPatient:
             return None
 
         best_appointment = None
+        all_appointment_priorities = [
+            appointment.priority() for appointment in self.__appointments
+        ]
+
+        if all_appointment_priorities:
+            best_appointments_by_location = [
+                appointment
+                for appointment in self.__appointments
+                if appointment.priority() == min(all_appointment_priorities)
+            ]
+
+        if len(best_appointments_by_location) == 1:
+            return best_appointments_by_location[0]
+
         all_appointment_dates = [
-            appointment.date()
-            for appointment in self.__appointments
-            if appointment.valid()
+            appointment.date() for appointment in best_appointments_by_location
         ]
 
         if all_appointment_dates:
-            best_appointment = self.__appointments[
-                all_appointment_dates.index(max(all_appointment_dates))
+            best_appointment = [
+                appointment
+                for appointment in best_appointments_by_location
+                if appointment.date() == min(all_appointment_dates)
             ]
 
-        return best_appointment
+        return best_appointment[0]
 
     @staticmethod
     def _clean_up_phone(phone_number_string: str) -> str:
@@ -171,7 +185,7 @@ class REDCapPatient:
 
             if field in self.__record:
                 value = self.__record[field]
-            elif field in appointment_fields:
+            elif field in appointment_fields and single_appointment:
                 value = single_appointment.value(field)
             elif field in self.__fields_dict:
                 translated_field = self.__fields_dict[field]
