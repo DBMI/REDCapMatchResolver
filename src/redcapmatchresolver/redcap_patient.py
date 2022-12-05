@@ -32,8 +32,9 @@ class REDCapPatient:
 
     def __init__(self, headers: list, row: tuple, clinics: REDCapClinic):
         #   Build a dictionary, where the keys come from 'headers' and
-        #   the values come from 'row'.
-        self.__record = {}
+        #   the values come from 'row'. Save room for study_id field.
+        self.__record = {"STUDY_ID": None}
+
         self.__appointments = []
 
         if headers is None or not isinstance(headers, list) or len(headers) == 0:
@@ -65,9 +66,6 @@ class REDCapPatient:
                         self.__record[field_name] = self._clean_up_phone(row[index])
                     else:
                         self.__record[field_name] = row[index]
-
-        #   Save room for study_id field.
-        self.__record["STUDY_ID"] = None
 
         if appointment_fields and appointment_data:
             appointment_object = REDCapAppointment(
