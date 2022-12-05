@@ -236,10 +236,13 @@ class REDCapPatient:
         #   Eliminate Nones, NULLS from the list.
         values_list = ["" if v is None else v for v in values_list]
         values_list = ["" if v is "NULL" else v for v in values_list]
+        values_list = ["" if v is " " else v for v in values_list]
 
         #   Join with comma and space.
         csv_summary = ", ".join(values_list)
 
+        #   Get rid of double-space empties.
+        csv_summary = csv_summary.replace("  ", " ")
         return csv_summary
 
     def merge(self, other_patient: REDCapPatient) -> None:
