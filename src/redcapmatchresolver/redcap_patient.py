@@ -262,15 +262,18 @@ class REDCapPatient:
 
         return True
 
-    def set_study_id(self, study_id: str) -> None:
+    def set_study_id(self, study_id: Union[int, str]) -> None:
         """Allows external code to set the patient's study_id after the object is instantiated.
 
         Parameters
         ----------
-        study_id : str
+        study_id : str or int
         """
-        if study_id is not None and isinstance(study_id, str):
-            self.__record["STUDY_ID"] = study_id
+        if study_id is not None:
+            if isinstance(study_id, str):
+                self.__record["STUDY_ID"] = study_id
+            elif isinstance(study_id, int):
+                self.__record["STUDY_ID"] = str(study_id)
 
     def __str__(self):
         nice_summary = ""
