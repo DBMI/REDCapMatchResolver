@@ -2,6 +2,7 @@
 Module: contains class REDCapPatient.
 """
 from __future__ import annotations
+import re
 from typing import Union
 from redcapmatchresolver.redcap_appointment import REDCapAppointment
 from redcapmatchresolver.redcap_clinic import REDCapClinic
@@ -11,6 +12,9 @@ class REDCapPatient:
     """
     Represents a patient record, allowing for multiple appointments.
     """
+
+    #   Mark these for special handling.
+    __dob_keywords = ["BIRTH_DATE", "DOB"]
 
     #   We create the patient object with one set of field names,
     #   but may wish to retrieve the values with slightly different names.
@@ -128,6 +132,30 @@ class REDCapPatient:
         return best_appointment[0]
 
     @staticmethod
+    # Cleanup specific to dates.  We want a 2022-04-12 format.
+    def _clean_up_date(date_string: str) -> Union[str, None]:
+        if not date_string:
+            return None
+
+        if len(date_string.split("/")) > 1:
+            ret = re.sub(r"(\d{1,2})/(\d{1,2})/(\d{4}).*", "\\3-\\1-\\2", date_string)
+            temp = ret.split("-")
+            try:
+                ret = "%04d-%02d-%02d" % (int(temp[0]), int(temp[1]), int(temp[2]))
+            except ValueError:
+                pass
+        else:
+            ret = re.sub(r"(\d{4})-(\d{1,2})-(\d{1,2}).*", "\\1-\\2-\\3", date_string)
+            temp = ret.split("-")
+
+            try:
+                ret = "%04d-%02d-%02d" % (int(temp[0]), int(temp[1]), int(temp[2]))
+            except ValueError:
+                pass
+
+        return ret
+
+    @staticmethod
     def _clean_up_phone(phone_number_string: str) -> str:
         if not phone_number_string or phone_number_string.upper().strip() == "NULL":
             return ""
@@ -192,6 +220,9 @@ class REDCapPatient:
                 value = self.__record[field]
             elif field in appointment_fields and single_appointment:
                 value = single_appointment.value(field)
+            elif field in self.__dob_keywords:
+                #   Special date of birth formatting.
+                value = REDCapPatient._clean_up_date(self.__record[field])
             elif field in self.__fields_dict:
                 translated_field = self.__fields_dict[field]
 
@@ -200,8 +231,9 @@ class REDCapPatient:
 
             values_list.append(value)
 
-        #   Eliminate Nones from the list.
-        values_list = ["None" if v is None else v for v in values_list]
+        #   Eliminate Nones, NULLS from the list.
+        values_list = ["" if v is None else v for v in values_list]
+        values_list = ["" if v is "NULL" else v for v in values_list]
 
         #   Join with comma and space.
         csv_summary = ", ".join(values_list)
