@@ -220,14 +220,18 @@ class REDCapPatient:
                 value = self.__record[field]
             elif field in appointment_fields and single_appointment:
                 value = single_appointment.value(field)
-            elif field in self.__dob_keywords:
-                #   Special date of birth formatting.
-                value = REDCapPatient._clean_up_date(self.__record[field])
             elif field in self.__fields_dict:
                 translated_field = self.__fields_dict[field]
 
                 if translated_field in self.__record:
                     value = self.__record[translated_field]
+
+            if field in self.__dob_keywords:
+                #   Special date of birth formatting.
+                #   (Doing this clean up after the above means we don't have to separately
+                #    handle whether field is already part of the self.__record ('BIRTH_DATE')
+                #    or needs to be translated first ('DOB').
+                value = REDCapPatient._clean_up_date(value)
 
             values_list.append(value)
 
