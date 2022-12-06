@@ -247,7 +247,7 @@ def fixture_patient_record_4():
         "NONE",
         "202-456-1111",
         "marthae.washington@whitehouse.gov",
-        "1731-06-02",
+        "06/02/1731",
         "1802-05-22",
         "UNC ORTHOPAEDICS",
         "2022-12-27 13:14:15",
@@ -271,6 +271,52 @@ def fixture_patient_record_5():
         "202-456-11111",
         "george.washington@whitehouse.gov",
         "1732-02-22",
+        "1799-12-14",
+        "UPC INTERNAL MEDICINE",
+        "2022-12-26 11:12:13",
+    )
+
+
+@pytest.fixture(name="patient_record_6")
+def fixture_patient_record_6():
+    return (
+        "1234567",
+        "2345678",
+        "E987654321",
+        "George",
+        "Washington",
+        "1600 Pennsylvania Ave. NW",
+        "Null",
+        "Washington",
+        "DC",
+        "20500",
+        "NULL",
+        "202-456-11111",
+        "george.washington@whitehouse.gov",
+        None,
+        "1799-12-14",
+        "UPC INTERNAL MEDICINE",
+        "2022-12-26 11:12:13",
+    )
+
+
+@pytest.fixture(name="patient_record_7")
+def fixture_patient_record_7():
+    return (
+        "1234567",
+        "2345678",
+        "E987654321",
+        "George",
+        "Washington",
+        "1600 Pennsylvania Ave. NW",
+        "Null",
+        "Washington",
+        "DC",
+        "20500",
+        "NULL",
+        "202-456-11111",
+        "george.washington@whitehouse.gov",
+        "1732A-02-22",
         "1799-12-14",
         "UPC INTERNAL MEDICINE",
         "2022-12-26 11:12:13",

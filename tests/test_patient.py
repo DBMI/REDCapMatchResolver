@@ -216,7 +216,12 @@ def test_patient_appointments(
 
 
 def test_patient_corner_cases(
-    patient_headers, patient_record_1, patient_record_4, clinics
+    patient_headers,
+    patient_record_1,
+    patient_record_4,
+    patient_record_6,
+    patient_record_7,
+    clinics,
 ):
     REDCapPatient(headers=patient_headers, row=None, clinics=clinics)
     patient_obj = REDCapPatient(
@@ -229,7 +234,35 @@ def test_patient_corner_cases(
     assert patient_obj.value("field_not_present") is None
 
     #   Exercise more of _clean_up_phone method.
-    REDCapPatient(headers=patient_headers, row=patient_record_4, clinics=clinics)
+    patient_obj = REDCapPatient(
+        headers=patient_headers, row=patient_record_4, clinics=clinics
+    )
+
+    #   Exercise more of _clean_up_date method.
+    patient_csv_description = patient_obj.csv()
+    assert patient_csv_description is not None and isinstance(
+        patient_csv_description, str
+    )
+
+    patient_obj = REDCapPatient(
+        headers=patient_headers, row=patient_record_6, clinics=clinics
+    )
+
+    #   Exercise more of _clean_up_date method.
+    patient_csv_description = patient_obj.csv()
+    assert patient_csv_description is not None and isinstance(
+        patient_csv_description, str
+    )
+
+    patient_obj = REDCapPatient(
+        headers=patient_headers, row=patient_record_7, clinics=clinics
+    )
+
+    #   Exercise more of _clean_up_date method.
+    patient_csv_description = patient_obj.csv()
+    assert patient_csv_description is not None and isinstance(
+        patient_csv_description, str
+    )
 
 
 def test_patient_errors(patient_headers, patient_record_1, clinics):
@@ -245,7 +278,11 @@ def test_patient_instantiation(
     )
     assert patient_obj is not None and isinstance(patient_obj, REDCapPatient)
 
+    #   Handle string input.
     patient_obj.set_study_id(study_id="654321")
+
+    #   Handle integer input.
+    patient_obj.set_study_id(study_id=654321)
 
     #   Try retrieving values.
     assert patient_obj.value("STUDY_ID") == "654321"
