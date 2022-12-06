@@ -57,7 +57,7 @@ class REDCapAppointment:
                 name in header.upper()
                 for name in REDCapAppointment.__appointment_date_keywords
             ):
-                self.__date = REDCapAppointment._clean_up_date(appointment_info[index])
+                self.__date = REDCapAppointment.clean_up_date(appointment_info[index])
                 self.__time = REDCapAppointment._clean_up_time(appointment_info[index])
 
         self.__priority = self._assign_priority(clinics=clinics)
@@ -105,20 +105,39 @@ class REDCapAppointment:
         priority = clinics.priority(self.__department)
         return priority
 
-    # Cleanup specific to dates.  We want a 2022-04-12 format.
+    #   Cleanup specific to dates.  We want a 2022-04-12 format.
+    #   Making this a public method so it can be used in REDCapPatient class.
     @staticmethod
-    def _clean_up_date(date_string: str = None) -> str:
-        if not date_string:  # pragma: no cover
+    def clean_up_date(date_string: str = None) -> str:
+        """Ensures a date string follows accepted formats.
+
+        Parameters
+        ----------
+        date_string : str like "2022-12-06" or "6/12/2022"
+
+        Returns
+        -------
+        ret : str in proper "yyyy-mm-dd" format.
+        """
+        if not date_string:
             return None
 
         if len(date_string.split("/")) > 1:
             ret = re.sub(r"(\d{1,2})/(\d{1,2})/(\d{4}).*", "\\3-\\1-\\2", date_string)
             temp = ret.split("-")
-            ret = f"{int(temp[0]):04d}-{int(temp[1]):02d}-{int(temp[2]):02d}"
+
+            try:
+                ret = f"{int(temp[0]):04d)}-{int(temp[1]):02d}-{int(temp[2]):04d}"
+            except ValueError:
+                pass
         else:
             ret = re.sub(r"(\d{4})-(\d{1,2})-(\d{1,2}).*", "\\1-\\2-\\3", date_string)
             temp = ret.split("-")
-            ret = f"{int(temp[0]):04d}-{int(temp[1]):02d}-{int(temp[2]):02d}"
+
+            try:
+                ret = f"{int(temp[0]):04d}-{int(temp[1]):02d}-{int(temp[2]):02d}"
+            except ValueError:
+                pass
 
         return ret
 
