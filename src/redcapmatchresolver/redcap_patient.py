@@ -242,7 +242,7 @@ class REDCapPatient:
         csv_summary = ", ".join(values_list)
 
         #   Get rid of double-space empties.
-        csv_summary = csv_summary.replace("  ", " ")
+        csv_summary = csv_summary.replace("  ", " ").replace(", ,", ",,")
         return csv_summary
 
     def merge(self, other_patient: REDCapPatient) -> None:
