@@ -206,7 +206,8 @@ class REDCapPatient:
                 #    or needs to be translated first ('DOB').
                 value = REDCapAppointment.clean_up_date(value)
 
-            values_list.append(value)
+            #   Get rid of stray commas that will look like new fields.
+            values_list.append(value.replace(',', ''))
 
         #   Eliminate Nones, NULLS from the list.
         values_list = ["" if v is None else v for v in values_list]

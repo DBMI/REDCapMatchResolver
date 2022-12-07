@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup(
     name="REDCapMatchResolver",
-    version="0.3.8",
+    version="0.3.9",
     packages=["redcapmatchresolver"],
     package_dir={"": "src"},
     include_package_data=True,
