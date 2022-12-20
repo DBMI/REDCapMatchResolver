@@ -2,6 +2,7 @@
 Module: contains class REDCapReportReader
 used to parse a reviewed list of patient matches.
 """
+from __future__ import annotations
 import collections
 from enum import Enum
 import io
@@ -15,6 +16,48 @@ from .utilities import Utilities
 ReportLine = collections.namedtuple(
     "ReportLine", ["name", "epic_value", "redcap_value"]
 )
+
+
+class CrcReason(Enum):  # pylint: disable=too-few-public-methods
+    """
+    Why did the CRC decide two records are NOT the same patient?
+    """
+
+    FAMILY = 1
+    SAME_ADDRESS = 2
+    PARENT_CHILD = 3
+    OTHER = 4
+
+    @classmethod
+    def convert(cls, decision: str = None):
+        """Allow us to create a CrcReason object from a string.
+
+        Parameters
+        ----------
+        decision : str  String like "NOT Same: Parent & child"
+
+        Returns
+        -------
+        object : CrcReason object
+        """
+        if decision is None:
+            raise TypeError(
+                "Input 'decisions' is not the expected string, list or tuple."
+            )
+
+        if not isinstance(decision, str):
+            raise TypeError("Input 'decisions' is not the expected string.")
+
+        if "family members" in decision.lower():
+            return CrcReason.FAMILY
+
+        if "same address" in decision.lower():
+            return CrcReason.SAME_ADDRESS
+
+        if "parent" in decision.lower():
+            return CrcReason.PARENT_CHILD
+
+        return CrcReason.OTHER
 
 
 class CrcReview(Enum):  # pylint: disable=too-few-public-methods
@@ -69,21 +112,21 @@ class CrcReview(Enum):  # pylint: disable=too-few-public-methods
 
         return CrcReview.NOT_SURE
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: REDCapReportReader) -> bool:
         """Defines the == method."""
         if isinstance(other, CrcReview):
             return self.value == other.value
 
         return False
 
-    def __gt__(self, other) -> bool:
+    def __gt__(self, other: REDCapReportReader) -> bool:
         """Defines the > method."""
         if isinstance(other, CrcReview):
             return self.value > other.value
 
         return False
 
-    def __lt__(self, other) -> bool:
+    def __lt__(self, other: REDCapReportReader) -> bool:
         """Defines the < method."""
         if isinstance(other, CrcReview):
             return self.value < other.value
@@ -95,6 +138,8 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
     """
     Parses formatted patient report.
     """
+
+    __separator = "------"
 
     def __init__(self):
         Utilities.setup_logging()
@@ -238,7 +283,6 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
     def _read(self) -> pandas.DataFrame:
         """Parses the report & forms a pandas DataFrame from the text."""
         reviewed_matches = None
-        separator = "------"
         match_index = 0
 
         #   Must be reset at every read.
@@ -248,11 +292,7 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
 
         while True:
             #   Search through to the start of the next match pair.
-            while next_line is not None and separator not in next_line:
-                next_line = self._next_line()
-
-            #   Do we still have data?
-            if next_line is not None:
+            while next_line is not None and "Epic Val" not in next_line:
                 next_line = self._next_line()
 
             if next_line is None:
@@ -266,14 +306,17 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
             match_dict = {}
 
             #   Read/parse each row, staying alert for a new '------' line,
-            #   meaning we've passed through to the next match.
-            while next_line is not None and separator not in next_line:
+            #   meaning we've passed through to the end of the match.
+            while (
+                next_line is not None
+                and REDCapReportReader.__separator not in next_line
+            ):
                 next_line = self._next_line()
 
                 if (
                     next_line is None
                     or not isinstance(next_line, str)
-                    or separator in next_line
+                    or REDCapReportReader.__separator in next_line
                 ):
                     break
 
@@ -297,7 +340,7 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
                 break
 
             #   Read "Same/Not Same" lines.
-            crc_decision = self._read_crc_decision()
+            crc_decision, crc_reason = self._read_crc_decision()
 
             match_dict["CRC_DECISION"] = str(crc_decision)
             this_row_df = pandas.DataFrame(match_dict, index=[match_index])
@@ -313,46 +356,63 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
 
         return reviewed_matches
 
-    def _read_crc_decision(self) -> Union[CrcReview, None]:
+    def _read_crc_decision(self) -> tuple:
         """From where we are in the report, find the "Same" or "Not Same" sections
         and figure out which one is checked.
 
         Returns
         -------
-        decision : CrcReview object
+        decision, reason : tuple containing CrcReview, CrcReason objects
         """
         # https://fsymbols.com/signs/tick/
         positive_marks = r".xXyY✓✔√✅❎☒☑✕✗✘✖❌"
+        crc_decision = None
+        crc_reason = None
 
         #   We assume we've just read the final separator in this section
-        #   and the Same/Not Same lines are close.
-        same_line = self._next_line()
+        #   and the Same/Not Same lines are close by.
+        decision_line = self._next_line()
 
         while (
-            same_line is not None
-            and isinstance(same_line, str)
-            and "Same" not in same_line
+            decision_line is not None
+            and isinstance(decision_line, str)
+            and "Same" not in decision_line
         ):
-            same_line = self._next_line()
+            decision_line = self._next_line()
 
-        if same_line is None or not isinstance(same_line, str):
-            return None
+        if decision_line is None or not isinstance(decision_line, str):
+            return crc_decision, crc_reason
 
-        different_line = self._next_line()
+        #   Parse what we've found so far.
+        same_checked = any(elem in decision_line for elem in positive_marks)
 
-        if different_line is None or not isinstance(different_line, str):
-            return None
+        if same_checked:
+            crc_decision = CrcReview.MATCH
+            return crc_decision, crc_reason
 
-        same_checked = any(elem in same_line for elem in positive_marks)
-        different_checked = any(elem in different_line for elem in positive_marks)
+        #   Continue reading & until we find a  checkmark or the next separator line.
+        decision_line = self._next_line()
 
-        if same_checked and not different_checked:
-            return CrcReview.MATCH
+        while (
+            decision_line is not None
+            and isinstance(decision_line, str)
+            and REDCapReportReader.__separator not in decision_line
+            and not any(elem in decision_line for elem in positive_marks)
+        ):
+            decision_line = self._next_line()
 
-        if not same_checked and different_checked:
-            return CrcReview.NO_MATCH
+        #   Did we run out of lines before finding a checkmark?
+        if (
+            decision_line is None
+            or not isinstance(decision_line, str)
+            or REDCapReportReader.__separator in decision_line
+        ):
+            return crc_decision, crc_reason
 
-        return None
+        #   Then we must have found a "NOT Same:" line checked.
+        crc_decision = CrcReview.NO_MATCH
+        crc_reason = CrcReason.convert(decision_line)
+        return crc_decision, crc_reason
 
     def read_file(self, report_filename: str = None) -> pandas.DataFrame:
         """Lets user specify we are to open a FILE.
