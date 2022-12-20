@@ -6,7 +6,11 @@ testing of the REDCapReportReader class.
 import os
 import pandas
 import pytest
-from redcapmatchresolver.redcap_report_reader import CrcReview, REDCapReportReader
+from redcapmatchresolver.redcap_report_reader import (
+    CrcReason,
+    CrcReview,
+    REDCapReportReader,
+)
 
 
 @pytest.fixture(name="report_filename")
@@ -15,6 +19,25 @@ def fixture_report_filename():
     return os.path.join(
         os.path.dirname(os.path.realpath(__file__)), "test_patient_report.txt"
     )
+
+
+def test_crc_reason_class() -> None:
+    """Exercise CrcReason enum class."""
+    with pytest.raises(TypeError):
+        CrcReason.convert()
+
+    with pytest.raises(TypeError):
+        CrcReason.convert(None)
+
+    with pytest.raises(TypeError):
+        CrcReason.convert(1979)
+
+    assert CrcReason.convert("NOT Same: Family members") == CrcReason.FAMILY
+    assert (
+        CrcReason.convert("NOT Same: Living at same address") == CrcReason.SAME_ADDRESS
+    )
+    assert CrcReason.convert("NOT Same: Parent & child") == CrcReason.PARENT_CHILD
+    assert CrcReason.convert("") == CrcReason.OTHER
 
 
 def test_crc_review_class() -> None:

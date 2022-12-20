@@ -14,6 +14,12 @@ def fixture_bad_reports_directory():
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), "bad_reports")
 
 
+@pytest.fixture(name="empty_reports_directory")
+def fixture_empty_reports_directory():
+    """Defines temporary empty reports directory."""
+    return os.path.join(os.path.dirname(os.path.realpath(__file__)), "empty_folder")
+
+
 @pytest.fixture(name="reports_directory")
 def fixture_reports_directory():
     """Defines temporary reports directory."""
@@ -56,16 +62,26 @@ def test_match_resolver_db_operation(
     assert past_decision == CrcReview.NOT_SURE
 
 
-def test_match_resolver_corner_cases(temp_database, bad_reports_directory) -> None:
+def test_match_resolver_corner_cases(
+    temp_database, bad_reports_directory, empty_reports_directory, matching_patients
+) -> None:
     """Tests lookup_potential_match() method of REDCapMatchResolver object."""
     mr_obj = REDCapMatchResolver(db_filename=temp_database)
 
     #   Exercise section in _insert_reports that fills in missing fields.
     assert mr_obj.read_reports(import_folder=bad_reports_directory)
 
-    #   Exercise section in _insert_reports that fills in missing fields.
     #   Exercise section in _insert_reports that skips if CRC decision not shown.
     assert mr_obj.read_reports(import_folder=bad_reports_directory)
+
+    #   What if there ARE no previous records? (This is how we'll start, after all.)
+    assert mr_obj.read_reports(import_folder=empty_reports_directory)
+
+    #   Can we query an EMPTY db with a new potential match?
+    past_decision = mr_obj.lookup_potential_match(match_block=matching_patients)
+    assert past_decision is not None
+    assert isinstance(past_decision, CrcReview)
+    assert past_decision == CrcReview.NOT_SURE
 
 
 def test_match_resolver_errors(
