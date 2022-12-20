@@ -1,12 +1,12 @@
 """
-Module: contains class REDCapReportWriter
+Module: contains class REDCapMatchResolver
 used to produce list of patient matches to be reviewed.
 """
 import logging
 from .utilities import Utilities
 
 
-class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
+class REDCapMatchResolver:  # pylint: disable=logging-fstring-interpolation
     """
     Produces formatted patient report.
     """

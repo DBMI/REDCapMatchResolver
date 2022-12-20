@@ -6,7 +6,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'REDCapReportWriter'
+project = 'REDCapMatchResolver'
 copyright = '2022, Kevin J. Delaney'
 author = 'Kevin J. Delaney'
 
