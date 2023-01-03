@@ -230,7 +230,8 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
                 # Read all the lines into a list.
                 self.__report_contents = file_obj.readlines()
         else:
-            self.__log.error(f"Unable to find file '{report_filename}'.")
+            self.__log.error("Unable to find file {report_filename}.",
+                             extra={"report_filename": report_filename})
             raise FileNotFoundError(f"Unable to find file '{report_filename}'.")
 
     def _open_text(self, block_txt: str = None) -> None:

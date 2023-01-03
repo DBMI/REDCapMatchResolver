@@ -7,7 +7,6 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'REDCapMatchResolver'
-copyright = '2022, Kevin J. Delaney'
 author = 'Kevin J. Delaney'
 
 version = '0.0.1'
@@ -20,7 +19,6 @@ extensions = []
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
-
 
 
 # -- Options for HTML output -------------------------------------------------

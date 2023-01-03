@@ -78,10 +78,10 @@ class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
                         return False  # pragma: no cover
 
                 except Exception as file_write_error:  # pragma: no cover
-                    self.__log.error(
-                        f"Unable to write match to log because {str(file_write_error)}."
+                    self.__log.exception(
+                        "Unable to write match to log because {file_write_error}."
                     )
-                    raise
+                    raise file_write_error
 
                 match_index += 1
 
