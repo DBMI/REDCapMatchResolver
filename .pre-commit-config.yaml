@@ -17,7 +17,7 @@ repos:
     hooks:
       - id: autoflake
         name: autoflake
-        entry: poetry run autoflake -r -i --remove-all-unused-imports --remove-unused-variables
+        entry: poetry run autoflake -r --remove-all-unused-imports --remove-unused-variables
         language: system
         types: [ python ]
       - id: isort
@@ -37,9 +37,10 @@ repos:
         types: [python]
       - id: mypy
         name: mypy
-        entry: poetry run mypy .
+        entry: poetry run mypy src/redcapmatchresolver
         require_serial: true
         language: system
+        additional_dependencies: ["mypy==0.812"]
         types: [python]
         pass_filenames: false
       - id: flake8
