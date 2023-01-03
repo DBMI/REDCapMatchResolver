@@ -39,7 +39,7 @@ repos:
         name: mypy
         entry: poetry run mypy src/redcapmatchresolver
         require_serial: true
-        language: system
+        language: python
         additional_dependencies: ["mypy==0.812"]
         types: [python]
         pass_filenames: false
