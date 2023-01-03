@@ -100,9 +100,11 @@ class REDCapMatchResolver:
             self.__conn = sqlite3.connect(db_filename)
             success = self.__conn is not None and isinstance(self.__conn, Connection)
         except sqlite3.Error as database_error:  # pragma: no cover
-            self.__log.error(
-                f"Unable to open file '{db_filename}'"
-                + f" because '{str(database_error)}'."
+            self.__log.exception(
+                "Unable to open file {db_filename} because {database_error}.",
+                extra={
+                    "db_filename": db_filename,
+                },
             )
             raise database_error
 
@@ -139,10 +141,10 @@ class REDCapMatchResolver:
             self.__conn.commit()
             success = True
         except sqlite3.Error as database_error:  # pragma: no cover
-            self.__log.error(
-                f"Unable to run 'create_table_sql' because '{str(database_error)}'."
+            self.__log.exception(
+                "Unable to run 'create_table_sql' because {database_error}."
             )
-            raise
+            raise database_error
 
         return success
 
@@ -189,8 +191,8 @@ class REDCapMatchResolver:
             self.__conn.commit()
             success = True
         except sqlite3.Error as database_error:  # pragma: no cover
-            self.__log.error(
-                f"Unable to run 'create_table_sql' because '{str(database_error)}'."
+            self.__log.exception(
+                "Unable to run 'create_table_sql' because {database_error}."
             )
             raise database_error
 
@@ -220,8 +222,8 @@ class REDCapMatchResolver:
             self.__conn.commit()
             success = True
         except sqlite3.Error as database_error:  # pragma: no cover
-            self.__log.error(
-                f"Unable to run 'drop_decisions_table' because '{str(database_error)}'."
+            self.__log.exception(
+                "Unable to run 'drop_decisions_table' because {database_error}."
             )
             raise database_error
 
@@ -251,8 +253,8 @@ class REDCapMatchResolver:
             self.__conn.commit()
             success = True
         except sqlite3.Error as database_error:  # pragma: no cover
-            self.__log.error(
-                f"Unable to run 'drop_matches_table' because '{str(database_error)}'."
+            self.__log.exception(
+                "Unable to run 'drop_matches_table' because {database_error}."
             )
             raise database_error
 
@@ -322,8 +324,8 @@ class REDCapMatchResolver:
                 cur.execute(insert_sql, values_list)
                 self.__conn.commit()
             except sqlite3.Error as database_error:  # pragma: no cover
-                self.__log.error(
-                    f"Error in running table insert method because '{str(database_error)}'."
+                self.__log.exception(
+                    "Error in running table insert method because {database_error}."
                 )
                 raise database_error
 
@@ -426,8 +428,8 @@ class REDCapMatchResolver:
 
                 return CrcReview.NOT_SURE
             except sqlite3.Error as database_error:  # pragma: no cover
-                self.__log.error(
-                    f"Error in running table query method because '{str(database_error)}'."
+                self.__log.exception(
+                    "Error in running table query method because {database_error}."
                 )
                 raise database_error
 
@@ -455,7 +457,9 @@ class REDCapMatchResolver:
             if report_df is None or not isinstance(
                 report_df, pandas.DataFrame
             ):  # pragma: no cover
-                self.__log.error(f"Unable to read '{file}'.")
+                self.__log.error(
+                    "Unable to read {report_file}.", extra={"report_file": file}
+                )
                 raise TypeError(f"Unable to read '{file}'.")
 
             insert_success = self._insert_report(report_df)
@@ -529,7 +533,7 @@ class REDCapMatchResolver:
             rows = cur.fetchall()
             return rows[0][0]
         except sqlite3.Error as database_error:  # pragma: no cover
-            self.__log.error(
-                f"Error in running 'decisions' table query because '{str(database_error)}'."
+            self.__log.exception(
+                "Error in running 'decisions' table query because {database_error}."
             )
             raise database_error
