@@ -10,7 +10,7 @@ import logging
 import os
 import re
 from typing import Union
-import pandas
+import pandas  # type: ignore[import]
 from .utilities import Utilities
 
 ReportLine = collections.namedtuple(
