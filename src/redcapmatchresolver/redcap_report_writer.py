@@ -3,6 +3,7 @@ Module: contains class REDCapReportWriter
 used to produce list of patient matches to be reviewed.
 """
 import logging
+from typing import List
 from .utilities import Utilities
 
 
@@ -31,16 +32,16 @@ class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
         self.__log = logging.getLogger(__name__)
         self.__report_filename = report_filename
         Utilities.ensure_output_path(self.__report_filename)
-        self.__reports = []
+        self.__reports: List[str] = []
 
-    def add_match(self, match: str = None) -> None:
+    def add_match(self, match: str) -> None:
         """Allows external code to add a pre-formatted text block comparing two patient records.
 
         Parameters
         ----------
         match : str     Pre-formatted block of text
         """
-        if match is not None and isinstance(match, str):
+        if match is not None and isinstance(match, str) and len(match) > 0:
             self.__reports.append(match)
 
     def report_filename(self) -> str:

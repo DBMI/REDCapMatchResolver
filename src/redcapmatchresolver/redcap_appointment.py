@@ -18,26 +18,21 @@ class REDCapAppointment:
 
     def __init__(
         self,
-        appointment_headers: list = None,
-        appointment_info: list = None,
-        clinics: REDCapClinic = None,
+        appointment_headers: list,
+        appointment_info: list,
+        clinics: Union[REDCapClinic, None] = None,
     ):
-        if (
-            appointment_headers is None
-            or not isinstance(appointment_headers, list)
-            or len(appointment_headers) == 0
-        ):
+        if not isinstance(appointment_headers, list) or len(appointment_headers) == 0:
             raise TypeError("Appointment headers was not the expected list.")
 
-        if (
-            appointment_info is None
-            or not isinstance(appointment_info, list)
-            or len(appointment_info) == 0
-        ):
+        if not isinstance(appointment_info, list) or len(appointment_info) == 0:
             raise TypeError("Appointment info was not the expected list.")
 
+        #   It's OK for 'clinics' to be None--
+        #   this forces the '__assign_priority' method to look them up.
+
         for index, header in enumerate(appointment_headers):
-            if header is None or not isinstance(header, str):
+            if not isinstance(header, str):
                 raise TypeError("Element in 'headers' is not the expected string.")
 
             if len(appointment_info) <= index:
@@ -50,7 +45,7 @@ class REDCapAppointment:
                 name in header.upper()
                 for name in REDCapAppointment.__department_keywords
             ):
-                self.__department = appointment_info[index]
+                self.__department = str(appointment_info[index])
                 continue
 
             if any(
@@ -63,7 +58,7 @@ class REDCapAppointment:
         self.__priority = self._assign_priority(clinics=clinics)
 
     @staticmethod
-    def applicable_header_fields(headers: list = None) -> list:
+    def applicable_header_fields(headers: list) -> list:
         """Which of the fields listed apply to the appointment?
 
         Parameters
@@ -75,6 +70,9 @@ class REDCapAppointment:
         applicable_headers : list of the input strings that would be used by this class.
         """
         applicable_headers = []
+
+        if not isinstance(headers, list) or len(headers) == 0:
+            raise TypeError("Argument 'headers' is not the expected list.")
 
         for header in headers:
             header_upper_case = header.upper()
@@ -97,9 +95,9 @@ class REDCapAppointment:
 
         return applicable_headers
 
-    def _assign_priority(self, clinics: REDCapClinic) -> int:
+    def _assign_priority(self, clinics: Union[REDCapClinic, None]) -> int:
 
-        if clinics is None or not isinstance(clinics, REDCapClinic):
+        if not isinstance(clinics, REDCapClinic):
             clinics = REDCapClinic()
 
         priority = clinics.priority(self.__department)
@@ -108,7 +106,7 @@ class REDCapAppointment:
     #   Cleanup specific to dates.  We want a 2022-04-12 format.
     #   Making this a public method so it can be used in REDCapPatient class.
     @staticmethod
-    def clean_up_date(date_string: str = None) -> str:
+    def clean_up_date(date_string: Union[int, str, None] = None) -> str:
         """Ensures a date string follows accepted formats.
 
         Parameters
@@ -119,8 +117,8 @@ class REDCapAppointment:
         -------
         ret : str in proper "yyyy-mm-dd" format.
         """
-        if not date_string:
-            return None
+        if not isinstance(date_string, str) or len(date_string) == 0:
+            return ""
 
         if len(date_string.split("/")) > 1:
             ret = re.sub(r"(\d{1,2})/(\d{1,2})/(\d{4}).*", "\\3-\\1-\\2", date_string)
@@ -143,9 +141,9 @@ class REDCapAppointment:
 
     # clean up specific to time.  We want a 12:30:01 format.
     @staticmethod
-    def _clean_up_time(time_string: str = None) -> str:
-        if not time_string or len(time_string.split()) < 2:
-            return None
+    def _clean_up_time(time_string: str) -> str:
+        if not isinstance(time_string, str) or len(time_string.split()) < 2:
+            return ""
 
         time_string = time_string.split()[1]
         ret = ""
@@ -184,10 +182,9 @@ class REDCapAppointment:
         except TypeError:
             #   One of the strings (either date or time) are empty or None, so just return None.
             return None
-        except ValueError as error:
-            raise ValueError(
-                f"Unable to parse date {self.__date} and time {self.__time}."
-            ) from error
+        except ValueError:
+            #   One of the strings (either date or time) are empty or None, so just return None.
+            return None
 
         return datetime_value
 
@@ -228,7 +225,7 @@ class REDCapAppointment:
         value_string : str
 
         """
-        if field is None or not isinstance(field, str):
+        if not isinstance(field, str) or len(field) == 0:
             return ""
 
         if "date" in field.lower():

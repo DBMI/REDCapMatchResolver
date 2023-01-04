@@ -10,14 +10,16 @@ class Utilities:  # pylint: disable=too-few-public-methods
     """Contains useful static methods."""
 
     @staticmethod
-    def ensure_output_path(report_filename: str = None) -> None:
+    def ensure_output_path(report_filename: str = "") -> None:
         """Make sure the directory to hold the report file is prepared.
 
         Parameters
         ----------
         report_filename : str Full path to location of desired report.
         """
-        if report_filename is None:  # pragma: no cover
+        if (
+            not isinstance(report_filename, str) or len(report_filename) == 0
+        ):  # pragma: no cover
             raise RuntimeError("Report filename not supplied.")
 
         try:
