@@ -9,9 +9,11 @@ import os
 import sqlite3
 from sqlite3 import Connection
 from typing import Union
+
 import pandas  # type: ignore[import]
-from .utilities import Utilities
+
 from .redcap_report_reader import CrcReview, REDCapReportReader
+from .utilities import Utilities
 
 
 class REDCapMatchResolver:
@@ -105,8 +107,10 @@ class REDCapMatchResolver:
             conn = sqlite3.connect(db_filename)
 
             if not isinstance(conn, sqlite3.Connection):
-                self.__log.error("Unable to establish connection to {db_filename}.",
-                                 extra={"db_filename": db_filename})
+                self.__log.error(
+                    "Unable to establish connection to {db_filename}.",
+                    extra={"db_filename": db_filename},
+                )
                 raise RuntimeError(
                     f"Unable to establish connection to '{db_filename}'."
                 )
@@ -535,8 +539,10 @@ class REDCapMatchResolver:
         if not self._build_decision_table(connection) or not self._create_matches_table(
             connection
         ):
-            self.__log.error("Unable to establish connection to {db_filename}.",
-                             extra={"db_filename": db_filename})
+            self.__log.error(
+                "Unable to establish connection to {db_filename}.",
+                extra={"db_filename": db_filename},
+            )
             raise RuntimeError(f"Unable to establish connection to '{db_filename}'.")
 
         return connection

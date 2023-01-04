@@ -4,6 +4,7 @@ used to produce list of patient matches to be reviewed.
 """
 import logging
 from typing import List
+
 from .utilities import Utilities
 
 

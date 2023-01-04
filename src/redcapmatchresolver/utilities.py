@@ -1,9 +1,9 @@
 """
 Module: contains utility functions.
 """
-from datetime import datetime
 import logging
 import os
+from datetime import datetime
 
 
 class Utilities:  # pylint: disable=too-few-public-methods

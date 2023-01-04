@@ -4,8 +4,9 @@ used to prioritize appointments according to
 clinic location.
 """
 import os.path
-import pandas  # type: ignore[import]
+
 import importlib_resources as pkg_resources  # type: ignore[import]
+import pandas  # type: ignore[import]
 
 
 class REDCapClinic:  # pylint: disable=too-few-public-methods
