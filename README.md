@@ -1,4 +1,4 @@
-# REDCapMatchResolver ![image info](./pictures/report_logo.png) 
+# REDCapMatchResolver ![image info](./pictures/report_logo.png)
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 ![Pylint](./.github/badges/pylint-badge.svg?dummy=8484744)
@@ -29,12 +29,12 @@ Its `lookup_potential_match` method allows external software to submit a block o
 | <p align="center"><b>Example of Match Report</b></p> |
 
 2. **Select Best Appointment**
-When producing `.csv` files used to update REDCap, we may have patients with multiple upcoming appointments. 
+When producing `.csv` files used to update REDCap, we may have patients with multiple upcoming appointments.
 We'd like to select each patient's "best" appointment for inclusion into REDCap, based on clinic location and appointment date.
 The calling function (like [refresh_redcap_upcoming_appointments](https://github.com/DBMI/AoU_v2/blob/main/redcap/refresh_redcap_upcoming_appointments.py))
 should instantiate a `REDCapClinic` object, which reads the Excel spreadsheet the CRCs have developed to assign a priority value
 to each clinic. This `REDCapClinic` object is then provided each time a `REDCapPatient` class object is created, so that
-the patient's `REDCapAppointment` objects contain not only clinic location, date and time, but a priority value as well. 
+the patient's `REDCapAppointment` objects contain not only clinic location, date and time, but a priority value as well.
 Then, when `refresh_redcap_upcoming_appointments` writes out the REDCap update `.csv` files, it calls
 the `REDCapPatient` method `csv`, which in turn calls `best_appointment` to select the `REDCapAppointment` with the highest clinic priority.
 In case there are more than one appointment at the best clinic, `best_appointment` selects the earliest appointment at that clinic.
