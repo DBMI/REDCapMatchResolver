@@ -10,7 +10,6 @@ import logging
 import os
 import re
 from enum import Enum
-from typing import Union
 
 import pandas  # type: ignore[import]
 
@@ -71,7 +70,7 @@ class CrcReview(Enum):  # pylint: disable=too-few-public-methods
     NOT_SURE = 1
 
     @classmethod
-    def convert(cls, decisions: Union[str, list, tuple]) -> Union[CrcReview, list]:
+    def convert(cls, decisions: str | list | tuple) -> CrcReview | list:
         """Allow us to create a CrcReview object from a string.
 
         Parameters
@@ -146,7 +145,7 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
     def __init__(self) -> None:
         Utilities.setup_logging()
         self.__log = logging.getLogger(__name__)
-        self.__report_contents = []
+        self.__report_contents = []  # type: ignore[var-annotated]
         self.__row_index = 0
 
     def _at_end(self) -> bool:
@@ -162,7 +161,7 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
         return pieces
 
     @staticmethod
-    def convert_nulls(value: str) -> Union[str, None]:
+    def convert_nulls(value: str) -> str | None:
         """Turn strings that SAY 'NULL' into Python Nones that will become NULL db values.
 
         Parameters
@@ -201,7 +200,7 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
 
         raise RuntimeError(f"Unable to find '{keyword}' in line.")
 
-    def _next_line(self) -> Union[str, None]:
+    def _next_line(self) -> str | None:
         """Get the next line in the report, or None if no more available.
 
         Returns
