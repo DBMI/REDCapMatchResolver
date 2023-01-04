@@ -22,6 +22,8 @@ class Utilities:  # pylint: disable=too-few-public-methods
         ):  # pragma: no cover
             raise RuntimeError("Report filename not supplied.")
 
+        report_path = ""
+
         try:
             report_path = os.path.dirname(report_filename)
 

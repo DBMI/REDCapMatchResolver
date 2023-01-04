@@ -3,8 +3,6 @@ Module: contains class REDCapPatient.
 """
 from __future__ import annotations
 
-from typing import Union
-
 from redcapmatchresolver.redcap_appointment import REDCapAppointment
 from redcapmatchresolver.redcap_clinic import REDCapClinic
 
@@ -34,7 +32,7 @@ class REDCapPatient:
     def __init__(self, headers: list, row: tuple, clinics: REDCapClinic) -> None:
         #   Build a dictionary, where the keys come from 'headers' and
         #   the values come from 'row'. Save room for study_id field.
-        self.__record: dict[str, Union[int, str, None]]
+        self.__record: dict[str, int | str | None]
         self.__record = {"STUDY_ID": None}
 
         self.__appointments = []
@@ -50,7 +48,7 @@ class REDCapPatient:
             self._non_appointment_fields,
             appointment_fields,
         ) = REDCapPatient._not_appointment_fields(headers)
-        appointment_data = []
+        appointment_data = []  # type: ignore[var-annotated]
 
         for index, field_name in enumerate(headers):
             if not isinstance(row, tuple) or len(row) <= index:
@@ -90,7 +88,7 @@ class REDCapPatient:
             appointment for appointment in self.__appointments if appointment.valid()
         ]
 
-    def best_appointment(self) -> Union[REDCapAppointment, None]:
+    def best_appointment(self) -> REDCapAppointment | None:
         """Selects the 'best' contact opportunity according to clinic priority & schedule.
         Returns
         -------
@@ -159,7 +157,7 @@ class REDCapPatient:
         rest = numeric_string[6:10]
         return f"{prefix}-{exchange}-{rest}"
 
-    def csv(self, headers: Union[list, None] = None) -> str:
+    def csv(self, headers: list | None = None) -> str:
         """Creates one line summary of patient record, suitable for a .csv file.
 
         Parameters
@@ -187,7 +185,7 @@ class REDCapPatient:
         values_list = []
 
         for field in headers:
-            value: Union[int, str, None] = None
+            value: int | str | None = None
 
             if field in self.__record:
                 value = self.__record[field]
@@ -201,7 +199,7 @@ class REDCapPatient:
 
             if field in self.__dob_keywords:
                 #   Special date of birth formatting.
-                #   (Doing this clean up after the above means we don't have to separately
+                #   Doing this clean up after the above means we don't have to separately
                 #    handle whether field is already part of the self.__record ('BIRTH_DATE')
                 #    or needs to be translated first ('DOB').
                 value = REDCapAppointment.clean_up_date(value)
@@ -280,7 +278,7 @@ class REDCapPatient:
 
         return True
 
-    def set_study_id(self, study_id: Union[int, str]) -> None:
+    def set_study_id(self, study_id: int | str) -> None:
         """Allows external code to set the patient's study_id after the object is instantiated.
 
         Parameters
@@ -301,7 +299,7 @@ class REDCapPatient:
 
         return nice_summary
 
-    def value(self, field: str) -> Union[str, None]:
+    def value(self, field: str) -> str | None:
         """Look up a value from the dictionary _record.
 
         Parameters

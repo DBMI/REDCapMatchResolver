@@ -26,8 +26,8 @@ class REDCapMatchResolver:
     def __init__(self, db_filename: str = "temp_matches_database.db"):
         Utilities.setup_logging()
         self.__log = logging.getLogger(__name__)
-        self.__database_fields_list = []
-        self.__dataframe_fields_list = []
+        self.__database_fields_list = []  # type: ignore[var-annotated]
+        self.__dataframe_fields_list = []  # type: ignore[var-annotated]
         self.__redcap_reader = REDCapReportReader()
 
         self._build_required_fields()
