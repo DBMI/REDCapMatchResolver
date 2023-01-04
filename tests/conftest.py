@@ -1,8 +1,9 @@
 """
 Contains test fixtures available across all test_*.py files.
 """
-from datetime import datetime
 import os
+from datetime import datetime
+
 import pytest
 
 

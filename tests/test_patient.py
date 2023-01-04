@@ -3,7 +3,9 @@ Module test_patient.py, which performs automated
 testing of the REDCapPatient class.
 """
 from datetime import datetime
+
 import pytest
+
 from redcapmatchresolver.redcap_appointment import REDCapAppointment
 from redcapmatchresolver.redcap_clinic import REDCapClinic
 from redcapmatchresolver.redcap_patient import REDCapPatient

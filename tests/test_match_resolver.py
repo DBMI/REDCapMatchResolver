@@ -3,7 +3,9 @@ Module test_match_resolver.py, which performs automated
 testing of the REDCapMatchResolver class.
 """
 import os
+
 import pytest
+
 from redcapmatchresolver.redcap_match_resolver import REDCapMatchResolver
 from redcapmatchresolver.redcap_report_reader import CrcReview
 
