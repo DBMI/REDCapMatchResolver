@@ -17,17 +17,17 @@ repos:
     hooks:
       - id: autoflake
         name: autoflake
-        entry: poetry run autoflake -r --remove-all-unused-imports --remove-unused-variables
+        entry: poetry run autoflake -r --remove-all-unused-imports --remove-unused-variables src/redcapmatchresolver
         language: system
         types: [ python ]
       - id: isort
         name: isort
-        entry: poetry run isort
+        entry: poetry run isort src/redcapmatchresolver
         language: system
         types: [python]
       - id: black
         name: black
-        entry: poetry run black
+        entry: poetry run black src/redcapmatchresolver
         language: system
         types: [python]
       - id: pyupgrade
