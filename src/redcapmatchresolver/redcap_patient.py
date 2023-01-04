@@ -2,7 +2,7 @@
 Module: contains class REDCapPatient.
 """
 from __future__ import annotations
-from typing import Union
+from typing import List, Union
 from redcapmatchresolver.redcap_appointment import REDCapAppointment
 from redcapmatchresolver.redcap_clinic import REDCapClinic
 
@@ -29,14 +29,15 @@ class REDCapPatient:
     }
     __phone_keywords = ["PHONE"]
 
-    def __init__(self, headers: list, row: tuple, clinics: REDCapClinic):
+    def __init__(self, headers: list, row: tuple, clinics: REDCapClinic) -> None:
         #   Build a dictionary, where the keys come from 'headers' and
         #   the values come from 'row'. Save room for study_id field.
+        self.__record: dict[str, Union[int, str, None]]
         self.__record = {"STUDY_ID": None}
 
         self.__appointments = []
 
-        if headers is None or not isinstance(headers, list) or len(headers) == 0:
+        if not isinstance(headers, list) or len(headers) == 0:
             raise TypeError("Input 'headers' can't be empty.")
 
         #   Don't want confusion about upper/lower case. Let's set all to uppercase now.
@@ -50,7 +51,7 @@ class REDCapPatient:
         appointment_data = []
 
         for index, field_name in enumerate(headers):
-            if row is None or not isinstance(row, tuple) or len(row) <= index:
+            if not isinstance(row, tuple) or len(row) <= index:
                 #   Then this field is not present in the 'row' structure.
                 #   Leave a blank.
                 if field_name in appointment_fields:
@@ -93,14 +94,9 @@ class REDCapPatient:
         -------
         best_appointment : REDCapAppointment
         """
-        if (
-            self.__appointments is None
-            or not isinstance(self.__appointments, list)
-            or len(self.__appointments) < 1
-        ):
+        if not isinstance(self.__appointments, list) or len(self.__appointments) < 1:
             return None
 
-        best_appointment = None
         all_appointment_priorities = [
             appointment.priority() for appointment in self.__appointments
         ]
@@ -112,21 +108,23 @@ class REDCapPatient:
                 if appointment.priority() == min(all_appointment_priorities)
             ]
 
-        if len(best_appointments_by_location) == 1:
-            return best_appointments_by_location[0]
+            if len(best_appointments_by_location) == 1:
+                return best_appointments_by_location[0]
 
-        all_appointment_dates = [
-            appointment.date() for appointment in best_appointments_by_location
-        ]
-
-        if all_appointment_dates:
-            best_appointment = [
-                appointment
-                for appointment in best_appointments_by_location
-                if appointment.date() == min(all_appointment_dates)
+            all_appointment_dates = [
+                appointment.date() for appointment in best_appointments_by_location
             ]
 
-        return best_appointment[0]
+            if all_appointment_dates:
+                best_appointment = [
+                    appointment
+                    for appointment in best_appointments_by_location
+                    if appointment.date()
+                    == min(d for d in all_appointment_dates if d is not None)
+                ]
+                return best_appointment[0]
+
+        return None
 
     @staticmethod
     def _clean_up_phone(phone_number_string: str) -> str:
@@ -159,7 +157,7 @@ class REDCapPatient:
         rest = numeric_string[6:10]
         return f"{prefix}-{exchange}-{rest}"
 
-    def csv(self, headers: list = None) -> str:
+    def csv(self, headers: Union[list, None] = None) -> str:
         """Creates one line summary of patient record, suitable for a .csv file.
 
         Parameters
@@ -175,8 +173,8 @@ class REDCapPatient:
         if self.__appointments and len(self.__appointments) > 0:
             single_appointment = self.best_appointment()
 
-        if headers is None or not isinstance(headers, list):
-            headers = self.__record.keys()
+        if not isinstance(headers, list) or len(headers) == 0:
+            headers = list(self.__record.keys())
 
         headers = [name.upper() for name in headers]
 
@@ -187,7 +185,7 @@ class REDCapPatient:
         values_list = []
 
         for field in headers:
-            value = " "
+            value: Union[int, str, None] = None
 
             if field in self.__record:
                 value = self.__record[field]
@@ -211,7 +209,8 @@ class REDCapPatient:
                 value = ""
 
             #   Get rid of stray commas that will look like new fields.
-            values_list.append(value.replace(',', ''))
+            value_as_str = str(value)
+            values_list.append(value_as_str.replace(",", ""))
 
         #   Eliminate Nones, NULLS from the list.
         values_list = ["" if v is None else v for v in values_list]
@@ -251,7 +250,7 @@ class REDCapPatient:
         ]
         return non_appointment_fields, appointment_fields
 
-    def __repr__(self):  # pragma: no cover
+    def __repr__(self) -> str:  # pragma: no cover
         nice_summary = ""
 
         for key, value in self.__record.items():
@@ -270,7 +269,7 @@ class REDCapPatient:
         -------
         same : bool
         """
-        if other_patient is None or not isinstance(other_patient, REDCapPatient):
+        if not isinstance(other_patient, REDCapPatient):
             return False
 
         for field in self._non_appointment_fields:
@@ -292,7 +291,7 @@ class REDCapPatient:
             elif isinstance(study_id, int):
                 self.__record["STUDY_ID"] = str(study_id)
 
-    def __str__(self):
+    def __str__(self) -> str:
         nice_summary = ""
 
         for key, value in self.__record.items():
@@ -312,7 +311,7 @@ class REDCapPatient:
         value : str Value of the property, or None if it's missing.
         """
         if field in self.__record:
-            return self.__record[field]
+            return str(self.__record[field])
 
         return None
 
