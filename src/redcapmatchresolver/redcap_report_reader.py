@@ -9,7 +9,7 @@ import io
 import logging
 import os
 import re
-from typing import List, Tuple, Union
+from typing import Union
 import pandas
 from .utilities import Utilities
 
@@ -29,7 +29,7 @@ class CrcReason(Enum):  # pylint: disable=too-few-public-methods
     OTHER = 4
 
     @classmethod
-    def convert(cls, decision: str = None):
+    def convert(cls, decision: str) -> CrcReason:
         """Allow us to create a CrcReason object from a string.
 
         Parameters
@@ -40,12 +40,7 @@ class CrcReason(Enum):  # pylint: disable=too-few-public-methods
         -------
         object : CrcReason object
         """
-        if decision is None:
-            raise TypeError(
-                "Input 'decisions' is not the expected string, list or tuple."
-            )
-
-        if not isinstance(decision, str):
+        if not isinstance(decision, str) or len(decision) == 0:
             raise TypeError("Input 'decisions' is not the expected string.")
 
         if "family members" in decision.lower():
@@ -62,7 +57,8 @@ class CrcReason(Enum):  # pylint: disable=too-few-public-methods
 
 class CrcReview(Enum):  # pylint: disable=too-few-public-methods
     """
-    What did the CRC decide? The same or not?
+    What did the CRC decide?
+    Are these patient records from the same person or not?
     """
 
     # We want these numerically ordered so that the MATCH is highest, etc.
@@ -72,25 +68,25 @@ class CrcReview(Enum):  # pylint: disable=too-few-public-methods
     NOT_SURE = 1
 
     @classmethod
-    def convert(cls, decisions: Union[str, List, Tuple] = None):
+    def convert(cls, decisions: Union[str, list, tuple]) -> Union[CrcReview, list]:
         """Allow us to create a CrcReview object from a string.
 
         Parameters
         ----------
         decisions : str  String like "MATCH" or "NO_MATCH"
                           -- OR --
-                         List or Tuple
+                         list or tuple
 
         Returns
         -------
-        object : CrcReview object
+        object : CrcReview object or a list of such objects.
         """
         if decisions is None:
             raise TypeError(
                 "Input 'decisions' is not the expected string, list or tuple."
             )
 
-        if isinstance(decisions, List):
+        if isinstance(decisions, list):
             decision_list = []
 
             for this_decision in decisions:
@@ -98,7 +94,7 @@ class CrcReview(Enum):  # pylint: disable=too-few-public-methods
 
             return decision_list
 
-        if isinstance(decisions, Tuple) and len(decisions) == 1:
+        if isinstance(decisions, tuple) and len(decisions) == 1:
             return CrcReview.convert(decisions[0])
 
         if not isinstance(decisions, str):
@@ -112,26 +108,29 @@ class CrcReview(Enum):  # pylint: disable=too-few-public-methods
 
         return CrcReview.NOT_SURE
 
-    def __eq__(self, other: REDCapReportReader) -> bool:
+    def __eq__(self, other: object) -> bool:
         """Defines the == method."""
         if isinstance(other, CrcReview):
-            return self.value == other.value
+            same = self.value == other.value
+            return same
+        else:
+            return NotImplemented
 
-        return False
-
-    def __gt__(self, other: REDCapReportReader) -> bool:
+    def __gt__(self, other: object) -> bool:
         """Defines the > method."""
         if isinstance(other, CrcReview):
-            return self.value > other.value
+            more_than = self.value > other.value
+            return more_than
+        else:
+            return NotImplemented
 
-        return False
-
-    def __lt__(self, other: REDCapReportReader) -> bool:
+    def __lt__(self, other: object) -> bool:
         """Defines the < method."""
         if isinstance(other, CrcReview):
-            return self.value < other.value
-
-        return False
+            less_than = self.value < other.value
+            return less_than
+        else:
+            return NotImplemented
 
 
 class REDCapReportReader:  # pylint: disable=too-few-public-methods
@@ -141,10 +140,10 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
 
     __separator = "------"
 
-    def __init__(self):
+    def __init__(self) -> None:
         Utilities.setup_logging()
         self.__log = logging.getLogger(__name__)
-        self.__report_contents = None
+        self.__report_contents = []
         self.__row_index = 0
 
     def _at_end(self) -> bool:
@@ -171,7 +170,7 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
         -------
         value_converted : str or None
         """
-        if value is None or not isinstance(value, str):
+        if not isinstance(value, str) or len(value) == 0:
             return None
 
         if value.upper() == "NULL":
@@ -210,16 +209,16 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
             return None
 
         self.__row_index += 1
-        return self.__report_contents[self.__row_index]
+        return str(self.__report_contents[self.__row_index])
 
-    def _open_file(self, report_filename: str = None) -> None:
+    def _open_file(self, report_filename: str) -> None:
         """Handles opening the input file.
 
         Parameters
         ----------
         report_filename : str Full path to location of report.
         """
-        if report_filename is None or not isinstance(report_filename, str):
+        if not isinstance(report_filename, str) or len(report_filename) == 0:
             self.__log.error("Need to know the name of the report file to be read.")
             raise TypeError("Need to know the name of the report file to be read.")
 
@@ -230,18 +229,20 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
                 # Read all the lines into a list.
                 self.__report_contents = file_obj.readlines()
         else:
-            self.__log.error("Unable to find file {report_filename}.",
-                             extra={"report_filename": report_filename})
+            self.__log.error(
+                "Unable to find file {report_filename}.",
+                extra={"report_filename": report_filename},
+            )
             raise FileNotFoundError(f"Unable to find file '{report_filename}'.")
 
-    def _open_text(self, block_txt: str = None) -> None:
+    def _open_text(self, block_txt: str) -> None:
         """Handles opening the input text block.
 
         Parameters
         ----------
         block_txt : str Multi-line block of text.
         """
-        if block_txt is None or not isinstance(block_txt, str):
+        if not isinstance(block_txt, str) or len(block_txt) == 0:
             self.__log.error("Need to supply the text block to be read.")
             raise TypeError("Need to supply the text block to be read.")
 
@@ -315,8 +316,8 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
                 next_line = self._next_line()
 
                 if (
-                    next_line is None
-                    or not isinstance(next_line, str)
+                    not isinstance(next_line, str)
+                    or len(next_line) == 0
                     or REDCapReportReader.__separator in next_line
                 ):
                     break
@@ -337,7 +338,7 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
                 ] = REDCapReportReader.convert_nulls(this_line.redcap_value)
 
             #   Did we get here because we ran out of data?
-            if next_line is None or not isinstance(next_line, str):
+            if not isinstance(next_line, str) or len(next_line) == 0:
                 break
 
             #   Read "Same/Not Same" lines.
@@ -381,7 +382,7 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
         ):
             decision_line = self._next_line()
 
-        if decision_line is None or not isinstance(decision_line, str):
+        if not isinstance(decision_line, str) or len(decision_line) == 0:
             return crc_decision, crc_reason
 
         #   Parse what we've found so far.
@@ -404,8 +405,7 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
 
         #   Did we run out of lines before finding a checkmark?
         if (
-            decision_line is None
-            or not isinstance(decision_line, str)
+            not isinstance(decision_line, str)
             or REDCapReportReader.__separator in decision_line
         ):
             return crc_decision, crc_reason
@@ -415,17 +415,23 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
         crc_reason = CrcReason.convert(decision_line)
         return crc_decision, crc_reason
 
-    def read_file(self, report_filename: str = None) -> pandas.DataFrame:
+    def read_file(self, report_filename: str) -> pandas.DataFrame:
         """Lets user specify we are to open a FILE.
 
         Parameters
         ----------
         """
+        if not isinstance(report_filename, str) or len(report_filename) == 0:
+            raise TypeError("Argument 'report_filename' is not the expected str.")
+
         self._open_file(report_filename=report_filename)
         return self._read()
 
-    def read_text(self, block_txt: str = None) -> pandas.DataFrame:
+    def read_text(self, block_txt: str) -> pandas.DataFrame:
         """Lets user specify we are to open a BLOCK of TEXT."""
+        if not isinstance(block_txt, str) or len(block_txt) == 0:
+            raise TypeError("Argument 'block_txt' is not the expected str.")
+
         self._open_text(block_txt=block_txt)
         return self._read()
 

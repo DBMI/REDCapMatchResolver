@@ -37,7 +37,9 @@ def test_crc_reason_class() -> None:
         CrcReason.convert("NOT Same: Living at same address") == CrcReason.SAME_ADDRESS
     )
     assert CrcReason.convert("NOT Same: Parent & child") == CrcReason.PARENT_CHILD
-    assert CrcReason.convert("") == CrcReason.OTHER
+
+    with pytest.raises(TypeError):
+        CrcReason.convert("")
 
 
 def test_crc_review_class() -> None:
@@ -62,12 +64,22 @@ def test_crc_review_class() -> None:
     assert CrcReview.NO_MATCH > CrcReview.NOT_SURE
     assert CrcReview.NOT_SURE < CrcReview.NO_MATCH
 
-    assert not CrcReview.MATCH == "Something"
-    assert not CrcReview.MATCH > None
-    assert not None > CrcReview.MATCH
-    assert not CrcReview.MATCH > 1979
-    assert not 1979 > CrcReview.MATCH
-    assert not CrcReview.MATCH > "Something"
+    assert CrcReview.MATCH != "Something"
+
+    with pytest.raises(TypeError):
+        CrcReview.MATCH > None
+
+    with pytest.raises(TypeError):
+        None > CrcReview.MATCH
+
+    with pytest.raises(TypeError):
+        CrcReview.MATCH > 1979
+
+    with pytest.raises(TypeError):
+        1979 > CrcReview.MATCH
+
+    with pytest.raises(TypeError):
+        CrcReview.MATCH > "Something"
 
 
 def test_reading_file(report_filename, my_location) -> None:

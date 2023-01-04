@@ -86,7 +86,9 @@ def test_appointment_errors(
         appointment_info=appointment_record_partial,
         clinics=clinics,
     )
+
     assert appointment_obj.date() is None
+
     partial_csv = appointment_obj.csv()
     assert (
         partial_csv is not None
@@ -100,8 +102,7 @@ def test_appointment_errors(
         clinics=clinics,
     )
 
-    with pytest.raises(ValueError):
-        appointment_obj.date()
+    assert appointment_obj.date() is None
 
 
 def test_appointment_instantiation(

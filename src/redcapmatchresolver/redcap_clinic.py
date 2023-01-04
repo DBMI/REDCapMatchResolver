@@ -13,7 +13,7 @@ class REDCapClinic:  # pylint: disable=too-few-public-methods
     Builds a dictionary from an Excel file listing all the clinics and their priority.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         #   Read Excel file. https://stackoverflow.com/a/67122465/20241849
         with pkg_resources.path(
             "redcapmatchresolver.data", "Epic DEP with future appts - 04192022 .xlsx"
