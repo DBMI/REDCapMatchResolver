@@ -4,8 +4,10 @@ testing of the REDCapReportReader class.
 """
 
 import os
+
 import pandas
 import pytest
+
 from redcapmatchresolver.redcap_report_reader import (
     CrcReason,
     CrcReview,
