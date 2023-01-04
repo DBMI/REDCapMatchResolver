@@ -3,14 +3,17 @@ Module: contains class REDCapReportReader
 used to parse a reviewed list of patient matches.
 """
 from __future__ import annotations
+
 import collections
-from enum import Enum
 import io
 import logging
 import os
 import re
+from enum import Enum
 from typing import Union
+
 import pandas  # type: ignore[import]
+
 from .utilities import Utilities
 
 ReportLine = collections.namedtuple(

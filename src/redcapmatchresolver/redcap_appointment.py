@@ -1,9 +1,10 @@
 """
 Module: contains class REDCapAppointment.
 """
-from datetime import datetime
 import re
+from datetime import datetime
 from typing import Union
+
 from redcapmatchresolver.redcap_clinic import REDCapClinic
 
 
