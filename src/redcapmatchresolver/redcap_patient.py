@@ -2,7 +2,7 @@
 Module: contains class REDCapPatient.
 """
 from __future__ import annotations
-from typing import List, Union
+from typing import Union
 from redcapmatchresolver.redcap_appointment import REDCapAppointment
 from redcapmatchresolver.redcap_clinic import REDCapClinic
 
