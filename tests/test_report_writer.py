@@ -26,7 +26,7 @@ def test_writer_init(tmp_path) -> None:
 
     # Report name that contains forbidden characters and is too long.
     with pytest.raises(OSError):
-        just_the_filename = "name that can't be /<>parsed" * 15 + '\0' + ".txt"
+        just_the_filename = r"name that can't be? :/<parsed*?.txt"
         bad_filename = str(tmp_path / just_the_filename)
         REDCapReportWriter(report_filename=bad_filename)
 
