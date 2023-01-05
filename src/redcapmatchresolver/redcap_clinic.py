@@ -5,7 +5,7 @@ clinic location.
 """
 import os.path
 
-import importlib_resources as pkg_resources  # type: ignore[import]
+from importlib import resources  # type: ignore[import]
 import pandas  # type: ignore[import]
 
 
@@ -16,7 +16,7 @@ class REDCapClinic:  # pylint: disable=too-few-public-methods
 
     def __init__(self) -> None:
         #   Read Excel file. https://stackoverflow.com/a/67122465/20241849
-        with pkg_resources.path(
+        with resources.path(
             "redcapmatchresolver.data", "Epic DEP with future appts - 04192022 .xlsx"
         ) as excel_filename:  # pragma: no cover
             if not os.path.exists(excel_filename):
