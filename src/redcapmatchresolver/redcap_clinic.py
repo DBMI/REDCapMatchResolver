@@ -4,8 +4,8 @@ used to prioritize appointments according to
 clinic location.
 """
 import os.path
-
 from importlib import resources  # type: ignore[import]
+
 import pandas  # type: ignore[import]
 
 
