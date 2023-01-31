@@ -4,7 +4,6 @@ used to create/use a SQLite database from
 CRC-reviewed match reports.
 """
 import glob
-import logging
 import os
 import sqlite3
 from sqlite3 import Connection
@@ -24,8 +23,7 @@ class REDCapMatchResolver:
     """
 
     def __init__(self, db_filename: str = "temp_matches_database.db"):
-        Utilities.setup_logging()
-        self.__log = logging.getLogger(__name__)
+        self.__log = Utilities.setup_logging(log_filename="redcap_match_resolver.log")
         self.__database_fields_list = []  # type: ignore[var-annotated]
         self.__dataframe_fields_list = []  # type: ignore[var-annotated]
         self.__redcap_reader = REDCapReportReader()
