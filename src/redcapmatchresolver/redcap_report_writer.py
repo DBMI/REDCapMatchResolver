@@ -2,7 +2,6 @@
 Module: contains class REDCapReportWriter
 used to produce list of patient matches to be reviewed.
 """
-import logging
 from typing import List
 
 from .utilities import Utilities
@@ -29,8 +28,7 @@ class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
         ----------
         report_filename : str Full path to location of desired report.
         """
-        Utilities.setup_logging()
-        self.__log = logging.getLogger(__name__)
+        self.__log = Utilities.setup_logging(log_filename="redcap_report_writer.log")
         self.__report_filename = report_filename
         Utilities.ensure_output_path(self.__report_filename)
         self.__reports: List[str] = []
