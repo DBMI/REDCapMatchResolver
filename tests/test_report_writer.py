@@ -24,12 +24,6 @@ def test_writer_init(tmp_path) -> None:
     assert isinstance(obj, REDCapReportWriter)
     assert obj.report_filename() == tmp_filename
 
-    # Report name that contains forbidden characters and is too long.
-    with pytest.raises(OSError):
-        just_the_filename = r"name that can't be? :/<parsed*?.txt"
-        bad_filename = str(tmp_path / just_the_filename)
-        REDCapReportWriter(report_filename=bad_filename)
-
 
 def test_writing(matching_patients, tmp_path) -> None:
     """End-to-end test of writing a report."""

@@ -3,7 +3,8 @@ Module: contains utility functions.
 """
 import logging
 import os
-from datetime import datetime
+import sys
+from typing import Union
 
 
 class Utilities:  # pylint: disable=too-few-public-methods
@@ -39,18 +40,31 @@ class Utilities:  # pylint: disable=too-few-public-methods
             ) from create_path_error
 
     @staticmethod
-    def setup_logging() -> None:
+    def setup_logging(log_filename: Union[str, None]) -> logging.Logger:
+
+        if not isinstance(log_filename, str):
+            log_filename = "redcap_match_resolver.log"
+
         """Set up the logging utility correctly."""
         # https: // stackoverflow.com / a / 49202811 / 20241849
         for handler in logging.root.handlers[:]:
             logging.root.removeHandler(handler)
 
-        logging.basicConfig(
-            datefmt="%Y_%m_%d %I:%M:%S %p",
-            filename=datetime.now().strftime("%Y_%m_%d_%H%M%S") + ".log",
-            format="%(asctime)s %(message)s",
-            level=logging.DEBUG,
+        logger = logging.getLogger(__name__)
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_format = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
+        console_handler.setFormatter(console_format)
+
+        logfile_handler = logging.FileHandler(filename=log_filename)
+        logfile_format = logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         )
+        logfile_handler.setFormatter(logfile_format)
+
+        logger.addHandler(console_handler)
+        logger.addHandler(logfile_handler)
+        logger.setLevel(logging.INFO)
+        return logger
 
 
 if __name__ == "__main__":
