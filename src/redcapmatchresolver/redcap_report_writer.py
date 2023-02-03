@@ -2,9 +2,11 @@
 Module: contains class REDCapReportWriter
 used to produce list of patient matches to be reviewed.
 """
-from typing import List
+import os
+from typing import List, Union
 
-from .utilities import Utilities
+from redcaputilities.directories import ensure_output_path_exists
+from redcaputilities.logging import patient_data_directory, setup_logging
 
 
 class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
@@ -22,15 +24,21 @@ class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
         "Notes:...................................................\n\n"
     )
 
-    def __init__(self, report_filename: str = "patient_report.txt"):
+    def __init__(self, report_filename: Union[str, None] = None):
         """
         Parameters
         ----------
         report_filename : str Full path to location of desired report.
         """
-        self.__log = Utilities.setup_logging(log_filename="redcap_report_writer.log")
+        self.__log = setup_logging(log_filename="redcap_report_writer.log")
+
+        if not isinstance(report_filename, str):
+            report_filename = os.path.join(
+                patient_data_directory(), "patient_reports", "patient_report.txt"
+            )
+
         self.__report_filename = report_filename
-        Utilities.ensure_output_path(self.__report_filename)
+        ensure_output_path_exists(self.__report_filename)
         self.__reports: List[str] = []
 
     def add_match(self, match: str) -> None:
