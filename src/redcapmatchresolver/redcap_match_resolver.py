@@ -10,9 +10,10 @@ from sqlite3 import Connection
 from typing import Union
 
 import pandas  # type: ignore[import]
+from redcaputilities.directories import ensure_output_path_exists
+from redcaputilities.logging import setup_logging
 
 from .redcap_report_reader import CrcReview, REDCapReportReader
-from .utilities import Utilities
 
 
 class REDCapMatchResolver:
@@ -23,7 +24,7 @@ class REDCapMatchResolver:
     """
 
     def __init__(self, db_filename: str = "temp_matches_database.db"):
-        self.__log = Utilities.setup_logging(log_filename="redcap_match_resolver.log")
+        self.__log = setup_logging(log_filename="redcap_match_resolver.log")
         self.__database_fields_list = []  # type: ignore[var-annotated]
         self.__dataframe_fields_list = []  # type: ignore[var-annotated]
         self.__redcap_reader = REDCapReportReader()
@@ -98,7 +99,7 @@ class REDCapMatchResolver:
             self.__log.error("Input 'db_filename' is not the expected string.")
             raise TypeError("Input 'db_filename' is not the expected string.")
 
-        Utilities.ensure_output_path(db_filename)
+        ensure_output_path_exists(db_filename)
 
         # pylint: disable=logging-fstring-interpolation
         try:
@@ -135,7 +136,7 @@ class REDCapMatchResolver:
         if not isinstance(conn, sqlite3.Connection):
             raise TypeError("Argument 'conn' is not a sqlite3.Connection object.")
 
-        if not self._is_connected(conn):  # pragma: no cover
+        if not self._is_connected(conn=conn):  # pragma: no cover
             self.__log.error(
                 "Called '_create_decisions_table' method but database is not connected."
             )
@@ -143,7 +144,7 @@ class REDCapMatchResolver:
                 "Called '_create_decisions_table' method but database is not connected."
             )
 
-        if not self._drop_decisions_table(conn):  # pragma: no cover
+        if not self._drop_decisions_table(conn=conn):  # pragma: no cover
             self.__log.error('Unable to drop "decisions" table.')
             raise RuntimeError('Unable to drop "decisions" table.')
 
@@ -177,7 +178,7 @@ class REDCapMatchResolver:
         if not isinstance(conn, sqlite3.Connection):
             raise TypeError("Argument 'conn' is not a sqlite3.Connection object.")
 
-        if not self._is_connected(conn):  # pragma: no cover
+        if not self._is_connected(conn=conn):  # pragma: no cover
             self.__log.error(
                 "Called '_create_matches_table' method but database is not connected."
             )
@@ -185,7 +186,7 @@ class REDCapMatchResolver:
                 "Called '_create_matches_table' method but database is not connected."
             )
 
-        if not self._drop_matches_table(conn):  # pragma: no cover
+        if not self._drop_matches_table(conn=conn):  # pragma: no cover
             self.__log.error('Unable to drop "matches" table.')
             raise RuntimeError('Unable to drop "matches" table.')
 
@@ -230,7 +231,7 @@ class REDCapMatchResolver:
         if not isinstance(conn, sqlite3.Connection):
             raise TypeError("Argument 'conn' is not a sqlite3.Connection object.")
 
-        if not self._is_connected(conn):  # pragma: no cover
+        if not self._is_connected(conn=conn):  # pragma: no cover
             self.__log.error(
                 "Called '_drop_decisions_table' method but database is not connected."
             )
@@ -264,7 +265,7 @@ class REDCapMatchResolver:
         if not isinstance(conn, sqlite3.Connection):
             raise TypeError("Argument 'conn' is not a sqlite3.Connection object.")
 
-        if not self._is_connected(conn):  # pragma: no cover
+        if not self._is_connected(conn=conn):  # pragma: no cover
             self.__log.error(
                 "Called '_drop_matches_table' method but database is not connected."
             )
@@ -303,7 +304,7 @@ class REDCapMatchResolver:
             self.__log.error("Input 'df' is not a pandas.DataFrame.")
             raise TypeError("Input 'df' is not a pandas.DataFrame.")
 
-        if not self._is_connected():  # pragma: no cover
+        if not self._is_connected(conn=None):  # pragma: no cover
             self.__log.error(
                 "Called '_insert_report' method but database is not connected."
             )
@@ -381,7 +382,7 @@ class REDCapMatchResolver:
         -------
         decision : CrcReview Reports whether CRCs said match, no match (or not sure).
         """
-        if not self._is_connected():  # pragma: no cover
+        if not self._is_connected(conn=None):  # pragma: no cover
             self.__log.error(
                 "Called 'lookup_potential_match' method but database is not connected."
             )
@@ -456,14 +457,14 @@ class REDCapMatchResolver:
                     )
                     return CrcReview(max(crc_review_objects))
 
-                return CrcReview.NOT_SURE
+                return CrcReview(CrcReview.NOT_SURE)
             except sqlite3.Error as database_error:  # pragma: no cover
                 self.__log.exception(
                     "Error in running table query method because {database_error}."
                 )
                 raise database_error
 
-        return CrcReview.NOT_SURE
+        return CrcReview(CrcReview.NOT_SURE)
 
     def read_reports(self, import_folder: str) -> bool:
         """Read all the report files & imports into db.

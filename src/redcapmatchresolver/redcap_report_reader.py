@@ -11,8 +11,7 @@ import re
 from enum import Enum
 
 import pandas  # type: ignore[import]
-
-from .utilities import Utilities
+from redcaputilities.logging import setup_logging
 
 ReportLine = collections.namedtuple(
     "ReportLine", ["name", "epic_value", "redcap_value"]
@@ -45,15 +44,15 @@ class CrcReason(Enum):  # pylint: disable=too-few-public-methods
             raise TypeError("Input 'decisions' is not the expected string.")
 
         if "family members" in decision.lower():
-            return CrcReason.FAMILY
+            return CrcReason(CrcReason.FAMILY)
 
         if "same address" in decision.lower():
-            return CrcReason.SAME_ADDRESS
+            return CrcReason(CrcReason.SAME_ADDRESS)
 
         if "parent" in decision.lower():
-            return CrcReason.PARENT_CHILD
+            return CrcReason(CrcReason.PARENT_CHILD)
 
-        return CrcReason.OTHER
+        return CrcReason(CrcReason.OTHER)
 
 
 class CrcReview(Enum):  # pylint: disable=too-few-public-methods
@@ -102,12 +101,12 @@ class CrcReview(Enum):  # pylint: disable=too-few-public-methods
             raise TypeError("Input 'decisions' is not the expected string.")
 
         if decisions == "MATCH":
-            return CrcReview.MATCH
+            return CrcReview(CrcReview.MATCH)
 
         if decisions == "NO_MATCH":
-            return CrcReview.NO_MATCH
+            return CrcReview(CrcReview.NO_MATCH)
 
-        return CrcReview.NOT_SURE
+        return CrcReview(CrcReview.NOT_SURE)
 
     def __eq__(self, other: object) -> bool:
         """Defines the == method."""
@@ -142,7 +141,7 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
     __separator = "------"
 
     def __init__(self) -> None:
-        self.__log = Utilities.setup_logging(log_filename="redcap_report_reader.log")
+        self.__log = setup_logging(log_filename="redcap_report_reader.log")
         self.__report_contents = []  # type: ignore[var-annotated]
         self.__row_index = 0
 

@@ -6,6 +6,12 @@ __pycache__/
 # C extensions
 *.so
 
+# Data files
+*.db
+*.log
+*.sqlite
+*.yaml
+
 # Distribution / packaging
 .Python
 build/
@@ -80,3 +86,6 @@ venv.bak/
 
 # IDEs
 .idea/
+/out/
+!.pre-commit-config.yaml
+/tests/temp_database.db

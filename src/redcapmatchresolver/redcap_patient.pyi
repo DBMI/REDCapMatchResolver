@@ -1,4 +1,8 @@
-from redcapmatchresolver.redcap_appointment import REDCapAppointment as REDCapAppointment
+from typing import Union
+
+from redcapmatchresolver.redcap_appointment import (
+    REDCapAppointment as REDCapAppointment,
+)
 from redcapmatchresolver.redcap_clinic import REDCapClinic as REDCapClinic
 
 class REDCapPatient:

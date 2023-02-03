@@ -4,9 +4,6 @@ testing of the REDCapReportWriter class.
 """
 
 import os
-
-import pytest
-
 from redcapmatchresolver import REDCapReportWriter
 
 
