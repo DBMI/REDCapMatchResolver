@@ -3,6 +3,7 @@ Module: contains class REDCapReportWriter
 used to produce list of patient matches to be reviewed.
 """
 import os
+from pathlib import Path
 from typing import List, Union
 
 from redcaputilities.directories import ensure_output_path_exists
@@ -37,7 +38,7 @@ class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
                 patient_data_directory(), "patient_reports", "patient_report.txt"
             )
 
-        self.__report_filename = report_filename
+        self.__report_filename = REDCapReportWriter.__ensure_safe_path(report_filename)
         ensure_output_path_exists(self.__report_filename)
         self.__reports: List[str] = []
 
@@ -50,6 +51,20 @@ class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
         """
         if match is not None and isinstance(match, str) and len(match) > 0:
             self.__reports.append(match)
+
+    @staticmethod
+    def __ensure_safe_path(target_path: str) -> str:
+        if not isinstance(target_path, str):
+            raise TypeError("Argument 'target_path' is not the expected str.")
+
+        if patient_data_directory() not in target_path:
+            path_parts = Path(target_path).parts
+            target_path = patient_data_directory()
+
+            for part in path_parts[1:]:
+                target_path = os.path.join(target_path, part)
+
+        return target_path
 
     def report_filename(self) -> str:
         """Allows external code to ask where the file went.

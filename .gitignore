@@ -89,3 +89,5 @@ venv.bak/
 /out/
 !.pre-commit-config.yaml
 /tests/temp_database.db
+/tests/temp_matches_database.db
+/tests/patient_report.txt

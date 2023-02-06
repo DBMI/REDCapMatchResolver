@@ -11,29 +11,29 @@ class REDCapMatchResolver:
         self.__redcap_reader = None
         self.__log = None
         ...
+    def __build_decision_table(self, connection):
+        pass
+    def __build_required_fields(self):
+        pass
+    def __create_connection(self, db_filename):
+        pass
+    def __create_matches_table(self, connection):
+        pass
+    def __create_decisions_table(self, conn):
+        pass
+    def __drop_decisions_table(self, conn):
+        pass
+    def __drop_matches_table(self, conn):
+        pass
+    def __insert_report(self, report_df):
+        pass
+    def __is_connected(self, conn: Union[sqlite3.Connection, None]):
+        pass
     def lookup_potential_match(self, match_block: str) -> CrcReview: ...
     def read_reports(self, import_folder: str) -> bool: ...
-    def _is_connected(self, conn: Union[sqlite3.Connection, None]):
+    def __setup_db(self, db_filename):
         pass
-    def _reader_ready(self):
+    def __reader_ready(self):
         pass
-    def _insert_report(self, report_df):
-        pass
-    def _build_required_fields(self):
-        pass
-    def _setup_db(self, db_filename):
-        pass
-    def _build_decision_table(self, connection):
-        pass
-    def _create_connection(self, db_filename):
-        pass
-    def _create_matches_table(self, connection):
-        pass
-    def _create_decisions_table(self, conn):
-        pass
-    def _drop_decisions_table(self, conn):
-        pass
-    def _drop_matches_table(self, conn):
-        pass
-    def _translate_crc_decision(self, crc_decision_string):
+    def __translate_crc_decision(self, crc_decision_string):
         pass

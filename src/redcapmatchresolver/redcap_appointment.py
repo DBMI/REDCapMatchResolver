@@ -1,9 +1,10 @@
 """
 Module: contains class REDCapAppointment.
 """
-import re
 from datetime import datetime
 from typing import Union
+
+from redcaputilities.string_cleanup import clean_up_date, clean_up_time
 
 from redcapmatchresolver.redcap_clinic import REDCapClinic
 
@@ -53,10 +54,10 @@ class REDCapAppointment:
                 name in header.upper()
                 for name in REDCapAppointment.__appointment_date_keywords
             ):
-                self.__date = REDCapAppointment.clean_up_date(appointment_info[index])
-                self.__time = REDCapAppointment._clean_up_time(appointment_info[index])
+                self.__date = clean_up_date(appointment_info[index])
+                self.__time = clean_up_time(appointment_info[index])
 
-        self.__priority = self._assign_priority(clinics=clinics)
+        self.__priority = self.__assign_priority(clinics=clinics)
 
     @staticmethod
     def applicable_header_fields(headers: list) -> list:
@@ -96,7 +97,7 @@ class REDCapAppointment:
 
         return applicable_headers
 
-    def _assign_priority(self, clinics: Union[REDCapClinic, None]) -> int:
+    def __assign_priority(self, clinics: Union[REDCapClinic, None]) -> int:
 
         if not isinstance(clinics, REDCapClinic):
             clinics = REDCapClinic()
@@ -105,57 +106,8 @@ class REDCapAppointment:
         return priority
 
     #   Cleanup specific to dates.  We want a 2022-04-12 format.
-    #   Making this a public method so it can be used in REDCapPatient class.
+    #   Making this a public method so that it can be used in REDCapPatient class.
     @staticmethod
-    def clean_up_date(date_string: Union[int, str, None] = None) -> str:
-        """Ensures a date string follows accepted formats.
-
-        Parameters
-        ----------
-        date_string : str like "2022-12-06" or "6/12/2022"
-
-        Returns
-        -------
-        ret : str in proper "yyyy-mm-dd" format.
-        """
-        if not isinstance(date_string, str) or len(date_string) == 0:
-            return ""
-
-        if len(date_string.split("/")) > 1:
-            ret = re.sub(r"(\d{1,2})/(\d{1,2})/(\d{4}).*", "\\3-\\1-\\2", date_string)
-            temp = ret.split("-")
-
-            try:
-                ret = f"{int(temp[0]):04d)}-{int(temp[1]):02d}-{int(temp[2]):04d}"
-            except ValueError:
-                pass
-        else:
-            ret = re.sub(r"(\d{4})-(\d{1,2})-(\d{1,2}).*", "\\1-\\2-\\3", date_string)
-            temp = ret.split("-")
-
-            try:
-                ret = f"{int(temp[0]):04d}-{int(temp[1]):02d}-{int(temp[2]):02d}"
-            except ValueError:
-                pass
-
-        return ret
-
-    # clean up specific to time.  We want a 12:30:01 format.
-    @staticmethod
-    def _clean_up_time(time_string: str) -> str:
-        if not isinstance(time_string, str) or len(time_string.split()) < 2:
-            return ""
-
-        time_string = time_string.split()[1]
-        ret = ""
-
-        if len(time_string.split(":")) > 1:
-            ret = re.sub(r"(\d{1,2}):(\d{1,2}):(\d{1,2}).*", "\\1:\\2:\\3", time_string)
-            temp = ret.split(":")
-            ret = f"{int(temp[0]):d}:{int(temp[1]):02d}:{int(temp[2]):02d}"
-
-        return ret
-
     def csv(self) -> str:
         """Returns department and date in a comma-separated format.
 
