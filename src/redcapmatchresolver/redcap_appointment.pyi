@@ -4,9 +4,9 @@ from typing import Union
 from redcapmatchresolver.redcap_clinic import REDCapClinic as REDCapClinic
 
 class REDCapAppointment:
-    __appointment_time_keywords = None
-    __department_keywords = None
     __appointment_date_keywords = None
+    __department_keywords = None
+    __appointment_time_keywords = None
 
     def __init__(
         self,
@@ -28,8 +28,5 @@ class REDCapAppointment:
     def priority(self) -> int: ...
     def valid(self) -> bool: ...
     def value(self, field: str) -> str: ...
-    @classmethod
-    def _clean_up_time(cls, param):
-        pass
-    def _assign_priority(self, clinics):
+    def __assign_priority(self, clinics):
         pass

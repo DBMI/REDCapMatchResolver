@@ -29,10 +29,10 @@ class REDCapMatchResolver:
         self.__dataframe_fields_list = []  # type: ignore[var-annotated]
         self.__redcap_reader = REDCapReportReader()
 
-        self._build_required_fields()
-        self.__conn = self._setup_db(db_filename=db_filename)
+        self.__build_required_fields()
+        self.__conn = self.__setup_db(db_filename=db_filename)
 
-    def _build_required_fields(self) -> None:
+    def __build_required_fields(self) -> None:
         fields_list = [
             "MRN",
             "FIRST",
@@ -55,7 +55,7 @@ class REDCapMatchResolver:
         self.__database_fields_list.append("crc_decision")
         self.__dataframe_fields_list.append("CRC_DECISION")
 
-    def _build_decision_table(self, conn: sqlite3.Connection) -> bool:
+    def __build_decision_table(self, conn: sqlite3.Connection) -> bool:
         """Creates & populates table that translates
 
         Returns
@@ -65,7 +65,7 @@ class REDCapMatchResolver:
         if not isinstance(conn, sqlite3.Connection):
             raise TypeError("Argument 'conn' is not a sqlite3.Connection object.")
 
-        if not self._create_decisions_table(conn):  # pragma: no cover
+        if not self.__create_decisions_table(conn):  # pragma: no cover
             self.__log.error("Unable to create 'decisions' table.")
             raise RuntimeError("Unable to create 'decisions' table.")
 
@@ -81,7 +81,7 @@ class REDCapMatchResolver:
         conn.commit()
         return True
 
-    def _create_connection(self, db_filename: str) -> sqlite3.Connection:
+    def __create_connection(self, db_filename: str) -> sqlite3.Connection:
         """Initializes a SQLite database at the desired location.
 
         Parameters
@@ -136,7 +136,7 @@ class REDCapMatchResolver:
         if not isinstance(conn, sqlite3.Connection):
             raise TypeError("Argument 'conn' is not a sqlite3.Connection object.")
 
-        if not self._is_connected(conn=conn):  # pragma: no cover
+        if not self.__is_connected(conn=conn):  # pragma: no cover
             self.__log.error(
                 "Called '_create_decisions_table' method but database is not connected."
             )
@@ -178,7 +178,7 @@ class REDCapMatchResolver:
         if not isinstance(conn, sqlite3.Connection):
             raise TypeError("Argument 'conn' is not a sqlite3.Connection object.")
 
-        if not self._is_connected(conn=conn):  # pragma: no cover
+        if not self.__is_connected(conn=conn):  # pragma: no cover
             self.__log.error(
                 "Called '_create_matches_table' method but database is not connected."
             )
@@ -231,7 +231,7 @@ class REDCapMatchResolver:
         if not isinstance(conn, sqlite3.Connection):
             raise TypeError("Argument 'conn' is not a sqlite3.Connection object.")
 
-        if not self._is_connected(conn=conn):  # pragma: no cover
+        if not self.__is_connected(conn=conn):  # pragma: no cover
             self.__log.error(
                 "Called '_drop_decisions_table' method but database is not connected."
             )
@@ -265,7 +265,7 @@ class REDCapMatchResolver:
         if not isinstance(conn, sqlite3.Connection):
             raise TypeError("Argument 'conn' is not a sqlite3.Connection object.")
 
-        if not self._is_connected(conn=conn):  # pragma: no cover
+        if not self.__is_connected(conn=conn):  # pragma: no cover
             self.__log.error(
                 "Called '_drop_matches_table' method but database is not connected."
             )
@@ -304,7 +304,7 @@ class REDCapMatchResolver:
             self.__log.error("Input 'df' is not a pandas.DataFrame.")
             raise TypeError("Input 'df' is not a pandas.DataFrame.")
 
-        if not self._is_connected(conn=None):  # pragma: no cover
+        if not self.__is_connected(conn=None):  # pragma: no cover
             self.__log.error(
                 "Called '_insert_report' method but database is not connected."
             )
@@ -343,7 +343,7 @@ class REDCapMatchResolver:
                 continue
 
             crc_decision_string = report_df["CRC_DECISION"][index]
-            crc_decision_code = self._translate_crc_decision(crc_decision_string)
+            crc_decision_code = self.__translate_crc_decision(crc_decision_string)
             values_list.append(str(crc_decision_code))
 
             # pylint: disable=logging-fstring-interpolation
@@ -358,7 +358,7 @@ class REDCapMatchResolver:
 
         return True
 
-    def _is_connected(self, conn: Union[sqlite3.Connection, None] = None) -> bool:
+    def __is_connected(self, conn: Union[sqlite3.Connection, None] = None) -> bool:
         """Tests to ensure we've already created the '.__conn' property.
 
         Returns
@@ -382,7 +382,7 @@ class REDCapMatchResolver:
         -------
         decision : CrcReview Reports whether CRCs said match, no match (or not sure).
         """
-        if not self._is_connected(conn=None):  # pragma: no cover
+        if not self.__is_connected(conn=None):  # pragma: no cover
             self.__log.error(
                 "Called 'lookup_potential_match' method but database is not connected."
             )
@@ -394,7 +394,7 @@ class REDCapMatchResolver:
             self.__log.error("Input 'match_block' is not the expected str.")
             raise TypeError("Input 'match_block' is not the expected str.")
 
-        if not self._reader_ready():  # pragma: no cover
+        if not self.__reader_ready():  # pragma: no cover
             self.__log.error("REDCapReader object isn't ready.")
             raise RuntimeError("REDCapReader object isn't ready.")
 
@@ -477,7 +477,7 @@ class REDCapMatchResolver:
         -------
         success : bool
         """
-        if not self._reader_ready():  # pragma: no cover
+        if not self.__reader_ready():  # pragma: no cover
             self.__log.error("Unable to create REDCapReportReader object.")
             raise RuntimeError("Unable to create REDCapReportReader object.")
 
@@ -504,7 +504,7 @@ class REDCapMatchResolver:
 
         return True
 
-    def _reader_ready(self) -> bool:
+    def __reader_ready(self) -> bool:
         """Tests to see if REDCapReportReader object was properly instantiated.
 
         Returns
@@ -515,7 +515,7 @@ class REDCapMatchResolver:
             self.__redcap_reader, REDCapReportReader
         )
 
-    def _setup_db(self, db_filename: str) -> sqlite3.Connection:
+    def __setup_db(self, db_filename: str) -> sqlite3.Connection:
         """Initializes database by:
             1) Creating connection
             2) Creating & populating the decisions table.
@@ -533,11 +533,11 @@ class REDCapMatchResolver:
         if not isinstance(db_filename, str) or len(db_filename) == 0:
             raise TypeError("Input 'db_filename' is not the expected string.")
 
-        connection = self._create_connection(db_filename=db_filename)
+        connection = self.__create_connection(db_filename=db_filename)
 
-        if not self._build_decision_table(connection) or not self._create_matches_table(
+        if not self.__build_decision_table(
             connection
-        ):
+        ) or not self._create_matches_table(connection):
             self.__log.error(
                 "Unable to establish connection to {db_filename}.",
                 extra={"db_filename": db_filename},
@@ -546,7 +546,7 @@ class REDCapMatchResolver:
 
         return connection
 
-    def _translate_crc_decision(self, crc_enum: str) -> int:
+    def __translate_crc_decision(self, crc_enum: str) -> int:
         """Converts CrcReview string into integer, using 'decisions' table.
 
         Returns
@@ -554,12 +554,12 @@ class REDCapMatchResolver:
         id : int
         """
 
-        if not self._is_connected():  # pragma: no cover
+        if not self.__is_connected():  # pragma: no cover
             self.__log.error(
-                "Called '_translate_crc_decision' method but database is not connected."
+                "Called '__translate_crc_decision' method but database is not connected."
             )
             raise RuntimeError(
-                "Called '_translate_crc_decision' method but database is not connected."
+                "Called '__translate_crc_decision' method but database is not connected."
             )
 
         if not isinstance(crc_enum, str) or len(crc_enum) == 0:  # pragma: no cover
