@@ -5,6 +5,7 @@ testing of the REDCapReportWriter class.
 
 import os
 from redcapmatchresolver import REDCapReportWriter
+from redcaputilities.logging import patient_data_directory
 
 
 def test_writer_init(tmp_path) -> None:
@@ -14,12 +15,20 @@ def test_writer_init(tmp_path) -> None:
     assert obj is not None
     assert isinstance(obj, REDCapReportWriter)
 
-    # Reasonable report name.
+    # Report name in UNsafe drive.
     tmp_filename = str(tmp_path / "test_filename.txt")
     obj = REDCapReportWriter(report_filename=tmp_filename)
     assert obj is not None
     assert isinstance(obj, REDCapReportWriter)
-    assert obj.report_filename() == tmp_filename
+    # Ensure report is sent to safe drive.
+    assert patient_data_directory() in obj.report_filename()
+
+    # Report name in safe drive.
+    safe_report_filename = os.path.join(patient_data_directory(), "test_filename.txt")
+    obj = REDCapReportWriter(report_filename=safe_report_filename)
+    assert obj is not None
+    assert isinstance(obj, REDCapReportWriter)
+    assert obj.report_filename() == safe_report_filename
 
 
 def test_writing(matching_patients, tmp_path) -> None:
@@ -34,10 +43,10 @@ def test_writing(matching_patients, tmp_path) -> None:
     assert writer_obj.write()
 
     # Check that the output file was created.
-    assert os.path.exists(output_filename)
+    assert os.path.exists(writer_obj.report_filename())
 
     # Check its contents.
-    with open(file=output_filename, encoding="utf-8") as file_obj:
+    with open(file=writer_obj.report_filename(), encoding="utf-8") as file_obj:
         retrieved_contents = file_obj.read()
         record_read_line = "Record 1 of 1\n"
         assert (

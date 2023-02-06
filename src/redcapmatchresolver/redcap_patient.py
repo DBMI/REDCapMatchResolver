@@ -3,6 +3,8 @@ Module: contains class REDCapPatient.
 """
 from __future__ import annotations
 
+from redcaputilities.string_cleanup import clean_up_phone
+
 from redcapmatchresolver.redcap_appointment import REDCapAppointment
 from redcapmatchresolver.redcap_clinic import REDCapClinic
 
@@ -32,7 +34,6 @@ class REDCapPatient:
     def __init__(self, headers: list, row: tuple, clinics: REDCapClinic) -> None:
         #   Build a dictionary, where the keys come from 'headers' and
         #   the values come from 'row'. Save room for study_id field.
-        self.__record: dict[str, int | str | None]
         self.__record = {"STUDY_ID": None}
 
         self.__appointments = []
@@ -57,13 +58,13 @@ class REDCapPatient:
                 if field_name in appointment_fields:
                     appointment_data.append(None)
                 else:
-                    self.__record[field_name] = None
+                    self.__record[field_name] = ""
             else:
                 if field_name in appointment_fields:
                     appointment_data.append(row[index])
                 else:
                     if any(word in field_name for word in self.__phone_keywords):
-                        self.__record[field_name] = self._clean_up_phone(row[index])
+                        self.__record[field_name] = str(clean_up_phone(row[index]))
                     else:
                         self.__record[field_name] = row[index]
 
@@ -125,37 +126,6 @@ class REDCapPatient:
                 return best_appointment[0]
 
         return None
-
-    @staticmethod
-    def _clean_up_phone(phone_number_string: str) -> str:
-        if not phone_number_string or phone_number_string.upper().strip() == "NULL":
-            return ""
-
-        if not phone_number_string or phone_number_string.upper().strip() == "NONE":
-            return ""
-
-        numeric_filter = filter(str.isdigit, phone_number_string)
-        numeric_string = "".join(numeric_filter)
-
-        if numeric_string in (
-            "0000000000",
-            "10000000000",
-            "9999999999",
-            "19999999999",
-            "1111111111",
-        ):
-            return ""
-
-        if numeric_string.startswith("1") and len(numeric_string) == 11:  # 1YYYXXXZZZZ
-            numeric_string = numeric_string[1:]
-
-        if len(numeric_string) != 10:
-            return phone_number_string
-
-        prefix = numeric_string[0:3]
-        exchange = numeric_string[3:6]
-        rest = numeric_string[6:10]
-        return f"{prefix}-{exchange}-{rest}"
 
     def csv(self, headers: list | None = None) -> str:
         """Creates one line summary of patient record, suitable for a .csv file.
