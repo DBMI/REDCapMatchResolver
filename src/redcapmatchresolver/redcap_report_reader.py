@@ -145,12 +145,12 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
         self.__report_contents = []  # type: ignore[var-annotated]
         self.__row_index = 0
 
-    def _at_end(self) -> bool:
+    def __at_end(self) -> bool:
         """Are we at the END of the report?"""
         return self.__row_index >= len(self.__report_contents) - 1
 
     @staticmethod
-    def _break_into_pieces(data_line: str) -> list:
+    def __break_into_pieces(data_line: str) -> list:
         pieces = re.split(r"\s{2,}", data_line)
 
         # Get rid of empty strings.
@@ -190,37 +190,33 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
         -------
         index : int zero-based index of where in line the keyword appears.
         """
-        pieces = REDCapReportReader._break_into_pieces(data_line)
+        pieces = REDCapReportReader.__break_into_pieces(data_line)
 
         if any(piece == keyword for piece in pieces):
             return pieces.index(keyword)
 
         raise RuntimeError(f"Unable to find '{keyword}' in line.")
 
-    def _next_line(self) -> str | None:
+    def __next_line(self) -> str | None:
         """Get the next line in the report, or None if no more available.
 
         Returns
         -------
         line : str (or None, if we're at the report end.)
         """
-        if self._at_end():
+        if self.__at_end():
             return None
 
         self.__row_index += 1
         return str(self.__report_contents[self.__row_index])
 
-    def _open_file(self, report_filename: str) -> None:
+    def __open_file(self, report_filename: str) -> None:
         """Handles opening the input file.
 
         Parameters
         ----------
         report_filename : str Full path to location of report.
         """
-        if not isinstance(report_filename, str) or len(report_filename) == 0:
-            self.__log.error("Need to know the name of the report file to be read.")
-            raise TypeError("Need to know the name of the report file to be read.")
-
         # pylint: disable=logging-fstring-interpolation
         if os.path.exists(report_filename):
             #   Open as FILE.
@@ -234,24 +230,20 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
             )
             raise FileNotFoundError(f"Unable to find file '{report_filename}'.")
 
-    def _open_text(self, block_txt: str) -> None:
+    def __open_text(self, block_txt: str) -> None:
         """Handles opening the input text block.
 
         Parameters
         ----------
         block_txt : str Multi-line block of text.
         """
-        if not isinstance(block_txt, str) or len(block_txt) == 0:
-            self.__log.error("Need to supply the text block to be read.")
-            raise TypeError("Need to supply the text block to be read.")
-
         #   Open block of text AS IF it were a file.
         with io.StringIO(block_txt) as text_block:
             # Read all the lines into a list.
             self.__report_contents = text_block.readlines()
 
     @staticmethod
-    def _parse_line(data_line: str, epic_index: int, redcap_index: int) -> ReportLine:
+    def __parse_line(data_line: str, epic_index: int, redcap_index: int) -> ReportLine:
         """Reads a line like 'C_MRN   123    456' and returns the ReportLine named tuple
         with fields 'name': 'MRN', 'epic_value': 123, 'redcap_value': 456.
 
@@ -265,7 +257,7 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
         -------
         report_line_obj : ReportLine named tuple
         """
-        pieces = REDCapReportReader._break_into_pieces(data_line)
+        pieces = REDCapReportReader.__break_into_pieces(data_line)
         variable_name = pieces[0].replace("C_", "").strip()
 
         epic_value = None
@@ -281,7 +273,7 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
             name=variable_name, epic_value=epic_value, redcap_value=redcap_value
         )
 
-    def _read(self) -> pandas.DataFrame:
+    def __read(self) -> pandas.DataFrame:
         """Parses the report & forms a pandas DataFrame from the text."""
         reviewed_matches = None
         match_index = 0
@@ -289,12 +281,12 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
         #   Must be reset at every read.
         self.__row_index = 0
 
-        next_line = self._next_line()
+        next_line = self.__next_line()
 
         while True:
             #   Search through to the start of the next match pair.
             while next_line is not None and "Epic Val" not in next_line:
-                next_line = self._next_line()
+                next_line = self.__next_line()
 
             if next_line is None:
                 break
@@ -312,7 +304,7 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
                 next_line is not None
                 and REDCapReportReader.__separator not in next_line
             ):
-                next_line = self._next_line()
+                next_line = self.__next_line()
 
                 if (
                     not isinstance(next_line, str)
@@ -321,7 +313,7 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
                 ):
                     break
 
-                this_line = REDCapReportReader._parse_line(
+                this_line = REDCapReportReader.__parse_line(
                     data_line=next_line,
                     epic_index=epic_index,
                     redcap_index=redcap_index,
@@ -341,7 +333,7 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
                 break
 
             #   Read "Same/Not Same" lines.
-            crc_decision, crc_reason = self._read_crc_decision()
+            crc_decision, crc_reason = self.__read_crc_decision()
 
             match_dict["CRC_DECISION"] = str(crc_decision)
             this_row_df = pandas.DataFrame(match_dict, index=[match_index])
@@ -353,11 +345,11 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
                 reviewed_matches = pandas.concat([reviewed_matches, this_row_df])
 
             #   Start reading next match report.
-            next_line = self._next_line()
+            next_line = self.__next_line()
 
         return reviewed_matches
 
-    def _read_crc_decision(self) -> tuple:
+    def __read_crc_decision(self) -> tuple:
         """From where we are in the report, find the "Same" or "Not Same" sections
         and figure out which one is checked.
 
@@ -372,14 +364,14 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
 
         #   We assume we've just read the final separator in this section
         #   and the Same/Not Same lines are close by.
-        decision_line = self._next_line()
+        decision_line = self.__next_line()
 
         while (
             decision_line is not None
             and isinstance(decision_line, str)
             and "Same" not in decision_line
         ):
-            decision_line = self._next_line()
+            decision_line = self.__next_line()
 
         if not isinstance(decision_line, str) or len(decision_line) == 0:
             return crc_decision, crc_reason
@@ -392,7 +384,7 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
             return crc_decision, crc_reason
 
         #   Continue reading & until we find a  checkmark or the next separator line.
-        decision_line = self._next_line()
+        decision_line = self.__next_line()
 
         while (
             decision_line is not None
@@ -400,7 +392,7 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
             and REDCapReportReader.__separator not in decision_line
             and not any(elem in decision_line for elem in positive_marks)
         ):
-            decision_line = self._next_line()
+            decision_line = self.__next_line()
 
         #   Did we run out of lines before finding a checkmark?
         if (
@@ -423,16 +415,16 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
         if not isinstance(report_filename, str) or len(report_filename) == 0:
             raise TypeError("Argument 'report_filename' is not the expected str.")
 
-        self._open_file(report_filename=report_filename)
-        return self._read()
+        self.__open_file(report_filename=report_filename)
+        return self.__read()
 
     def read_text(self, block_txt: str) -> pandas.DataFrame:
         """Lets user specify we are to open a BLOCK of TEXT."""
         if not isinstance(block_txt, str) or len(block_txt) == 0:
             raise TypeError("Argument 'block_txt' is not the expected str.")
 
-        self._open_text(block_txt=block_txt)
-        return self._read()
+        self.__open_text(block_txt=block_txt)
+        return self.__read()
 
 
 if __name__ == "__main__":
