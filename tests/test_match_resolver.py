@@ -38,7 +38,6 @@ def test_match_resolver_creation(temp_database) -> None:
     """Tests instantiation and setup of a REDCapMatchResolver object."""
     mr_obj = REDCapMatchResolver(db_filename=temp_database)
 
-    assert mr_obj is not None
     assert isinstance(mr_obj, REDCapMatchResolver)
 
 
@@ -48,18 +47,19 @@ def test_match_resolver_db_operation(
     """Tests lookup_potential_match() method of REDCapMatchResolver object."""
     mr_obj = REDCapMatchResolver(db_filename=temp_database)
 
+    with pytest.raises(TypeError):
+        REDCapMatchResolver(db_filename=1979)
+
     #   Can we read the already-reviewed report files & populate the temp database?
     assert mr_obj.read_reports(import_folder=reports_directory)
 
     #   Can we query the db with a new potential match?
     past_decision = mr_obj.lookup_potential_match(match_block=matching_patients)
-    assert past_decision is not None
     assert isinstance(past_decision, CrcReview)
     assert past_decision == CrcReview.MATCH
 
     #   Can we query the db with a match NOT present in the database?
     past_decision = mr_obj.lookup_potential_match(match_block=non_matching_patients)
-    assert past_decision is not None
     assert isinstance(past_decision, CrcReview)
     assert past_decision == CrcReview.NOT_SURE
 
@@ -81,7 +81,6 @@ def test_match_resolver_corner_cases(
 
     #   Can we query an EMPTY db with a new potential match?
     past_decision = mr_obj.lookup_potential_match(match_block=matching_patients)
-    assert past_decision is not None
     assert isinstance(past_decision, CrcReview)
     assert past_decision == CrcReview.NOT_SURE
 
@@ -98,6 +97,9 @@ def test_match_resolver_errors(
     #   Send improper inputs.
     with pytest.raises(TypeError):
         mr_obj.lookup_potential_match(match_block=None)
+
+    with pytest.raises(TypeError):
+        mr_obj.read_reports(import_folder=1979)
 
     with pytest.raises(RuntimeError):
         mr_obj.lookup_potential_match(match_block=malformed_match_block)

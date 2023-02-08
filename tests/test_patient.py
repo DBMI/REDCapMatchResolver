@@ -3,6 +3,7 @@ Module test_patient.py, which performs automated
 testing of the REDCapPatient class.
 """
 from datetime import datetime
+from dateutil.parser import ParserError
 
 import pytest
 
@@ -24,9 +25,7 @@ def test_appointment_corner_cases(
         appointment_headers=appointment_headers,
         appointment_info=appointment_record_slashes,
     )
-    assert appointment_obj is not None and isinstance(
-        appointment_obj, REDCapAppointment
-    )
+    assert isinstance(appointment_obj, REDCapAppointment)
     assert appointment_obj.date() == appointment_datetime
 
 
@@ -83,28 +82,19 @@ def test_appointment_errors(
             clinics=clinics,
         )
 
-    appointment_obj = REDCapAppointment(
-        appointment_headers=appointment_headers,
-        appointment_info=appointment_record_partial,
-        clinics=clinics,
-    )
+    with pytest.raises(ParserError):
+        REDCapAppointment(
+            appointment_headers=appointment_headers,
+            appointment_info=appointment_record_partial,
+            clinics=clinics,
+        )
 
-    assert appointment_obj.date() is None
-
-    partial_csv = appointment_obj.csv()
-    assert (
-        partial_csv is not None
-        and isinstance(partial_csv, str)
-        and partial_csv == " , "
-    )
-
-    appointment_obj = REDCapAppointment(
-        appointment_headers=appointment_headers,
-        appointment_info=appointment_record_malformed,
-        clinics=clinics,
-    )
-
-    assert appointment_obj.date() is None
+    with pytest.raises(ParserError):
+        REDCapAppointment(
+            appointment_headers=appointment_headers,
+            appointment_info=appointment_record_malformed,
+            clinics=clinics,
+        )
 
 
 def test_appointment_instantiation(
@@ -115,38 +105,36 @@ def test_appointment_instantiation(
         appointment_info=appointment_record,
         clinics=clinics,
     )
-    assert appointment_obj is not None and isinstance(
-        appointment_obj, REDCapAppointment
-    )
+    assert isinstance(appointment_obj, REDCapAppointment)
 
     #   Can we parse the date/time from the REDCapAppointment object?
     extracted_datetime = appointment_obj.date()
-    assert extracted_datetime is not None and isinstance(extracted_datetime, datetime)
+    assert isinstance(extracted_datetime, datetime)
     assert extracted_datetime == appointment_datetime
 
     #   Test .csv output.
     csv_summary = appointment_obj.csv()
-    assert csv_summary is not None and isinstance(csv_summary, str)
+    assert isinstance(csv_summary, str)
 
     #   Ask for clinic, date, time.
     value = appointment_obj.value("appointment_clinic")
-    assert value is not None and isinstance(value, str) and value == "LWC CARDIOLOGY"
+    assert isinstance(value, str) and value == "LWC CARDIOLOGY"
 
     value = appointment_obj.value("appointment_date")
-    assert value is not None and isinstance(value, str) and value == "2022-12-01"
+    assert isinstance(value, str) and value == "2022-12-01"
 
     value = appointment_obj.value("appointment_time")
-    assert value is not None and isinstance(value, str) and value == "10:40:00"
+    assert isinstance(value, str) and value == "10:40:00"
 
     value = appointment_obj.value("not_valid_name")
-    assert value is not None and isinstance(value, str) and len(value) == 0
+    assert isinstance(value, str) and len(value) == 0
 
     value = appointment_obj.value(1979)
-    assert value is not None and isinstance(value, str) and len(value) == 0
+    assert isinstance(value, str) and len(value) == 0
 
     #   Ask for appointment priority.
     priority = appointment_obj.priority()
-    assert priority is not None and isinstance(priority, int) and priority == 14
+    assert isinstance(priority, int) and priority == 14
 
 
 def test_patient_appointments(
@@ -162,11 +150,8 @@ def test_patient_appointments(
         row=tuple(patient_record_no_appointments_list),
         clinics=clinics,
     )
-    assert patient_with_no_appointments is not None and isinstance(
-        patient_with_no_appointments, REDCapPatient
-    )
+    assert isinstance(patient_with_no_appointments, REDCapPatient)
     appointments = patient_with_no_appointments.appointments()
-    assert appointments is not None
     assert isinstance(appointments, list)
     assert len(appointments) == 0
     best_appointment = patient_with_no_appointments.best_appointment()
@@ -175,30 +160,27 @@ def test_patient_appointments(
     patient_obj_1 = REDCapPatient(
         headers=patient_headers, row=patient_record_1, clinics=clinics
     )
-    assert patient_obj_1 is not None and isinstance(patient_obj_1, REDCapPatient)
+    assert isinstance(patient_obj_1, REDCapPatient)
 
     #   Only one appointment, but can still ask for the "best".
     best_appointment = patient_obj_1.best_appointment()
-    assert best_appointment is not None and isinstance(
-        best_appointment, REDCapAppointment
-    )
+    assert isinstance(best_appointment, REDCapAppointment)
 
     #   Same patient, different appointments.
     patient_obj_2 = REDCapPatient(
         headers=patient_headers, row=patient_record_2, clinics=clinics
     )
-    assert patient_obj_2 is not None and isinstance(patient_obj_2, REDCapPatient)
+    assert isinstance(patient_obj_2, REDCapPatient)
 
     patient_obj_1.merge(patient_obj_2)
-    assert patient_obj_1 is not None and isinstance(patient_obj_1, REDCapPatient)
+    assert isinstance(patient_obj_1, REDCapPatient)
     assert len(patient_obj_1.appointments()) == 2
 
     #   Two appointments at different clinics--ask for the "best".
     #   In this case, best will be determined by clinic location.
     best_appointment = patient_obj_1.best_appointment()
     assert (
-        best_appointment is not None
-        and isinstance(best_appointment, REDCapAppointment)
+        isinstance(best_appointment, REDCapAppointment)
         and best_appointment.value("department") == "UPC DRAW STATION"
     )
 
@@ -206,16 +188,28 @@ def test_patient_appointments(
     patient_obj_5 = REDCapPatient(
         headers=patient_headers, row=patient_record_5, clinics=clinics
     )
-    assert patient_obj_5 is not None and isinstance(patient_obj_5, REDCapPatient)
+    assert isinstance(patient_obj_5, REDCapPatient)
     patient_obj_2.merge(patient_obj_5)
-    assert patient_obj_2 is not None and isinstance(patient_obj_2, REDCapPatient)
+    assert isinstance(patient_obj_2, REDCapPatient)
     assert len(patient_obj_2.appointments()) == 2
     best_appointment = patient_obj_2.best_appointment()
     assert (
-        best_appointment is not None
-        and isinstance(best_appointment, REDCapAppointment)
+        isinstance(best_appointment, REDCapAppointment)
         and best_appointment.value("date") == "2022-12-25"
     )
+
+
+def test_appointment_fields(appointment_fields):
+    # Test the ability of the REDCapAppointment class to determine
+    # which record fields pertain to an appointment.
+    possible_fields = appointment_fields.copy()
+    possible_fields.extend(["NAME", "CITY", "ZIP", "PHONE"])
+    appt_fields = REDCapAppointment.applicable_header_fields(headers=possible_fields)
+    assert isinstance(appt_fields, list)
+    assert appt_fields == appointment_fields
+
+    with pytest.raises(TypeError):
+        REDCapAppointment.applicable_header_fields(headers=[])
 
 
 def test_patient_corner_cases(
@@ -226,46 +220,34 @@ def test_patient_corner_cases(
     patient_record_7,
     clinics,
 ):
-    REDCapPatient(headers=patient_headers, row=None, clinics=clinics)
-    patient_obj = REDCapPatient(
-        headers=patient_headers, row=patient_record_1[:-1], clinics=clinics
-    )
+    patient_obj = REDCapPatient(headers=patient_headers, row=None, clinics=clinics)
+    assert isinstance(patient_obj, REDCapPatient)
     assert patient_obj.best_appointment() is None
 
-    patient_obj.same_as(None)
-
-    assert patient_obj.value("field_not_present") is None
-
-    #   Exercise more of _clean_up_phone method.
+    #   Exercise more of __clean_up_phone method.
     patient_obj = REDCapPatient(
         headers=patient_headers, row=patient_record_4, clinics=clinics
     )
 
-    #   Exercise more of _clean_up_date method.
+    #   Exercise more of __clean_up_date method.
     patient_csv_description = patient_obj.csv()
-    assert patient_csv_description is not None and isinstance(
-        patient_csv_description, str
-    )
+    assert isinstance(patient_csv_description, str)
 
     patient_obj = REDCapPatient(
         headers=patient_headers, row=patient_record_6, clinics=clinics
     )
 
-    #   Exercise more of _clean_up_date method.
-    patient_csv_description = patient_obj.csv()
-    assert patient_csv_description is not None and isinstance(
-        patient_csv_description, str
-    )
+    #   Exercise more of __clean_up_date method.
+    with pytest.raises(TypeError):
+        patient_obj.csv()
 
     patient_obj = REDCapPatient(
         headers=patient_headers, row=patient_record_7, clinics=clinics
     )
 
-    #   Exercise more of _clean_up_date method.
-    patient_csv_description = patient_obj.csv()
-    assert patient_csv_description is not None and isinstance(
-        patient_csv_description, str
-    )
+    #   Exercise more of __clean_up_date method.
+    with pytest.raises(ParserError):
+        patient_obj.csv()
 
 
 def test_patient_errors(patient_headers, patient_record_1, clinics):
@@ -279,7 +261,7 @@ def test_patient_instantiation(
     patient_obj = REDCapPatient(
         headers=patient_headers, row=patient_record_1, clinics=clinics
     )
-    assert patient_obj is not None and isinstance(patient_obj, REDCapPatient)
+    assert isinstance(patient_obj, REDCapPatient)
 
     #   Handle string input.
     patient_obj.set_study_id(study_id="654321")
@@ -291,18 +273,17 @@ def test_patient_instantiation(
     assert patient_obj.value("STUDY_ID") == "654321"
     assert patient_obj.value("PAT_ID") == "1234567"
 
+    #   Not there.
+    assert patient_obj.value("not present") is None
+
     patient_description = str(patient_obj)
-    assert patient_description is not None and isinstance(patient_description, str)
+    assert isinstance(patient_description, str)
 
     patient_csv_description = patient_obj.csv()
-    assert patient_csv_description is not None and isinstance(
-        patient_csv_description, str
-    )
+    assert isinstance(patient_csv_description, str)
 
     patient_csv_description = patient_obj.csv(headers=export_fields)
-    assert patient_csv_description is not None and isinstance(
-        patient_csv_description, str
-    )
+    assert isinstance(patient_csv_description, str)
 
 
 def test_patient_merger(
@@ -311,31 +292,30 @@ def test_patient_merger(
     patient_obj_1 = REDCapPatient(
         headers=patient_headers, row=patient_record_1, clinics=clinics
     )
-    assert patient_obj_1 is not None and isinstance(patient_obj_1, REDCapPatient)
+    assert isinstance(patient_obj_1, REDCapPatient)
 
     #   Same patient, different appointments.
     patient_obj_2 = REDCapPatient(
         headers=patient_headers, row=patient_record_2, clinics=clinics
     )
-    assert patient_obj_2 is not None and isinstance(patient_obj_2, REDCapPatient)
+    assert isinstance(patient_obj_2, REDCapPatient)
     assert patient_obj_1.same_as(patient_obj_2)
 
     assert len(patient_obj_1.appointments()) == 1
     patient_obj_1.merge(patient_obj_2)
-    assert patient_obj_1 is not None and isinstance(patient_obj_1, REDCapPatient)
+    assert isinstance(patient_obj_1, REDCapPatient)
     assert len(patient_obj_1.appointments()) == 2
 
     #   Different patients.
     patient_obj_3 = REDCapPatient(
         headers=patient_headers, row=patient_record_3, clinics=clinics
     )
-    assert patient_obj_3 is not None and isinstance(patient_obj_3, REDCapPatient)
+    assert isinstance(patient_obj_3, REDCapPatient)
     assert not patient_obj_1.same_as(patient_obj_3)
 
     patient_obj_2.merge(patient_obj_3)
-    assert patient_obj_2 is not None and isinstance(patient_obj_2, REDCapPatient)
+    assert isinstance(patient_obj_2, REDCapPatient)
     assert len(patient_obj_2.appointments()) == 1
 
-
-if __name__ == "__main__":
-    pass
+    #   Comparison with something that's NOT a REDCapPatient object.
+    assert not patient_obj_1.same_as("not a patient")

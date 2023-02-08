@@ -107,7 +107,6 @@ class REDCapAppointment:
 
     #   Cleanup specific to dates.  We want a 2022-04-12 format.
     #   Making this a public method so that it can be used in REDCapPatient class.
-    @staticmethod
     def csv(self) -> str:
         """Returns department and date in a comma-separated format.
 
@@ -115,12 +114,7 @@ class REDCapAppointment:
         -------
         csv_summary : str
         """
-        if self.valid():
-            csv_summary = f"{self.__department}, {self.date()}"
-        else:
-            csv_summary = " , "
-
-        return csv_summary
+        return f"{self.__department}, {self.date()}"
 
     def date(self) -> Union[datetime, None]:
         """Convert stored date and time strings into one datetime object.
@@ -129,17 +123,8 @@ class REDCapAppointment:
         -------
         datetime_value : datetime
         """
-        try:
-            date_time_combined = self.__date + " " + self.__time
-            datetime_value = datetime.strptime(date_time_combined, "%Y-%m-%d %H:%M:%S")
-        except TypeError:
-            #   One of the strings (either date or time) are empty or None, so just return None.
-            return None
-        except ValueError:
-            #   One of the strings (either date or time) are empty or None, so just return None.
-            return None
-
-        return datetime_value
+        date_time_combined = self.__date + " " + self.__time
+        return datetime.strptime(date_time_combined, "%Y-%m-%d %H:%M:%S")
 
     def priority(self) -> int:
         """Allows querying of self.__priority value.
@@ -159,12 +144,7 @@ class REDCapAppointment:
         """
         date_value = self.date()
 
-        return (
-            self.__department is not None
-            and isinstance(self.__department, str)
-            and date_value is not None
-            and isinstance(date_value, datetime)
-        )
+        return isinstance(self.__department, str) and isinstance(date_value, datetime)
 
     def value(self, field: str) -> str:
         """Retrieves either the department or date as requested.
