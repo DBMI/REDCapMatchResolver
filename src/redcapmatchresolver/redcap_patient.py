@@ -3,8 +3,8 @@ Module: contains class REDCapPatient.
 """
 from __future__ import annotations
 
-from redcaputilities.string_cleanup import clean_up_phone
-
+from dateutil.parser import ParserError
+from redcaputilities.string_cleanup import clean_up_date, clean_up_phone
 from redcapmatchresolver.redcap_appointment import REDCapAppointment
 from redcapmatchresolver.redcap_clinic import REDCapClinic
 
@@ -41,42 +41,7 @@ class REDCapPatient:
         if not isinstance(headers, list) or len(headers) == 0:
             raise TypeError("Input 'headers' can't be empty.")
 
-        #   Don't want confusion about upper/lower case. Let's set all to uppercase now.
-        headers = [name.upper() for name in headers]
-
-        #   Which header fields are NOT part of the appointment?
-        (
-            self._non_appointment_fields,
-            appointment_fields,
-        ) = REDCapPatient._not_appointment_fields(headers)
-        appointment_data = []  # type: ignore[var-annotated]
-
-        for index, field_name in enumerate(headers):
-            if not isinstance(row, tuple) or len(row) <= index:
-                #   Then this field is not present in the 'row' structure.
-                #   Leave a blank.
-                if field_name in appointment_fields:
-                    appointment_data.append(None)
-                else:
-                    self.__record[field_name] = ""
-            else:
-                if field_name in appointment_fields:
-                    appointment_data.append(row[index])
-                else:
-                    if any(word in field_name for word in self.__phone_keywords):
-                        self.__record[field_name] = str(clean_up_phone(row[index]))
-                    else:
-                        self.__record[field_name] = row[index]
-
-        if appointment_fields and appointment_data:
-            appointment_object = REDCapAppointment(
-                appointment_headers=appointment_fields,
-                appointment_info=appointment_data,
-                clinics=clinics,
-            )
-
-            if appointment_object.valid():
-                self.__appointments.append(appointment_object)
+        self.__build_record(headers, row, clinics)
 
     def appointments(self) -> list:
         """Returns the list stored in self.__appointments.
@@ -125,7 +90,47 @@ class REDCapPatient:
                 ]
                 return best_appointment[0]
 
-        return None
+    def __build_record(self, headers: list, row: tuple, clinics: REDCapClinic) -> None:
+        #   Don't want confusion about upper/lower case. Let's set all to uppercase now.
+        headers = [name.upper() for name in headers]
+
+        #   Which header fields are NOT part of the appointment?
+        (
+            self.__non_appointment_fields,
+            appointment_fields,
+        ) = REDCapPatient.__not_appointment_fields(headers)
+        appointment_data = []  # type: ignore[var-annotated]
+
+        for index, field_name in enumerate(headers):
+            if not isinstance(row, tuple) or len(row) <= index:
+                #   Then this field is not present in the 'row' structure.
+                #   Leave a blank.
+                if field_name in appointment_fields:
+                    appointment_data.append(None)
+                else:
+                    self.__record[field_name] = ""
+            else:
+                if field_name in appointment_fields:
+                    appointment_data.append(row[index])
+                else:
+                    if any(word in field_name for word in self.__phone_keywords):
+                        self.__record[field_name] = str(clean_up_phone(row[index]))
+                    else:
+                        self.__record[field_name] = row[index]
+
+        if appointment_fields and appointment_data:
+            try:
+                appointment_object = REDCapAppointment(
+                    appointment_headers=appointment_fields,
+                    appointment_info=appointment_data,
+                    clinics=clinics,
+                )
+
+                if appointment_object.valid():
+                    self.__appointments.append(appointment_object)
+            except (ParserError, TypeError):
+                # Then there is no valid Appointment object.
+                pass
 
     def csv(self, headers: list | None = None) -> str:
         """Creates one line summary of patient record, suitable for a .csv file.
@@ -172,7 +177,7 @@ class REDCapPatient:
                 #   Doing this clean up after the above means we don't have to separately
                 #    handle whether field is already part of the self.__record ('BIRTH_DATE')
                 #    or needs to be translated first ('DOB').
-                value = REDCapAppointment.clean_up_date(value)
+                value = clean_up_date(value)
 
             #   Stuff an empty into value if it's None.
             if not value:
@@ -212,7 +217,7 @@ class REDCapPatient:
             self.__appointments += other_patient.appointments()
 
     @staticmethod
-    def _not_appointment_fields(headers: list) -> tuple:
+    def __not_appointment_fields(headers: list) -> tuple:
         appointment_fields = REDCapAppointment.applicable_header_fields(headers)
         appointment_fields = [field.upper() for field in appointment_fields]
         non_appointment_fields = [
@@ -242,7 +247,7 @@ class REDCapPatient:
         if not isinstance(other_patient, REDCapPatient):
             return False
 
-        for field in self._non_appointment_fields:
+        for field in self.__non_appointment_fields:
             if self.value(field) != other_patient.value(field):
                 return False
 
@@ -284,7 +289,3 @@ class REDCapPatient:
             return str(self.__record[field])
 
         return None
-
-
-if __name__ == "__main__":
-    pass

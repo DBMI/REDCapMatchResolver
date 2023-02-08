@@ -12,6 +12,19 @@ def fixture_appointment_datetime() -> datetime:
     return datetime.strptime("2022-12-01 10:40:00", "%Y-%m-%d %H:%M:%S")
 
 
+@pytest.fixture(name="appointment_fields")
+def fixture_appointment_fields() -> list:
+    return [
+        "APPOINTMENT_DATE",
+        "APPT_DATE",
+        "APPOINTMENT_TIME",
+        "APPT_TIME",
+        "CLINIC",
+        "DEPARTMENT",
+        "DEPT",
+    ]
+
+
 @pytest.fixture(name="appointment_headers")
 def fixture_appointment_headers() -> list:
     return ["DEPARTMENT_NAME", "APPT_DATE_TIME"]
