@@ -33,7 +33,7 @@ class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
         """
         self.__log = setup_logging(log_filename="redcap_report_writer.log")
 
-        if not isinstance(report_filename, str):
+        if not isinstance(report_filename, str) or len(report_filename) == 0:
             report_filename = os.path.join(
                 patient_data_directory(), "patient_reports", "patient_report.txt"
             )
@@ -54,9 +54,6 @@ class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
 
     @staticmethod
     def __ensure_safe_path(target_path: str) -> str:
-        if not isinstance(target_path, str):
-            raise TypeError("Argument 'target_path' is not the expected str.")
-
         if patient_data_directory() not in target_path:
             path_parts = Path(target_path).parts
             target_path = patient_data_directory()

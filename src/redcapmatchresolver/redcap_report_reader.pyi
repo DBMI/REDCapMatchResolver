@@ -34,28 +34,28 @@ class REDCapReportReader:
         self.__report_contents = None
         self.__log = None
         ...
+    def __at_end(self) -> bool:
+        pass
+    @classmethod
+    def __break_into_pieces(cls, data_line) -> list:
+        pass
     @staticmethod
     def convert_nulls(value: str) -> Union[str, None]: ...
+    @classmethod
+    def _find_column(cls, next_line, param) -> int:
+        pass
+    def __next_line(self) -> str | None:
+        pass
+    def __open_file(self, report_filename) -> None:
+        pass
+    def __open_text(self, block_txt) -> None:
+        pass
+    @classmethod
+    def __parse_line(cls, data_line, epic_index, redcap_index) -> ReportLine:
+        pass
+    def __read(self) -> pandas.DataFrame:
+        pass
+    def __read_crc_decision(self) -> tuple:
+        pass
     def read_file(self, report_filename: str) -> pandas.DataFrame: ...
     def read_text(self, block_txt: str) -> pandas.DataFrame: ...
-    @classmethod
-    def _break_into_pieces(cls, data_line):
-        pass
-    @classmethod
-    def _find_column(cls, next_line, param):
-        pass
-    @classmethod
-    def _parse_line(cls, data_line, epic_index, redcap_index):
-        pass
-    def _read(self):
-        pass
-    def _open_file(self, report_filename):
-        pass
-    def _open_text(self, block_txt):
-        pass
-    def _next_line(self):
-        pass
-    def _read_crc_decision(self):
-        pass
-    def _at_end(self):
-        pass

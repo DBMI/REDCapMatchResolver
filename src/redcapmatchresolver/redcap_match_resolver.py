@@ -539,16 +539,13 @@ class REDCapMatchResolver:
         connection : sqlite3.Connection object
 
         """
-        if not isinstance(db_filename, str) or len(db_filename) == 0:
-            raise TypeError("Input 'db_filename' is not the expected string.")
-
         connection = self.__create_connection(db_filename=db_filename)
 
         if not self.__build_decision_table(
             connection=connection
         ) or not self.__create_matches_table(
             connection=connection
-        ):  #  pragma: no cover
+        ):  # pragma: no cover
 
             self.__log.error(
                 "Unable to establish connection to {db_filename}.",
