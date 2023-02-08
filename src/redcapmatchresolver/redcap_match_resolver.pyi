@@ -13,7 +13,6 @@ class REDCapMatchResolver:
         self.__redcap_reader = None
         self.__log = None
         ...
-    def __build_decision_table(self, connection: sqlite3.Connection):
         pass
     def __build_required_fields(self) -> None:
         pass
@@ -38,4 +37,6 @@ class REDCapMatchResolver:
     def __reader_ready(self):
         pass
     def __translate_crc_decision(self, crc_enum: str) -> int:
+        pass
+    def __build_decision_table(self, connection: sqlite3.Connection):
         pass

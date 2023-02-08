@@ -262,6 +262,7 @@ def test_patient_instantiation(
         headers=patient_headers, row=patient_record_1, clinics=clinics
     )
     assert isinstance(patient_obj, REDCapPatient)
+    assert patient_obj is not None and isinstance(patient_obj, REDCapPatient)
 
     #   Handle string input.
     patient_obj.set_study_id(study_id="654321")

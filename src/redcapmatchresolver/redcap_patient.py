@@ -5,7 +5,6 @@ from __future__ import annotations
 
 from dateutil.parser import ParserError
 from redcaputilities.string_cleanup import clean_up_date, clean_up_phone
-
 from redcapmatchresolver.redcap_appointment import REDCapAppointment
 from redcapmatchresolver.redcap_clinic import REDCapClinic
 

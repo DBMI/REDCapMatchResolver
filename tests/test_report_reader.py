@@ -63,7 +63,6 @@ def test_crc_review_class() -> None:
     #   Exercise list processing.
     converted_list = CrcReview.convert(["MATCH", "NO_MATCH"])
     assert converted_list == [CrcReview.MATCH, CrcReview.NO_MATCH]
-
     assert CrcReview.MATCH == CrcReview.MATCH
     assert CrcReview.MATCH > CrcReview.NO_MATCH
     assert CrcReview.MATCH > CrcReview.NOT_SURE

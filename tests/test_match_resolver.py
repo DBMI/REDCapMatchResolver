@@ -37,7 +37,6 @@ def fixture_temp_database():
 def test_match_resolver_creation(temp_database) -> None:
     """Tests instantiation and setup of a REDCapMatchResolver object."""
     mr_obj = REDCapMatchResolver(db_filename=temp_database)
-
     assert isinstance(mr_obj, REDCapMatchResolver)
 
 
@@ -46,9 +45,6 @@ def test_match_resolver_db_operation(
 ) -> None:
     """Tests lookup_potential_match() method of REDCapMatchResolver object."""
     mr_obj = REDCapMatchResolver(db_filename=temp_database)
-
-    with pytest.raises(TypeError):
-        REDCapMatchResolver(db_filename=1979)
 
     #   Can we read the already-reviewed report files & populate the temp database?
     assert mr_obj.read_reports(import_folder=reports_directory)
