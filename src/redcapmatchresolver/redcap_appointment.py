@@ -4,6 +4,7 @@ Module: contains class REDCapAppointment.
 from datetime import datetime
 from typing import Union
 
+import pandas
 from redcaputilities.string_cleanup import clean_up_date, clean_up_time
 
 from redcapmatchresolver.redcap_clinic import REDCapClinic
@@ -20,42 +21,35 @@ class REDCapAppointment:
 
     def __init__(
         self,
-        appointment_headers: list,
-        appointment_info: list,
+        df: pandas.DataFrame,
         clinics: Union[REDCapClinic, None] = None,
     ):
-        if not isinstance(appointment_headers, list) or len(appointment_headers) == 0:
-            raise TypeError("Appointment headers was not the expected list.")
+        if not isinstance(df, pandas.DataFrame) or len(df) == 0:
+            raise TypeError("Appointment info was not the expected DataFrame.")
 
-        if not isinstance(appointment_info, list) or len(appointment_info) == 0:
-            raise TypeError("Appointment info was not the expected list.")
-
+        appointment_headers = list(df.columns)
         #   It's OK for 'clinics' to be None--
         #   this forces the '__assign_priority' method to look them up.
+        self.__date: Union[str, None] = None
+        self.__department: Union[str, None] = None
+        self.__time: Union[str, None] = None
 
-        for index, header in enumerate(appointment_headers):
-            if not isinstance(header, str):
-                raise TypeError("Element in 'headers' is not the expected string.")
-
-            if len(appointment_info) <= index:
-                raise TypeError(
-                    f"List 'appointment_headers' has length {len(appointment_headers)} "
-                    f"but 'appointment_info' has length {len(appointment_info)}."
-                )
+        for this_header in appointment_headers:
+            this_value = df[this_header][0]
 
             if any(
-                name in header.upper()
+                name in this_header.upper()
                 for name in REDCapAppointment.__department_keywords
             ):
-                self.__department = str(appointment_info[index])
+                self.__department = str(this_value)
                 continue
 
             if any(
-                name in header.upper()
+                name in this_header.upper()
                 for name in REDCapAppointment.__appointment_date_keywords
             ):
-                self.__date = clean_up_date(appointment_info[index])
-                self.__time = clean_up_time(appointment_info[index])
+                self.__date = clean_up_date(this_value)
+                self.__time = clean_up_time(this_value)
 
         self.__priority = self.__assign_priority(clinics=clinics)
 
@@ -123,8 +117,15 @@ class REDCapAppointment:
         -------
         datetime_value : datetime
         """
-        date_time_combined = self.__date + " " + self.__time
-        return datetime.strptime(date_time_combined, "%Y-%m-%d %H:%M:%S")
+        datetime_obj = None
+
+        try:
+            date_time_combined = self.__date + " " + self.__time
+            datetime_obj = datetime.strptime(date_time_combined, "%Y-%m-%d %H:%M:%S")
+        except TypeError:
+            pass
+
+        return datetime_obj
 
     def priority(self) -> int:
         """Allows querying of self.__priority value.
@@ -143,7 +144,6 @@ class REDCapAppointment:
         valid : bool
         """
         date_value = self.date()
-
         return isinstance(self.__department, str) and isinstance(date_value, datetime)
 
     def value(self, field: str) -> str:

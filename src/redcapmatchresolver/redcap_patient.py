@@ -3,7 +3,7 @@ Module: contains class REDCapPatient.
 """
 from __future__ import annotations
 
-from dateutil.parser import ParserError
+import pandas
 from redcaputilities.string_cleanup import clean_up_date, clean_up_phone
 
 from redcapmatchresolver.redcap_appointment import REDCapAppointment
@@ -30,19 +30,21 @@ class REDCapPatient:
         "PHONE_NUMBER": "HOME_PHONE",
         "DOB": "BIRTH_DATE",
     }
-    __phone_keywords = ["PHONE"]
+    __phone_keywords = ["PHONE", "HOME_PHONE", "WORK_PHONE"]
 
-    def __init__(self, headers: list, row: tuple, clinics: REDCapClinic) -> None:
+    def __init__(self, df: pandas.DataFrame, clinics: REDCapClinic) -> None:
         #   Build a dictionary, where the keys come from 'headers' and
         #   the values come from 'row'. Save room for study_id field.
-        self.__record = {"STUDY_ID": None}
+        if not isinstance(df, pandas.DataFrame):
+            raise TypeError("Argument 'df' is not the expected DataFrame.")
+
+        #   Make all column names uppercase.
+        df.columns = map(str.upper, df.columns)
+        self.__df = df
+        self.__cleanup()
 
         self.__appointments = []
-
-        if not isinstance(headers, list) or len(headers) == 0:
-            raise TypeError("Input 'headers' can't be empty.")
-
-        self.__build_record(headers, row, clinics)
+        self.__find_appointments(clinics)
 
     def appointments(self) -> list:
         """Returns the list stored in self.__appointments.
@@ -91,47 +93,24 @@ class REDCapPatient:
                 ]
                 return best_appointment[0]
 
-    def __build_record(self, headers: list, row: tuple, clinics: REDCapClinic) -> None:
-        #   Don't want confusion about upper/lower case. Let's set all to uppercase now.
-        headers = [name.upper() for name in headers]
+    def __cleanup(self) -> None:
+        """Cleans up the phone and date fields."""
+        columns_list = list(self.__df.columns)
+        date_column_names = [col for col in columns_list if col in self.__dob_keywords]
 
-        #   Which header fields are NOT part of the appointment?
-        (
-            self.__non_appointment_fields,
-            appointment_fields,
-        ) = REDCapPatient.__not_appointment_fields(headers)
-        appointment_data = []  # type: ignore[var-annotated]
+        for date_column_name in date_column_names:
+            self.__df[date_column_name] = self.__df[date_column_name].apply(
+                clean_up_date
+            )
 
-        for index, field_name in enumerate(headers):
-            if not isinstance(row, tuple) or len(row) <= index:
-                #   Then this field is not present in the 'row' structure.
-                #   Leave a blank.
-                if field_name in appointment_fields:
-                    appointment_data.append(None)
-                else:
-                    self.__record[field_name] = ""
-            else:
-                if field_name in appointment_fields:
-                    appointment_data.append(row[index])
-                else:
-                    if any(word in field_name for word in self.__phone_keywords):
-                        self.__record[field_name] = str(clean_up_phone(row[index]))
-                    else:
-                        self.__record[field_name] = row[index]
+        phone_column_names = [
+            col for col in columns_list if col in self.__phone_keywords
+        ]
 
-        if appointment_fields and appointment_data:
-            try:
-                appointment_object = REDCapAppointment(
-                    appointment_headers=appointment_fields,
-                    appointment_info=appointment_data,
-                    clinics=clinics,
-                )
-
-                if appointment_object.valid():
-                    self.__appointments.append(appointment_object)
-            except (ParserError, TypeError):
-                # Then there is no valid Appointment object.
-                pass
+        for phone_column_name in phone_column_names:
+            self.__df[phone_column_name] = self.__df[phone_column_name].apply(
+                clean_up_phone
+            )
 
     def csv(self, headers: list | None = None) -> str:
         """Creates one line summary of patient record, suitable for a .csv file.
@@ -144,61 +123,28 @@ class REDCapPatient:
         -------
         csv_summary : str
         """
-        single_appointment = None
+        return self.__df.to_csv()
 
-        if self.__appointments and len(self.__appointments) > 0:
-            single_appointment = self.best_appointment()
+    def __find_appointments(self, clinics: REDCapClinic) -> None:
+        if not isinstance(clinics, REDCapClinic):
+            raise TypeError(
+                "Argument 'clinics' is not the expected REDCapClinic object."
+            )
 
-        if not isinstance(headers, list) or len(headers) == 0:
-            headers = list(self.__record.keys())
+        #   Which columns are NOT part of the appointment?
+        (
+            self.__non_appointment_fields,
+            appointment_fields,
+        ) = REDCapPatient.__not_appointment_fields(list(self.__df.columns))
 
-        headers = [name.upper() for name in headers]
+        df_subset = self.__df[appointment_fields]
+        appointment_object = REDCapAppointment(
+            df=df_subset,
+            clinics=clinics,
+        )
 
-        #   Which of these fields need special appointment handling?
-        #   (Need to do this again here because the output fields are different
-        #   from the ones with which the object was instantiated.)
-        appointment_fields = REDCapAppointment.applicable_header_fields(headers)
-        values_list = []
-
-        for field in headers:
-            value: int | str | None = None
-
-            if field in self.__record:
-                value = self.__record[field]
-            elif field in appointment_fields and single_appointment:
-                value = single_appointment.value(field)
-            elif field in self.__fields_dict:
-                translated_field = self.__fields_dict[field]
-
-                if translated_field in self.__record:
-                    value = self.__record[translated_field]
-
-            if field in self.__dob_keywords:
-                #   Special date of birth formatting.
-                #   Doing this clean up after the above means we don't have to separately
-                #    handle whether field is already part of the self.__record ('BIRTH_DATE')
-                #    or needs to be translated first ('DOB').
-                value = clean_up_date(value)
-
-            #   Stuff an empty into value if it's None.
-            if not value:
-                value = ""
-
-            #   Get rid of stray commas that will look like new fields.
-            value_as_str = str(value)
-            values_list.append(value_as_str.replace(",", ""))
-
-        #   Eliminate Nones, NULLS from the list.
-        values_list = ["" if v is None else v for v in values_list]
-        values_list = ["" if v == "NULL" else v for v in values_list]
-        values_list = ["" if v == " " else v for v in values_list]
-
-        #   Join with comma and space.
-        csv_summary = ",".join(values_list)
-
-        #   Get rid of double-space empties.
-        csv_summary = csv_summary.replace("  ", " ").replace(", ,", ",,")
-        return csv_summary
+        if appointment_object.valid():
+            self.__appointments.append(appointment_object)
 
     def merge(self, other_patient: REDCapPatient) -> None:
         """Combines the appointments from two copies of the same patient.
@@ -227,12 +173,7 @@ class REDCapPatient:
         return non_appointment_fields, appointment_fields
 
     def __repr__(self) -> str:  # pragma: no cover
-        nice_summary = ""
-
-        for key, value in self.__record.items():
-            nice_summary += f"{key}: {value}" + "\n"
-
-        return nice_summary
+        return self.__df.to_markdown()
 
     def same_as(self, other_patient: REDCapPatient) -> bool:
         """Tests to see if two REDCapPatient objects match in every field EXCEPT appointments.
@@ -263,17 +204,13 @@ class REDCapPatient:
         """
         if study_id is not None:
             if isinstance(study_id, str):
-                self.__record["STUDY_ID"] = study_id
+                self.__df["STUDY_ID"] = study_id
             elif isinstance(study_id, int):
-                self.__record["STUDY_ID"] = str(study_id)
+                self.__df["STUDY_ID"] = str(study_id)
 
+    # https: // stackoverflow.com / a / 60202636 / 20241849
     def __str__(self) -> str:
-        nice_summary = ""
-
-        for key, value in self.__record.items():
-            nice_summary += f"{key}: {value}" + "\n"
-
-        return nice_summary
+        return self.__df.to_markdown()
 
     def value(self, field: str) -> str | None:
         """Look up a value from the dictionary _record.
@@ -286,7 +223,8 @@ class REDCapPatient:
         -------
         value : str Value of the property, or None if it's missing.
         """
-        if field in self.__record:
-            return str(self.__record[field])
+        if field in self.__df:
+            this_value = self.__df[field][0]
+            return str(this_value)
 
         return None
