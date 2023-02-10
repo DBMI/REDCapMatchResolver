@@ -18,91 +18,63 @@ def fixture_clinics() -> REDCapClinic:
 
 
 def test_appointment_corner_cases(
-    appointment_headers, appointment_record_slashes, appointment_datetime
+        appointment_df,
+        appointment_df_malformed,
+        appointment_df_slashes
 ):
     #   Make it look up clinics by itself.
     appointment_obj = REDCapAppointment(
-        appointment_headers=appointment_headers,
-        appointment_info=appointment_record_slashes,
+        df=appointment_df
     )
     assert isinstance(appointment_obj, REDCapAppointment)
-    assert appointment_obj.date() == appointment_datetime
+    assert appointment_obj.date() == datetime.strptime(appointment_df.APPT_DATE_TIME[0], "%Y-%m-%d %H:%M:%S")
+
+    appointment_obj = REDCapAppointment(
+        df=appointment_df_malformed
+    )
+    assert isinstance(appointment_obj, REDCapAppointment)
+    assert not appointment_obj.valid()
+
+    #   Handle dd/mm/yyyy format.
+    appointment_obj = REDCapAppointment(
+        df=appointment_df_slashes
+    )
+    assert isinstance(appointment_obj, REDCapAppointment)
+    assert appointment_obj.date() == datetime.strptime(appointment_df.APPT_DATE_TIME[0], "%Y-%m-%d %H:%M:%S")
 
 
-def test_appointment_errors(
-    appointment_headers,
-    appointment_record,
-    appointment_record_partial,
-    appointment_record_malformed,
-    clinics,
-):
+def test_appointment_errors(clinics):
     with pytest.raises(TypeError):
         REDCapAppointment(
-            appointment_headers=None,
-            appointment_info=appointment_record,
-            clinics=clinics,
-        )
-
-    with pytest.raises(TypeError):
-        REDCapAppointment(
-            appointment_headers=1979,
-            appointment_info=appointment_record,
-            clinics=clinics,
-        )
-
-    with pytest.raises(TypeError):
-        REDCapAppointment(
-            appointment_headers=appointment_headers,
-            appointment_info=None,
+            df=None,
             clinics=clinics,
         )
 
     with pytest.raises(TypeError):
         REDCapAppointment(
-            appointment_headers=appointment_headers,
-            appointment_info=1979,
+            df=1979,
             clinics=clinics,
         )
 
-    appointment_headers_modified = appointment_headers.copy()
-    appointment_headers_modified[0] = 1979
+
+def test_appointment_fields(appointment_fields):
+    # Test the ability of the REDCapAppointment class to determine
+    # which record fields pertain to an appointment.
+    possible_fields = appointment_fields.copy()
+    possible_fields.extend(["NAME", "CITY", "ZIP", "PHONE"])
+    appt_fields = REDCapAppointment.applicable_header_fields(headers=possible_fields)
+    assert isinstance(appt_fields, list)
+    assert appt_fields == appointment_fields
 
     with pytest.raises(TypeError):
-        REDCapAppointment(
-            appointment_headers=appointment_headers_modified,
-            appointment_info=appointment_record,
-            clinics=clinics,
-        )
-
-    with pytest.raises(TypeError):
-        #   Remove last item from appointment_record, to cause length mismatch error.
-        REDCapAppointment(
-            appointment_headers=appointment_headers,
-            appointment_info=appointment_record[:-1],
-            clinics=clinics,
-        )
-
-    with pytest.raises(ParserError):
-        REDCapAppointment(
-            appointment_headers=appointment_headers,
-            appointment_info=appointment_record_partial,
-            clinics=clinics,
-        )
-
-    with pytest.raises(ParserError):
-        REDCapAppointment(
-            appointment_headers=appointment_headers,
-            appointment_info=appointment_record_malformed,
-            clinics=clinics,
-        )
+        REDCapAppointment.applicable_header_fields(headers=[])
 
 
 def test_appointment_instantiation(
-    appointment_headers, appointment_record, appointment_datetime, clinics
+    appointment_df, clinics
 ):
     appointment_obj = REDCapAppointment(
-        appointment_headers=appointment_headers,
-        appointment_info=appointment_record,
+        df=appointment_df,
         clinics=clinics,
     )
     assert isinstance(appointment_obj, REDCapAppointment)
@@ -110,7 +82,7 @@ def test_appointment_instantiation(
     #   Can we parse the date/time from the REDCapAppointment object?
     extracted_datetime = appointment_obj.date()
     assert isinstance(extracted_datetime, datetime)
-    assert extracted_datetime == appointment_datetime
+    assert extracted_datetime == datetime.strptime(appointment_df.APPT_DATE_TIME[0], "%Y-%m-%d %H:%M:%S")
 
     #   Test .csv output.
     csv_summary = appointment_obj.csv()
@@ -138,16 +110,11 @@ def test_appointment_instantiation(
 
 
 def test_patient_appointments(
-    patient_headers, patient_record_1, patient_record_2, patient_record_5, clinics
+    patient_headers, patient_record_no_appt, patient_record_1, patient_record_2, patient_record_5, clinics
 ):
     #   Patient with NO appointments.
-    patient_record_no_appointments_list = list(patient_record_1)
-    patient_record_no_appointments_list = patient_record_no_appointments_list[
-        : len(patient_record_no_appointments_list) - 2
-    ]
     patient_with_no_appointments = REDCapPatient(
-        headers=patient_headers,
-        row=tuple(patient_record_no_appointments_list),
+        df=patient_record_no_appt,
         clinics=clinics,
     )
     assert isinstance(patient_with_no_appointments, REDCapPatient)
@@ -158,7 +125,7 @@ def test_patient_appointments(
     assert best_appointment is None
 
     patient_obj_1 = REDCapPatient(
-        headers=patient_headers, row=patient_record_1, clinics=clinics
+        df=patient_record_1, clinics=clinics
     )
     assert isinstance(patient_obj_1, REDCapPatient)
 
@@ -168,7 +135,7 @@ def test_patient_appointments(
 
     #   Same patient, different appointments.
     patient_obj_2 = REDCapPatient(
-        headers=patient_headers, row=patient_record_2, clinics=clinics
+        df=patient_record_2, clinics=clinics
     )
     assert isinstance(patient_obj_2, REDCapPatient)
 
@@ -186,7 +153,7 @@ def test_patient_appointments(
 
     #   Two appointments at the same clinic. Best is earliest.
     patient_obj_5 = REDCapPatient(
-        headers=patient_headers, row=patient_record_5, clinics=clinics
+        df=patient_record_5, clinics=clinics
     )
     assert isinstance(patient_obj_5, REDCapPatient)
     patient_obj_2.merge(patient_obj_5)
@@ -199,67 +166,62 @@ def test_patient_appointments(
     )
 
 
-def test_appointment_fields(appointment_fields):
-    # Test the ability of the REDCapAppointment class to determine
-    # which record fields pertain to an appointment.
-    possible_fields = appointment_fields.copy()
-    possible_fields.extend(["NAME", "CITY", "ZIP", "PHONE"])
-    appt_fields = REDCapAppointment.applicable_header_fields(headers=possible_fields)
-    assert isinstance(appt_fields, list)
-    assert appt_fields == appointment_fields
-
-    with pytest.raises(TypeError):
-        REDCapAppointment.applicable_header_fields(headers=[])
-
-
 def test_patient_corner_cases(
-    patient_headers,
-    patient_record_1,
     patient_record_4,
     patient_record_6,
     patient_record_7,
+    patient_record_no_appt,
     clinics,
 ):
-    patient_obj = REDCapPatient(headers=patient_headers, row=None, clinics=clinics)
-    assert isinstance(patient_obj, REDCapPatient)
-    assert patient_obj.best_appointment() is None
-
-    #   Exercise more of __clean_up_phone method.
     patient_obj = REDCapPatient(
-        headers=patient_headers, row=patient_record_4, clinics=clinics
+        df=patient_record_4, clinics=clinics
+    )
+
+    patient_csv_description = patient_obj.csv()
+    assert isinstance(patient_csv_description, str)
+    assert patient_obj.value('BIRTH_DATE') == "1731-06-02"
+
+    patient_obj = REDCapPatient(
+        df=patient_record_6, clinics=clinics
+    )
+
+    patient_csv_description = patient_obj.csv()
+    assert isinstance(patient_csv_description, str)
+    assert patient_obj.value('BIRTH_DATE') == ""
+
+    patient_obj = REDCapPatient(
+        df=patient_record_7, clinics=clinics
     )
 
     #   Exercise more of __clean_up_date method.
     patient_csv_description = patient_obj.csv()
     assert isinstance(patient_csv_description, str)
+    assert patient_obj.value('BIRTH_DATE') == ""
 
+    #   Exercise no-appointments case.
     patient_obj = REDCapPatient(
-        headers=patient_headers, row=patient_record_6, clinics=clinics
+        df=patient_record_no_appt, clinics=clinics
     )
+    assert isinstance(patient_obj, REDCapPatient)
+    assert len(patient_obj.appointments()) == 0
 
-    #   Exercise more of __clean_up_date method.
+
+def test_patient_errors(patient_record_1, clinics):
     with pytest.raises(TypeError):
-        patient_obj.csv()
+        REDCapPatient(df=None, clinics=clinics)
 
-    patient_obj = REDCapPatient(
-        headers=patient_headers, row=patient_record_7, clinics=clinics
-    )
-
-    #   Exercise more of __clean_up_date method.
-    with pytest.raises(ParserError):
-        patient_obj.csv()
-
-
-def test_patient_errors(patient_headers, patient_record_1, clinics):
     with pytest.raises(TypeError):
-        REDCapPatient(headers=None, row=patient_record_1, clinics=clinics)
+        REDCapPatient(
+            df=patient_record_1,
+            clinics=1979,
+        )
 
 
 def test_patient_instantiation(
-    patient_headers, patient_record_1, export_fields, clinics
+    patient_record_1, export_fields, clinics
 ):
     patient_obj = REDCapPatient(
-        headers=patient_headers, row=patient_record_1, clinics=clinics
+        df=patient_record_1, clinics=clinics
     )
     assert isinstance(patient_obj, REDCapPatient)
     assert patient_obj is not None and isinstance(patient_obj, REDCapPatient)
@@ -291,13 +253,13 @@ def test_patient_merger(
     patient_headers, patient_record_1, patient_record_2, patient_record_3, clinics
 ):
     patient_obj_1 = REDCapPatient(
-        headers=patient_headers, row=patient_record_1, clinics=clinics
+        df=patient_record_1, clinics=clinics
     )
     assert isinstance(patient_obj_1, REDCapPatient)
 
     #   Same patient, different appointments.
     patient_obj_2 = REDCapPatient(
-        headers=patient_headers, row=patient_record_2, clinics=clinics
+        df=patient_record_2, clinics=clinics
     )
     assert isinstance(patient_obj_2, REDCapPatient)
     assert patient_obj_1.same_as(patient_obj_2)
@@ -309,7 +271,7 @@ def test_patient_merger(
 
     #   Different patients.
     patient_obj_3 = REDCapPatient(
-        headers=patient_headers, row=patient_record_3, clinics=clinics
+        df=patient_record_3, clinics=clinics
     )
     assert isinstance(patient_obj_3, REDCapPatient)
     assert not patient_obj_1.same_as(patient_obj_3)
