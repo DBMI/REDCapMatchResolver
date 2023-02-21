@@ -1,6 +1,6 @@
 from typing import Union
 
-import pandas
+import pandas  # type: ignore[import]
 
 from redcapmatchresolver.redcap_appointment import (
     REDCapAppointment as REDCapAppointment,
@@ -28,4 +28,6 @@ class REDCapPatient:
         pass
     def same_as(self, other_patient: REDCapPatient) -> bool: ...
     def set_study_id(self, study_id: Union[int, str]) -> None: ...
+    def to_df(self) -> pandas.DataFrame:
+        pass
     def value(self, field: str) -> Union[str, None]: ...

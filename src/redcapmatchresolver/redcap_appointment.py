@@ -136,6 +136,17 @@ class REDCapAppointment:
         """
         return self.__priority
 
+    def to_df(self) -> pandas.DataFrame:
+        """Converts Appointment object to a pandas.DataFrame.
+
+        Returns
+        -------
+        df : pandas.DataFrame
+        """
+        d = {"department": self.__department, "date": str(self.date())}
+        df = pandas.DataFrame(d, index=[0])
+        return df
+
     def valid(self) -> bool:
         """Tests to see if department, date both available.
 
@@ -160,6 +171,9 @@ class REDCapAppointment:
         """
         if not isinstance(field, str) or len(field) == 0:
             return ""
+
+        if "datetime" in field.lower():
+            return self.__date + " " + self.__time
 
         if "date" in field.lower():
             return self.__date

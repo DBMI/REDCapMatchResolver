@@ -8,8 +8,7 @@ import pytest
 
 @pytest.fixture(name="appointment_df")
 def fixture_appointment_df() -> pandas.DataFrame:
-    d = {"DEPARTMENT_NAME": "LWC CARDIOLOGY",
-         "APPT_DATE_TIME": "2022-12-01 10:40:00"}
+    d = {"DEPARTMENT_NAME": "LWC CARDIOLOGY", "APPT_DATE_TIME": "2022-12-01 10:40:00"}
     return pandas.DataFrame(d, index=[0])
 
 
@@ -21,8 +20,7 @@ def fixture_appointment_df_malformed() -> pandas.DataFrame:
 
 @pytest.fixture(name="appointment_df_slashes")
 def fixture_appointment_record_slashes() -> pandas.DataFrame:
-    d = {"DEPARTMENT_NAME": "LWC CARDIOLOGY",
-         "APPT_DATE_TIME": "12/01/2022 10:40:00"}
+    d = {"DEPARTMENT_NAME": "LWC CARDIOLOGY", "APPT_DATE_TIME": "12/01/2022 10:40:00"}
     return pandas.DataFrame(d, index=[0])
 
 
@@ -165,176 +163,220 @@ def fixture_patient_headers() -> list:
     return headers
 
 
+#   For use with .csv() method. Can we rearrange and downselect the .csv output?
+@pytest.fixture(name="patient_headers_scrambled")
+def fixture_patient_headers_scrambled() -> list:
+    headers = """
+        MRN
+        PAT_LAST_NAME
+        PAT_FIRST_NAME
+        DEPARTMENT_NAME
+        APPT_DATE_TIME
+        """.split()
+    return headers
+
+
 @pytest.fixture(name="patient_record_1")
 def fixture_patient_record_1() -> pandas.DataFrame:
-    d = {'PAT_ID':"1234567",
-        'MRN':"2345678",
-        'EPIC_INTERNAL_ID':"E987654321",
-        'PAT_FIRST_NAME':"George",
-        'PAT_LAST_NAME':"Washington",
-        'ADD_LINE_1':"1600 Pennsylvania Ave. NW",
-        'ADD_LINE_2':"Null",
-        'CITY':"Washington",
-        'STATE_ABBR':"DC",
-        'ZIP':"20500",
-        'HOME_PHONE':"NULL",
-        'WORK_PHONE':"202-456-11111",
-        'EMAIL_ADDRESS':"george.washington@whitehouse.gov",
-        'BIRTH_DATE':"1732-02-22",
-        'DEATH_DATE':"1799-12-14",
-        'DEPARTMENT_NAME':"UPC DRAW STATION",
-        'APPT_DATE_TIME':"2022-12-26 10:11:12"}
+    d = {
+        "PAT_ID": "1234567",
+        "MRN": "2345678",
+        "EPIC_INTERNAL_ID": "E987654321",
+        "PAT_FIRST_NAME": "George",
+        "PAT_LAST_NAME": "Washington",
+        "ADD_LINE_1": "1600 Pennsylvania Ave. NW",
+        "ADD_LINE_2": "Null",
+        "CITY": "Washington",
+        "STATE_ABBR": "DC",
+        "ZIP": "20500",
+        "HOME_PHONE": "NULL",
+        "WORK_PHONE": "202-456-11111",
+        "EMAIL_ADDRESS": "george.washington@whitehouse.gov",
+        "BIRTH_DATE": "1732-02-22",
+        "DEATH_DATE": "1799-12-14",
+        "DEPARTMENT_NAME": "UPC DRAW STATION",
+        "APPT_DATE_TIME": "2022-12-26 10:11:12",
+    }
     return pandas.DataFrame(d, index=[0])
 
 
 @pytest.fixture(name="patient_record_2")
 def fixture_patient_record_2() -> pandas.DataFrame:
-    d = {'PAT_ID':"1234567",
-        'MRN':"2345678",
-        'EPIC_INTERNAL_ID':"E987654321",
-        'PAT_FIRST_NAME':"George",
-        'PAT_LAST_NAME':"Washington",
-        'ADD_LINE_1':"1600 Pennsylvania Ave. NW",
-        'ADD_LINE_2':"Null",
-        'CITY':"Washington",
-        'STATE_ABBR':"DC",
-        'ZIP':"20500",
-        'HOME_PHONE':"NULL",
-        'WORK_PHONE':"202-456-11111",
-        'EMAIL_ADDRESS':"george.washington@whitehouse.gov",
-        'BIRTH_DATE':"1732-02-22",
-        'DEATH_DATE':"1799-12-14",
-        'DEPARTMENT_NAME':"UPC INTERNAL MEDICINE",
-        'APPT_DATE_TIME':"2022-12-25 11:12:13"}
+    d = {
+        "PAT_ID": "1234567",
+        "MRN": "2345678",
+        "EPIC_INTERNAL_ID": "E987654321",
+        "PAT_FIRST_NAME": "George",
+        "PAT_LAST_NAME": "Washington",
+        "ADD_LINE_1": "1600 Pennsylvania Ave. NW",
+        "ADD_LINE_2": "Null",
+        "CITY": "Washington",
+        "STATE_ABBR": "DC",
+        "ZIP": "20500",
+        "HOME_PHONE": "NULL",
+        "WORK_PHONE": "202-456-11111",
+        "EMAIL_ADDRESS": "george.washington@whitehouse.gov",
+        "BIRTH_DATE": "1732-02-22",
+        "DEATH_DATE": "1799-12-14",
+        "DEPARTMENT_NAME": "UPC INTERNAL MEDICINE",
+        "APPT_DATE_TIME": "2022-12-25 11:12:13",
+    }
     return pandas.DataFrame(d, index=[0])
+
+
+@pytest.fixture(name="patient_records_1_2_merged")
+def fixture_patient_records_1_2_merged() -> str:
+    return """,PAT_ID,MRN,EPIC_INTERNAL_ID,PAT_FIRST_NAME,PAT_LAST_NAME,ADD_LINE_1,ADD_LINE_2,CITY,STATE_ABBR,ZIP,HOME_PHONE,WORK_PHONE,EMAIL_ADDRESS,BIRTH_DATE,DEATH_DATE,DEPARTMENT_NAME,APPT_DATE_TIME
+0,1234567,2345678,E987654321,George,Washington,1600 Pennsylvania Ave. NW,Null,Washington,DC,20500,,202-456-11111,george.washington@whitehouse.gov,1732-02-22,1799-12-14,UPC DRAW STATION,2022-12-26 10:11:12
+"""
+
+
+@pytest.fixture(name="patient_records_1_2_merged_limited_cols")
+def fixture_patient_records_1_2_merged_limited_cols() -> str:
+    return """,MRN,PAT_LAST_NAME,PAT_FIRST_NAME,DEPARTMENT_NAME,APPT_DATE_TIME
+0,2345678,Washington,George,UPC DRAW STATION,2022-12-26 10:11:12
+"""
 
 
 @pytest.fixture(name="patient_record_3")
 def fixture_patient_record_3() -> pandas.DataFrame:
-    d = {'PAT_ID':"2345678",
-        'MRN':"3456789",
-        'EPIC_INTERNAL_ID':"E876543210",
-        'PAT_FIRST_NAME':"Martha",
-        'PAT_LAST_NAME':"Washington",
-        'ADD_LINE_1':"1600 Pennsylvania Ave. NW",
-        'ADD_LINE_2':"Null",
-        'CITY':"Washington",
-        'STATE_ABBR':"DC",
-        'ZIP':"20500",
-        'HOME_PHONE':"000-000-0000",
-        'WORK_PHONE':"1-202-456-1111",
-        'EMAIL_ADDRESS':"marthae.washington@whitehouse.gov",
-        'BIRTH_DATE':"1731-06-02",
-        'DEATH_DATE':"1802-05-22",
-        'DEPARTMENT_NAME':"UPC ORTHOPAEDICS",
-        'APPT_DATE_TIME':"2022-12-27 13:14:15"}
+    d = {
+        "PAT_ID": "2345678",
+        "MRN": "3456789",
+        "EPIC_INTERNAL_ID": "E876543210",
+        "PAT_FIRST_NAME": "Martha",
+        "PAT_LAST_NAME": "Washington",
+        "ADD_LINE_1": "1600 Pennsylvania Ave. NW",
+        "ADD_LINE_2": "Null",
+        "CITY": "Washington",
+        "STATE_ABBR": "DC",
+        "ZIP": "20500",
+        "HOME_PHONE": "000-000-0000",
+        "WORK_PHONE": "1-202-456-1111",
+        "EMAIL_ADDRESS": "marthae.washington@whitehouse.gov",
+        "BIRTH_DATE": "1731-06-02",
+        "DEATH_DATE": "1802-05-22",
+        "DEPARTMENT_NAME": "UPC ORTHOPAEDICS",
+        "APPT_DATE_TIME": "2022-12-27 13:14:15",
+    }
     return pandas.DataFrame(d, index=[0])
 
 
 @pytest.fixture(name="patient_record_4")
 def fixture_patient_record_4() -> pandas.DataFrame:
-    d = {'PAT_ID': "2345678",
-         'MRN': "3456789",
-         'EPIC_INTERNAL_ID': "E876543210",
-         'PAT_FIRST_NAME': "Martha",
-         'PAT_LAST_NAME': "Washington",
-         'ADD_LINE_1': "1600 Pennsylvania Ave. NW",
-         'ADD_LINE_2': "Null",
-         'CITY': "Washington",
-         'STATE_ABBR': "DC",
-         'ZIP': "20500",
-         'HOME_PHONE': "NONE",
-         'WORK_PHONE': "1-202-456-1111",
-         'EMAIL_ADDRESS': "marthae.washington@whitehouse.gov",
-         'BIRTH_DATE': "06/02/1731",
-         'DEATH_DATE': "1802-05-22",
-         'DEPARTMENT_NAME': "UPC ORTHOPAEDICS",
-         'APPT_DATE_TIME': "2022-12-27 13:14:15"}
+    d = {
+        "PAT_ID": "2345678",
+        "MRN": "3456789",
+        "EPIC_INTERNAL_ID": "E876543210",
+        "PAT_FIRST_NAME": "Martha",
+        "PAT_LAST_NAME": "Washington",
+        "ADD_LINE_1": "1600 Pennsylvania Ave. NW",
+        "ADD_LINE_2": "Null",
+        "CITY": "Washington",
+        "STATE_ABBR": "DC",
+        "ZIP": "20500",
+        "HOME_PHONE": "NONE",
+        "WORK_PHONE": "1-202-456-1111",
+        "EMAIL_ADDRESS": "marthae.washington@whitehouse.gov",
+        "BIRTH_DATE": "06/02/1731",
+        "DEATH_DATE": "1802-05-22",
+        "DEPARTMENT_NAME": "UPC ORTHOPAEDICS",
+        "APPT_DATE_TIME": "2022-12-27 13:14:15",
+    }
     return pandas.DataFrame(d, index=[0])
 
 
 @pytest.fixture(name="patient_record_5")
 def fixture_patient_record_5() -> pandas.DataFrame:
-    d = {'PAT_ID':"1234567",
-        'MRN':"2345678",
-        'EPIC_INTERNAL_ID':"E987654321",
-        'PAT_FIRST_NAME':"George",
-        'PAT_LAST_NAME':"Washington",
-        'ADD_LINE_1':"1600 Pennsylvania Ave. NW",
-        'ADD_LINE_2':"Null",
-        'CITY':"Washington",
-        'STATE_ABBR':"DC",
-        'ZIP':"20500",
-        'HOME_PHONE':"NULL",
-        'WORK_PHONE':"202-456-11111",
-        'EMAIL_ADDRESS':"george.washington@whitehouse.gov",
-        'BIRTH_DATE':"1732-02-22",
-        'DEATH_DATE':"1799-12-14",
-        'DEPARTMENT_NAME':"UPC INTERNAL MEDICINE",
-        'APPT_DATE_TIME':"2022-12-25 11:12:13"}
+    d = {
+        "PAT_ID": "1234567",
+        "MRN": "2345678",
+        "EPIC_INTERNAL_ID": "E987654321",
+        "PAT_FIRST_NAME": "George",
+        "PAT_LAST_NAME": "Washington",
+        "ADD_LINE_1": "1600 Pennsylvania Ave. NW",
+        "ADD_LINE_2": "Null",
+        "CITY": "Washington",
+        "STATE_ABBR": "DC",
+        "ZIP": "20500",
+        "HOME_PHONE": "NULL",
+        "WORK_PHONE": "202-456-11111",
+        "EMAIL_ADDRESS": "george.washington@whitehouse.gov",
+        "BIRTH_DATE": "1732-02-22",
+        "DEATH_DATE": "1799-12-14",
+        "DEPARTMENT_NAME": "UPC INTERNAL MEDICINE",
+        "APPT_DATE_TIME": "2022-12-25 14:15:16",
+    }
     return pandas.DataFrame(d, index=[0])
 
 
 @pytest.fixture(name="patient_record_6")
 def fixture_patient_record_6() -> pandas.DataFrame:
-    d = {'PAT_ID':"1234567",
-        'MRN':"2345678",
-        'EPIC_INTERNAL_ID':"E987654321",
-        'PAT_FIRST_NAME':"George",
-        'PAT_LAST_NAME':"Washington",
-        'ADD_LINE_1':"1600 Pennsylvania Ave. NW",
-        'ADD_LINE_2':"Null",
-        'CITY':"Washington",
-        'STATE_ABBR':"DC",
-        'ZIP':"20500",
-        'HOME_PHONE':"NULL",
-        'WORK_PHONE':"202-456-11111",
-        'EMAIL_ADDRESS':"george.washington@whitehouse.gov",
-        'BIRTH_DATE':None,
-        'DEATH_DATE':"1799-12-14",
-        'DEPARTMENT_NAME':"UPC INTERNAL MEDICINE",
-        'APPT_DATE_TIME':"2022-12-25 11:12:13"}
+    d = {
+        "PAT_ID": "1234567",
+        "MRN": "2345678",
+        "EPIC_INTERNAL_ID": "E987654321",
+        "PAT_FIRST_NAME": "George",
+        "PAT_LAST_NAME": "Washington",
+        "ADD_LINE_1": "1600 Pennsylvania Ave. NW",
+        "ADD_LINE_2": "Null",
+        "CITY": "Washington",
+        "STATE_ABBR": "DC",
+        "ZIP": "20500",
+        "HOME_PHONE": "NULL",
+        "WORK_PHONE": "202-456-11111",
+        "EMAIL_ADDRESS": "george.washington@whitehouse.gov",
+        "BIRTH_DATE": None,
+        "DEATH_DATE": "1799-12-14",
+        "DEPARTMENT_NAME": "UPC INTERNAL MEDICINE",
+        "APPT_DATE_TIME": "2022-12-25 11:12:13",
+    }
     return pandas.DataFrame(d, index=[0])
 
 
 @pytest.fixture(name="patient_record_7")
 def fixture_patient_record_7() -> pandas.DataFrame:
-    d = {'PAT_ID':"1234567",
-        'MRN':"2345678",
-        'EPIC_INTERNAL_ID':"E987654321",
-        'PAT_FIRST_NAME':"George",
-        'PAT_LAST_NAME':"Washington",
-        'ADD_LINE_1':"1600 Pennsylvania Ave. NW",
-        'ADD_LINE_2':"Null",
-        'CITY':"Washington",
-        'STATE_ABBR':"DC",
-        'ZIP':"20500",
-        'HOME_PHONE':"NULL",
-        'WORK_PHONE':"202-456-11111",
-        'EMAIL_ADDRESS':"george.washington@whitehouse.gov",
-        'BIRTH_DATE':"1732A-02-22",
-        'DEATH_DATE':"1799-12-14",
-        'DEPARTMENT_NAME':"UPC INTERNAL MEDICINE",
-        'APPT_DATE_TIME':"2022-12-25 11:12:13"}
+    d = {
+        "PAT_ID": "1234567",
+        "MRN": "2345678",
+        "EPIC_INTERNAL_ID": "E987654321",
+        "PAT_FIRST_NAME": "George",
+        "PAT_LAST_NAME": "Washington",
+        "ADD_LINE_1": "1600 Pennsylvania Ave. NW",
+        "ADD_LINE_2": "Null",
+        "CITY": "Washington",
+        "STATE_ABBR": "DC",
+        "ZIP": "20500",
+        "HOME_PHONE": "NULL",
+        "WORK_PHONE": "202-456-11111",
+        "EMAIL_ADDRESS": "george.washington@whitehouse.gov",
+        "BIRTH_DATE": "1732A-02-22",
+        "DEATH_DATE": "1799-12-14",
+        "DEPARTMENT_NAME": "UPC INTERNAL MEDICINE",
+        "APPT_DATE_TIME": "2022-12-25 11:12:13",
+    }
     return pandas.DataFrame(d, index=[0])
+
 
 @pytest.fixture(name="patient_record_no_appt")
 def fixture_patient_record_no_appt() -> pandas.DataFrame:
-    d = {'PAT_ID':"1234567",
-        'MRN':"2345678",
-        'EPIC_INTERNAL_ID':"E987654321",
-        'PAT_FIRST_NAME':"George",
-        'PAT_LAST_NAME':"Washington",
-        'ADD_LINE_1':"1600 Pennsylvania Ave. NW",
-        'ADD_LINE_2':"Null",
-        'CITY':"Washington",
-        'STATE_ABBR':"DC",
-        'ZIP':"20500",
-        'HOME_PHONE':"NULL",
-        'WORK_PHONE':"202-456-11111",
-        'EMAIL_ADDRESS':"george.washington@whitehouse.gov",
-        'BIRTH_DATE':"1732-02-22",
-        'DEATH_DATE':"1799-12-14"}
+    d = {
+        "PAT_ID": "1234567",
+        "MRN": "2345678",
+        "EPIC_INTERNAL_ID": "E987654321",
+        "PAT_FIRST_NAME": "George",
+        "PAT_LAST_NAME": "Washington",
+        "ADD_LINE_1": "1600 Pennsylvania Ave. NW",
+        "ADD_LINE_2": "Null",
+        "CITY": "Washington",
+        "STATE_ABBR": "DC",
+        "ZIP": "20500",
+        "HOME_PHONE": "NULL",
+        "WORK_PHONE": "202-456-11111",
+        "EMAIL_ADDRESS": "george.washington@whitehouse.gov",
+        "BIRTH_DATE": "1732-02-22",
+        "DEATH_DATE": "1799-12-14",
+    }
     return pandas.DataFrame(d, index=[0])
 
 
