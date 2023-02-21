@@ -43,6 +43,7 @@ def test_match_resolver_creation(temp_database) -> None:
     mr_obj = REDCapMatchResolver()
     assert isinstance(mr_obj, REDCapMatchResolver)
 
+
 def test_match_resolver_db_operation(
     temp_database, reports_directory, matching_patients, non_matching_patients
 ) -> None:

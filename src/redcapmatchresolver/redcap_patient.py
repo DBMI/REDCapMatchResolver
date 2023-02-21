@@ -123,7 +123,16 @@ class REDCapPatient:
         -------
         csv_summary : str
         """
-        return self.__df.to_csv()
+        df_including_best_appt = self.to_df()
+
+        if isinstance(headers, list):
+            #   Only request columns that are present in the dataframe.
+            headers_present = [
+                h for h in headers if h in df_including_best_appt.columns
+            ]
+            return df_including_best_appt.to_csv(columns=headers_present)
+
+        return df_including_best_appt.to_csv()
 
     def __find_appointments(self, clinics: REDCapClinic) -> None:
         if not isinstance(clinics, REDCapClinic):
@@ -211,6 +220,25 @@ class REDCapPatient:
     # https: // stackoverflow.com / a / 60202636 / 20241849
     def __str__(self) -> str:
         return self.__df.to_markdown()
+
+    def to_df(self) -> pandas.DataFrame:
+        """Converts Patient object to a pandas DataFrame, including the best appointment.
+
+        Returns
+        -------
+        df : pandas.DataFrame
+        """
+        df = self.__df
+
+        #   Substitute the best appointment for the appointment
+        #   that just happened to be assigned last.
+        best_appt = self.best_appointment()
+
+        if best_appt:
+            df["APPT_DATE_TIME"] = best_appt.value("datetime")
+            df["DEPARTMENT_NAME"] = best_appt.value("department")
+
+        return df
 
     def value(self, field: str) -> str | None:
         """Look up a value from the dictionary _record.
