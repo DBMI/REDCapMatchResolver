@@ -99,7 +99,8 @@ class REDCapPatient:
         date_column_names = [col for col in columns_list if col in self.__dob_keywords]
 
         for date_column_name in date_column_names:
-            self.__df[date_column_name] = self.__df[date_column_name].apply(
+            #   https://www.statology.org/pandas-apply-inplace/
+            self.__df.loc[:, date_column_name] = self.__df.loc[:, date_column_name].apply(
                 clean_up_date
             )
 
@@ -108,7 +109,7 @@ class REDCapPatient:
         ]
 
         for phone_column_name in phone_column_names:
-            self.__df[phone_column_name] = self.__df[phone_column_name].apply(
+            self.__df.loc[:, phone_column_name] = self.__df.loc[:, phone_column_name].apply(
                 clean_up_phone
             )
 
