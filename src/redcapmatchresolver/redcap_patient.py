@@ -16,21 +16,8 @@ class REDCapPatient:
     """
 
     #   Mark these for special handling.
-    __dob_keywords = ["BIRTH_DATE", "DOB"]
-
-    #   We create the patient object with one set of field names,
-    #   but may wish to retrieve the values with slightly different names.
-    __fields_dict = {
-        "FIRST_NAME": "PAT_FIRST_NAME",
-        "LAST_NAME": "PAT_LAST_NAME",
-        "STREET_ADDRESS_LINE_1": "ADD_LINE_1",
-        "STREET_ADDRESS_LINE_2": "ADD_LINE_2",
-        "STATE": "STATE_ABBR",
-        "ZIP_CODE": "ZIP",
-        "PHONE_NUMBER": "HOME_PHONE",
-        "DOB": "BIRTH_DATE",
-    }
-    __phone_keywords = ["PHONE", "HOME_PHONE", "WORK_PHONE"]
+    __dob_keywords = ["birth_date", "dob"]
+    __phone_keywords = ["phone", "home_phone", "work_phone"]
 
     def __init__(self, df: pandas.DataFrame, clinics: REDCapClinic) -> None:
         #   Build a dictionary, where the keys come from 'headers' and
@@ -38,8 +25,8 @@ class REDCapPatient:
         if not isinstance(df, pandas.DataFrame):
             raise TypeError("Argument 'df' is not the expected DataFrame.")
 
-        #   Make all column names uppercase.
-        df.columns = map(str.upper, df.columns)
+        #   Make all column names lowercase, to be REDCap compatible.
+        df.columns = map(str.lower, df.columns)
         self.__df = df
         self.__cleanup()
 
@@ -176,7 +163,7 @@ class REDCapPatient:
     @staticmethod
     def __not_appointment_fields(headers: list) -> tuple:
         appointment_fields = REDCapAppointment.applicable_header_fields(headers)
-        appointment_fields = [field.upper() for field in appointment_fields]
+        appointment_fields = [field.lower() for field in appointment_fields]
         non_appointment_fields = [
             term for term in headers if term not in appointment_fields
         ]
@@ -214,9 +201,9 @@ class REDCapPatient:
         """
         if study_id is not None:
             if isinstance(study_id, str):
-                self.__df["STUDY_ID"] = study_id
+                self.__df["study_id"] = study_id
             elif isinstance(study_id, int):
-                self.__df["STUDY_ID"] = str(study_id)
+                self.__df["study_id"] = str(study_id)
 
     # https: // stackoverflow.com / a / 60202636 / 20241849
     def __str__(self) -> str:
@@ -236,8 +223,9 @@ class REDCapPatient:
         best_appt = self.best_appointment()
 
         if best_appt:
-            df["APPT_DATE_TIME"] = best_appt.value("datetime")
-            df["DEPARTMENT_NAME"] = best_appt.value("department")
+            df["appointment_date"] = best_appt.value("date")
+            df["appointment_time"] = best_appt.value("time")
+            df["appointment_clinic"] = best_appt.value("department")
 
         return df
 

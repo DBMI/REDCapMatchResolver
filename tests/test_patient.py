@@ -23,8 +23,9 @@ def test_appointment_corner_cases(
     #   Make it look up clinics by itself.
     appointment_obj = REDCapAppointment(df=appointment_df)
     assert isinstance(appointment_obj, REDCapAppointment)
-    assert appointment_obj.date() == datetime.strptime(
-        appointment_df.APPT_DATE_TIME[0], "%Y-%m-%d %H:%M:%S"
+    full_datetime_string = appointment_df.appointment_date[0] + " " + appointment_df.appointment_time[0]
+    assert appointment_obj.date() == datetime.strptime(full_datetime_string,
+        "%Y-%m-%d %H:%M:%S",
     )
 
     appointment_obj = REDCapAppointment(df=appointment_df_malformed)
@@ -34,8 +35,8 @@ def test_appointment_corner_cases(
     #   Handle dd/mm/yyyy format.
     appointment_obj = REDCapAppointment(df=appointment_df_slashes)
     assert isinstance(appointment_obj, REDCapAppointment)
-    assert appointment_obj.date() == datetime.strptime(
-        appointment_df.APPT_DATE_TIME[0], "%Y-%m-%d %H:%M:%S"
+    assert appointment_obj.date() == datetime.strptime(full_datetime_string,
+        "%Y-%m-%d %H:%M:%S",
     )
 
 
@@ -57,7 +58,7 @@ def test_appointment_fields(appointment_fields):
     # Test the ability of the REDCapAppointment class to determine
     # which record fields pertain to an appointment.
     possible_fields = appointment_fields.copy()
-    possible_fields.extend(["NAME", "CITY", "ZIP", "PHONE"])
+    possible_fields.extend(["name", "city", "zip", "phone"])
     appt_fields = REDCapAppointment.applicable_header_fields(headers=possible_fields)
     assert isinstance(appt_fields, list)
     assert appt_fields == appointment_fields
@@ -76,8 +77,9 @@ def test_appointment_instantiation(appointment_df, clinics):
     #   Can we parse the date/time from the REDCapAppointment object?
     extracted_datetime = appointment_obj.date()
     assert isinstance(extracted_datetime, datetime)
+    full_datetime_string = appointment_df.appointment_date[0] + " " + appointment_df.appointment_time[0]
     assert extracted_datetime == datetime.strptime(
-        appointment_df.APPT_DATE_TIME[0], "%Y-%m-%d %H:%M:%S"
+        full_datetime_string, "%Y-%m-%d %H:%M:%S"
     )
 
     #   Test .csv output.
@@ -109,7 +111,6 @@ def test_appointment_instantiation(appointment_df, clinics):
 
 
 def test_patient_appointments(
-    patient_headers,
     patient_record_no_appt,
     patient_record_1,
     patient_record_2,
@@ -148,7 +149,7 @@ def test_patient_appointments(
     best_appointment = patient_obj_1.best_appointment()
     assert (
         isinstance(best_appointment, REDCapAppointment)
-        and best_appointment.value("department") == "UPC DRAW STATION"
+        and best_appointment.value("appointment_clinic") == "UPC DRAW STATION"
     )
 
     #   Two appointments at the same clinic. Best is earlier.
@@ -158,31 +159,34 @@ def test_patient_appointments(
     assert isinstance(patient_obj_2, REDCapPatient)
     assert len(patient_obj_2.appointments()) == 2
     best_appointment = patient_obj_2.best_appointment()
-    assert (
-        isinstance(best_appointment, REDCapAppointment)
-        and best_appointment.value("datetime") == "2022-12-25 11:12:13"
-    )
-    assert best_appointment.value("department") == "UPC INTERNAL MEDICINE"
+    assert isinstance(best_appointment, REDCapAppointment)
+    assert best_appointment.value("appointment_date") == "2022-12-25"
+    assert best_appointment.value("appointment_time") == "11:12:13"
+    assert best_appointment.value("appointment_clinic") == "UPC INTERNAL MEDICINE"
 
     #   Convert APPOINTMENT to dataframe.
     df = best_appointment.to_df()
     assert isinstance(df, pandas.DataFrame)
-    assert "department" in df
-    assert df["department"][0] == "UPC INTERNAL MEDICINE"
-    assert "date" in df
-    assert df["date"][0] == "2022-12-25 11:12:13"
+    assert "appointment_clinic" in df
+    assert df["appointment_clinic"].values[0] == "UPC INTERNAL MEDICINE"
+    assert "appointment_date" in df
+    assert df["appointment_date"].values[0] == "2022-12-25"
+    assert "appointment_time" in df
+    assert df["appointment_time"].values[0] == "11:12:13"
 
     #   Convert PATIENT to dataframe.
     #   Need to do this with merged appts to ensure
     #   to_df() method is using the BEST appt.
     df = patient_obj_2.to_df()
     assert isinstance(df, pandas.DataFrame)
-    assert "PAT_ID" in df
-    assert df["PAT_ID"][0] == "1234567"
-    assert "DEPARTMENT_NAME" in df
-    assert df["DEPARTMENT_NAME"][0] == "UPC INTERNAL MEDICINE"
-    assert "APPT_DATE_TIME" in df
-    assert df["APPT_DATE_TIME"][0] == "2022-12-25 11:12:13"
+    assert "study_id" in df
+    assert df["study_id"].values[0] == "1234567"
+    assert "appointment_clinic" in df
+    assert df["appointment_clinic"].values[0] == "UPC INTERNAL MEDICINE"
+    assert "appointment_date" in df
+    assert df["appointment_date"].values[0] == "2022-12-25"
+    assert "appointment_time" in df
+    assert df["appointment_time"].values[0] == "11:12:13"
 
 
 def test_patient_corner_cases(
@@ -196,20 +200,20 @@ def test_patient_corner_cases(
 
     patient_csv_description = patient_obj.csv()
     assert isinstance(patient_csv_description, str)
-    assert patient_obj.value("BIRTH_DATE") == "1731-06-02"
+    assert patient_obj.value("dob") == "1731-06-02"
 
     patient_obj = REDCapPatient(df=patient_record_6, clinics=clinics)
 
     patient_csv_description = patient_obj.csv()
     assert isinstance(patient_csv_description, str)
-    assert patient_obj.value("BIRTH_DATE") == ""
+    assert patient_obj.value("dob") == ""
 
     patient_obj = REDCapPatient(df=patient_record_7, clinics=clinics)
 
     #   Exercise more of __clean_up_date method.
     patient_csv_description = patient_obj.csv()
     assert isinstance(patient_csv_description, str)
-    assert patient_obj.value("BIRTH_DATE") == ""
+    assert patient_obj.value("dob") == ""
 
     #   Exercise no-appointments case.
     patient_obj = REDCapPatient(df=patient_record_no_appt, clinics=clinics)
@@ -218,7 +222,6 @@ def test_patient_corner_cases(
 
 
 def test_patient_csv(
-    patient_headers,
     patient_headers_scrambled,
     patient_record_1,
     patient_record_2,
@@ -268,8 +271,7 @@ def test_patient_instantiation(patient_record_1, export_fields, clinics):
     patient_obj.set_study_id(study_id=654321)
 
     #   Try retrieving values.
-    assert patient_obj.value("STUDY_ID") == "654321"
-    assert patient_obj.value("PAT_ID") == "1234567"
+    assert patient_obj.value("study_id") == "654321"
 
     #   Not there.
     assert patient_obj.value("not present") is None
@@ -284,9 +286,7 @@ def test_patient_instantiation(patient_record_1, export_fields, clinics):
     assert isinstance(patient_csv_description, str)
 
 
-def test_patient_merger(
-    patient_headers, patient_record_1, patient_record_2, patient_record_3, clinics
-):
+def test_patient_merger(patient_record_1, patient_record_2, patient_record_3, clinics):
     patient_obj_1 = REDCapPatient(df=patient_record_1, clinics=clinics)
     assert isinstance(patient_obj_1, REDCapPatient)
 
