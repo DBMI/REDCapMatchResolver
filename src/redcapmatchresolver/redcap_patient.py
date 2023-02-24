@@ -253,7 +253,7 @@ class REDCapPatient:
         value : str Value of the property, or None if it's missing.
         """
         if field in self.__df:
-            this_value = self.__df[field][0]
+            this_value = self.__df[field].values[0]
             return str(this_value)
 
         return None
