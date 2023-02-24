@@ -35,7 +35,7 @@ class REDCapAppointment:
         self.__time: Union[str, None] = None
 
         for this_header in appointment_headers:
-            this_value = df[this_header][0]
+            this_value = df[this_header].values[0]
 
             if any(
                 name in this_header.upper()

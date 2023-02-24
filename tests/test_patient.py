@@ -234,12 +234,15 @@ def test_patient_csv(
 
     patient_csv_description = patient_obj_1.csv()
     assert isinstance(patient_csv_description, str)
-    assert patient_csv_description.replace('\r', '') == patient_records_1_2_merged
+    assert patient_csv_description.replace("\r", "") == patient_records_1_2_merged
 
     #   Now rearrange the columns.
     patient_csv_description = patient_obj_1.csv(headers=patient_headers_scrambled)
     assert isinstance(patient_csv_description, str)
-    assert patient_csv_description.replace('\r', '') == patient_records_1_2_merged_limited_cols
+    assert (
+        patient_csv_description.replace("\r", "")
+        == patient_records_1_2_merged_limited_cols
+    )
 
 
 def test_patient_errors(patient_record_1, clinics):

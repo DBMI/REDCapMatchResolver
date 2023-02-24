@@ -100,18 +100,18 @@ class REDCapPatient:
 
         for date_column_name in date_column_names:
             #   https://www.statology.org/pandas-apply-inplace/
-            self.__df.loc[:, date_column_name] = self.__df.loc[:, date_column_name].apply(
-                clean_up_date
-            )
+            self.__df.loc[:, date_column_name] = self.__df.loc[
+                :, date_column_name
+            ].apply(clean_up_date)
 
         phone_column_names = [
             col for col in columns_list if col in self.__phone_keywords
         ]
 
         for phone_column_name in phone_column_names:
-            self.__df.loc[:, phone_column_name] = self.__df.loc[:, phone_column_name].apply(
-                clean_up_phone
-            )
+            self.__df.loc[:, phone_column_name] = self.__df.loc[
+                :, phone_column_name
+            ].apply(clean_up_phone)
 
     def csv(self, headers: list | None = None) -> str:
         """Creates one line summary of patient record, suitable for a .csv file.
