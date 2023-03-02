@@ -17,7 +17,10 @@ class REDCapPatient:
 
     #   Mark these for special handling.
     __dob_keywords = ["birth_date", "dob"]
-    __phone_keywords = ["phone", "home_phone", "work_phone"]
+    __phone_keywords = ["home_phone", "phone", "phone_number", "work_phone"]
+
+    #   These fields --describe-- the patient but don't --indentify-- them.
+    __info_fields = ["hpi_percentile", "hpi_score"]
 
     def __init__(self, df: pandas.DataFrame, clinics: REDCapClinic) -> None:
         #   Build a dictionary, where the keys come from 'headers' and
@@ -100,12 +103,13 @@ class REDCapPatient:
                 :, phone_column_name
             ].apply(clean_up_phone)
 
-    def csv(self, headers: list | None = None) -> str:
+    def csv(self, columns: list | None = None, include_headers: bool = True) -> str:
         """Creates one line summary of patient record, suitable for a .csv file.
 
         Parameters
         ----------
-        headers : list  Optional list of which fields go where
+        columns : list  Optional list of which fields go where
+        include_headers : bool Optional: do we show the headers? (Default: True)
 
         Returns
         -------
@@ -113,14 +117,14 @@ class REDCapPatient:
         """
         df_including_best_appt = self.to_df()
 
-        if isinstance(headers, list):
+        if isinstance(columns, list):
             #   Only request columns that are present in the dataframe.
-            headers_present = [
-                h for h in headers if h in df_including_best_appt.columns
+            columns_present = [
+                c for c in columns if c in df_including_best_appt.columns
             ]
-            return df_including_best_appt.to_csv(columns=headers_present)
+            return df_including_best_appt.to_csv(columns=columns_present, header=include_headers)
 
-        return df_including_best_appt.to_csv()
+        return df_including_best_appt.to_csv(header=include_headers)
 
     def __find_appointments(self, clinics: REDCapClinic) -> None:
         if not isinstance(clinics, REDCapClinic):
@@ -130,9 +134,9 @@ class REDCapPatient:
 
         #   Which columns are NOT part of the appointment?
         (
-            self.__non_appointment_fields,
+            self.__patient_identifying_fields,
             appointment_fields,
-        ) = REDCapPatient.__not_appointment_fields(list(self.__df.columns))
+        ) = self.__distinguish_fields(list(self.__df.columns))
 
         df_subset = self.__df[appointment_fields]
         appointment_object = REDCapAppointment(
@@ -160,14 +164,14 @@ class REDCapPatient:
         if self.same_as(other_patient):
             self.__appointments += other_patient.appointments()
 
-    @staticmethod
-    def __not_appointment_fields(headers: list) -> tuple:
+    def __distinguish_fields(self, headers: list) -> tuple:
         appointment_fields = REDCapAppointment.applicable_header_fields(headers)
         appointment_fields = [field.lower() for field in appointment_fields]
-        non_appointment_fields = [
+        patient_identifying_fields = [
             term for term in headers if term not in appointment_fields
+                                        and term not in self.__info_fields
         ]
-        return non_appointment_fields, appointment_fields
+        return patient_identifying_fields, appointment_fields
 
     def __repr__(self) -> str:  # pragma: no cover
         return self.__df.to_markdown()
@@ -186,7 +190,7 @@ class REDCapPatient:
         if not isinstance(other_patient, REDCapPatient):
             return False
 
-        for field in self.__non_appointment_fields:
+        for field in self.__patient_identifying_fields:
             if self.value(field) != other_patient.value(field):
                 return False
 

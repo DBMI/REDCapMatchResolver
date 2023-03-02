@@ -214,6 +214,12 @@ def fixture_patient_records_1_2_merged() -> str:
 """
 
 
+@pytest.fixture(name="patient_records_1_2_merged_no_header")
+def fixture_patient_records_1_2_merged_no_header() -> str:
+    return """0,1234567,2345678,George,Washington,1600 Pennsylvania Ave. NW,Null,Washington,DC,20500,202-456-11111,george.washington@whitehouse.gov,1732-02-22,1799-12-14,UPC DRAW STATION,2022-12-26,10:11:12
+"""
+
+
 @pytest.fixture(name="patient_records_1_2_merged_limited_cols")
 def fixture_patient_records_1_2_merged_limited_cols() -> str:
     return """,mrn,last_name,first_name,appointment_clinic,appointment_date,appointment_time
@@ -336,8 +342,8 @@ def fixture_patient_record_7() -> pandas.DataFrame:
     return pandas.DataFrame(d, index=[0])
 
 
-@pytest.fixture(name="patient_record_no_appt")
-def fixture_patient_record_no_appt() -> pandas.DataFrame:
+@pytest.fixture(name="patient_record_1_no_appt")
+def fixture_patient_record_1_no_appt() -> pandas.DataFrame:
     d = {
         "study_id": "1234567",
         "mrn": "2345678",
@@ -352,6 +358,28 @@ def fixture_patient_record_no_appt() -> pandas.DataFrame:
         "email_address": "george.washington@whitehouse.gov",
         "dob": "1732-02-22",
         "death_datetime": "1799-12-14",
+    }
+    return pandas.DataFrame(d, index=[0])
+
+
+@pytest.fixture(name="patient_record_1_with_hpi")
+def fixture_patient_record_1_with_hpi() -> pandas.DataFrame:
+    d = {
+        "study_id": "1234567",
+        "mrn": "2345678",
+        "first_name": "George",
+        "last_name": "Washington",
+        "street_address_1": "1600 Pennsylvania Ave. NW",
+        "street_address_2": "Null",
+        "city": "Washington",
+        "state": "DC",
+        "zip_code": "20500",
+        "phone_number": "202-456-11111",
+        "email_address": "george.washington@whitehouse.gov",
+        "dob": "1732-02-22",
+        "death_datetime": "1799-12-14",
+        "hpi_percentile": "95.0",
+        "hpi_score": "1.1",
     }
     return pandas.DataFrame(d, index=[0])
 
