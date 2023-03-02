@@ -23,8 +23,11 @@ def test_appointment_corner_cases(
     #   Make it look up clinics by itself.
     appointment_obj = REDCapAppointment(df=appointment_df)
     assert isinstance(appointment_obj, REDCapAppointment)
-    full_datetime_string = appointment_df.appointment_date[0] + " " + appointment_df.appointment_time[0]
-    assert appointment_obj.date() == datetime.strptime(full_datetime_string,
+    full_datetime_string = (
+        appointment_df.appointment_date[0] + " " + appointment_df.appointment_time[0]
+    )
+    assert appointment_obj.date() == datetime.strptime(
+        full_datetime_string,
         "%Y-%m-%d %H:%M:%S",
     )
 
@@ -35,7 +38,8 @@ def test_appointment_corner_cases(
     #   Handle dd/mm/yyyy format.
     appointment_obj = REDCapAppointment(df=appointment_df_slashes)
     assert isinstance(appointment_obj, REDCapAppointment)
-    assert appointment_obj.date() == datetime.strptime(full_datetime_string,
+    assert appointment_obj.date() == datetime.strptime(
+        full_datetime_string,
         "%Y-%m-%d %H:%M:%S",
     )
 
@@ -77,7 +81,9 @@ def test_appointment_instantiation(appointment_df, clinics):
     #   Can we parse the date/time from the REDCapAppointment object?
     extracted_datetime = appointment_obj.date()
     assert isinstance(extracted_datetime, datetime)
-    full_datetime_string = appointment_df.appointment_date[0] + " " + appointment_df.appointment_time[0]
+    full_datetime_string = (
+        appointment_df.appointment_date[0] + " " + appointment_df.appointment_time[0]
+    )
     assert extracted_datetime == datetime.strptime(
         full_datetime_string, "%Y-%m-%d %H:%M:%S"
     )
@@ -251,7 +257,10 @@ def test_patient_csv(
     #   Exercise the no-headers option.
     patient_csv_description = patient_obj_1.csv(include_headers=False)
     assert isinstance(patient_csv_description, str)
-    assert patient_csv_description.replace("\r", "") == patient_records_1_2_merged_no_header
+    assert (
+        patient_csv_description.replace("\r", "")
+        == patient_records_1_2_merged_no_header
+    )
 
 
 def test_patient_errors(patient_record_1, clinics):
@@ -313,7 +322,14 @@ def test_patient_merger(patient_record_1, patient_record_2, patient_record_3, cl
     assert isinstance(patient_obj_2, REDCapPatient)
     assert len(patient_obj_2.appointments()) == 1
 
-def test_patient_same_as(patient_record_1, patient_record_1_with_hpi, patient_record_2, patient_record_3, clinics):
+
+def test_patient_same_as(
+    patient_record_1,
+    patient_record_1_with_hpi,
+    patient_record_2,
+    patient_record_3,
+    clinics,
+):
     patient_obj_1 = REDCapPatient(df=patient_record_1, clinics=clinics)
     assert isinstance(patient_obj_1, REDCapPatient)
 
@@ -323,7 +339,9 @@ def test_patient_same_as(patient_record_1, patient_record_1_with_hpi, patient_re
     assert patient_obj_1.same_as(patient_obj_2)
 
     #   Same patient, with HPI info.
-    patient_obj_1_with_hpi = REDCapPatient(df=patient_record_1_with_hpi, clinics=clinics)
+    patient_obj_1_with_hpi = REDCapPatient(
+        df=patient_record_1_with_hpi, clinics=clinics
+    )
     assert isinstance(patient_obj_1_with_hpi, REDCapPatient)
     assert patient_obj_1.same_as(patient_obj_1_with_hpi)
 

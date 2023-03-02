@@ -20,9 +20,9 @@ class REDCapPatient:
     def best_appointment(self) -> Union[REDCapAppointment, None]: ...
     def __cleanup(self) -> None:
         pass
-    def csv(self,
-            columns: Union[list, None] = None,
-            include_headers: bool = True) -> str: ...
+    def csv(
+        self, columns: Union[list, None] = None, include_headers: bool = True
+    ) -> str: ...
     def __distinguish_fields(self, headers: list) -> tuple:
         pass
     def __find_appointments(self, clinics) -> None:

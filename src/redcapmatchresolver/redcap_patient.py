@@ -122,7 +122,9 @@ class REDCapPatient:
             columns_present = [
                 c for c in columns if c in df_including_best_appt.columns
             ]
-            return df_including_best_appt.to_csv(columns=columns_present, header=include_headers)
+            return df_including_best_appt.to_csv(
+                columns=columns_present, header=include_headers
+            )
 
         return df_including_best_appt.to_csv(header=include_headers)
 
@@ -168,8 +170,9 @@ class REDCapPatient:
         appointment_fields = REDCapAppointment.applicable_header_fields(headers)
         appointment_fields = [field.lower() for field in appointment_fields]
         patient_identifying_fields = [
-            term for term in headers if term not in appointment_fields
-                                        and term not in self.__info_fields
+            term
+            for term in headers
+            if term not in appointment_fields and term not in self.__info_fields
         ]
         return patient_identifying_fields, appointment_fields
 
