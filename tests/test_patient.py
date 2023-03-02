@@ -111,7 +111,7 @@ def test_appointment_instantiation(appointment_df, clinics):
 
 
 def test_patient_appointments(
-    patient_record_no_appt,
+    patient_record_1_no_appt,
     patient_record_1,
     patient_record_2,
     patient_record_5,
@@ -119,7 +119,7 @@ def test_patient_appointments(
 ):
     #   Patient with NO appointments.
     patient_with_no_appointments = REDCapPatient(
-        df=patient_record_no_appt,
+        df=patient_record_1_no_appt,
         clinics=clinics,
     )
     assert isinstance(patient_with_no_appointments, REDCapPatient)
@@ -193,7 +193,7 @@ def test_patient_corner_cases(
     patient_record_4,
     patient_record_6,
     patient_record_7,
-    patient_record_no_appt,
+    patient_record_1_no_appt,
     clinics,
 ):
     patient_obj = REDCapPatient(df=patient_record_4, clinics=clinics)
@@ -216,7 +216,7 @@ def test_patient_corner_cases(
     assert patient_obj.value("dob") == ""
 
     #   Exercise no-appointments case.
-    patient_obj = REDCapPatient(df=patient_record_no_appt, clinics=clinics)
+    patient_obj = REDCapPatient(df=patient_record_1_no_appt, clinics=clinics)
     assert isinstance(patient_obj, REDCapPatient)
     assert len(patient_obj.appointments()) == 0
 
@@ -227,6 +227,7 @@ def test_patient_csv(
     patient_record_2,
     clinics,
     patient_records_1_2_merged,
+    patient_records_1_2_merged_no_header,
     patient_records_1_2_merged_limited_cols,
 ):
     #   Same patient, two appointments at different clinics.
@@ -240,12 +241,17 @@ def test_patient_csv(
     assert patient_csv_description.replace("\r", "") == patient_records_1_2_merged
 
     #   Now rearrange the columns.
-    patient_csv_description = patient_obj_1.csv(headers=patient_headers_scrambled)
+    patient_csv_description = patient_obj_1.csv(columns=patient_headers_scrambled)
     assert isinstance(patient_csv_description, str)
     assert (
         patient_csv_description.replace("\r", "")
         == patient_records_1_2_merged_limited_cols
     )
+
+    #   Exercise the no-headers option.
+    patient_csv_description = patient_obj_1.csv(include_headers=False)
+    assert isinstance(patient_csv_description, str)
+    assert patient_csv_description.replace("\r", "") == patient_records_1_2_merged_no_header
 
 
 def test_patient_errors(patient_record_1, clinics):
@@ -282,7 +288,7 @@ def test_patient_instantiation(patient_record_1, export_fields, clinics):
     patient_csv_description = patient_obj.csv()
     assert isinstance(patient_csv_description, str)
 
-    patient_csv_description = patient_obj.csv(headers=export_fields)
+    patient_csv_description = patient_obj.csv(columns=export_fields)
     assert isinstance(patient_csv_description, str)
 
 
@@ -293,7 +299,6 @@ def test_patient_merger(patient_record_1, patient_record_2, patient_record_3, cl
     #   Same patient, different appointments.
     patient_obj_2 = REDCapPatient(df=patient_record_2, clinics=clinics)
     assert isinstance(patient_obj_2, REDCapPatient)
-    assert patient_obj_1.same_as(patient_obj_2)
 
     assert len(patient_obj_1.appointments()) == 1
     patient_obj_1.merge(patient_obj_2)
@@ -303,11 +308,29 @@ def test_patient_merger(patient_record_1, patient_record_2, patient_record_3, cl
     #   Different patients.
     patient_obj_3 = REDCapPatient(df=patient_record_3, clinics=clinics)
     assert isinstance(patient_obj_3, REDCapPatient)
-    assert not patient_obj_1.same_as(patient_obj_3)
 
     patient_obj_2.merge(patient_obj_3)
     assert isinstance(patient_obj_2, REDCapPatient)
     assert len(patient_obj_2.appointments()) == 1
+
+def test_patient_same_as(patient_record_1, patient_record_1_with_hpi, patient_record_2, patient_record_3, clinics):
+    patient_obj_1 = REDCapPatient(df=patient_record_1, clinics=clinics)
+    assert isinstance(patient_obj_1, REDCapPatient)
+
+    #   Same patient, different appointments.
+    patient_obj_2 = REDCapPatient(df=patient_record_2, clinics=clinics)
+    assert isinstance(patient_obj_2, REDCapPatient)
+    assert patient_obj_1.same_as(patient_obj_2)
+
+    #   Same patient, with HPI info.
+    patient_obj_1_with_hpi = REDCapPatient(df=patient_record_1_with_hpi, clinics=clinics)
+    assert isinstance(patient_obj_1_with_hpi, REDCapPatient)
+    assert patient_obj_1.same_as(patient_obj_1_with_hpi)
+
+    #   Different patients.
+    patient_obj_3 = REDCapPatient(df=patient_record_3, clinics=clinics)
+    assert isinstance(patient_obj_3, REDCapPatient)
+    assert not patient_obj_1.same_as(patient_obj_3)
 
     #   Comparison with something that's NOT a REDCapPatient object.
     assert not patient_obj_1.same_as("not a patient")
