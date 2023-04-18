@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "REDCapMatchResolver"
-version = "0.7.2"
+version = "0.7.3"
 description = "Assists with human expert review of possible patient matches."
 authors = [
     "Kevin J. Delaney <kjdelaney@ucsd.edu>",
@@ -33,7 +33,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = ">=3.7.1, <4.0"
-pandas = "2.0.0"
+pandas = ">=2.0.0"
 tabulate = "^0.9.0"
 redcaputilities = {git = "https://github.com/DBMI/REDCapUtilities.git", rev="main"}
 
