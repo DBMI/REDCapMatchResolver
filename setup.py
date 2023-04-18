@@ -1,15 +1,16 @@
 """
 Defines packaging information.
 """
-from setuptools import setup
+from setuptools import find_packages, setup
 
 setup(
     name="REDCapMatchResolver",
-    version="0.6.6",
+    version="0.7.0",
+    packages=find_packages(),
     packages=["redcapmatchresolver"],
     package_dir={"": "src"},
     include_package_data=True,
-    package_data={"": ["data/*.xlsx"]},
+    package_data={"redcapmatchresolver.data": ["src/data/*.xlsx"]},
     url="https://github.com/DBMI/REDCapMatchResolver",
     license="",
     author="Kevin J. Delaney",
