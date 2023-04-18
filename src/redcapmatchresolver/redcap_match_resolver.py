@@ -13,7 +13,6 @@ from typing import Union
 import pandas  # type: ignore[import]
 from redcaputilities.directories import ensure_output_path_exists
 from redcaputilities.logging import patient_data_directory, setup_logging
-
 from redcapmatchresolver.redcap_report_reader import CrcReview, REDCapReportReader
 
 
