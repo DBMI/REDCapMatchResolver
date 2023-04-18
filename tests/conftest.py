@@ -2,39 +2,47 @@
 Contains test fixtures available across all test_*.py files.
 """
 import os
-from datetime import datetime
-
+import pandas
 import pytest
 
 
-@pytest.fixture(name="appointment_datetime")
-def fixture_appointment_datetime() -> datetime:
-    return datetime.strptime("2022-12-01 10:40:00", "%Y-%m-%d %H:%M:%S")
+@pytest.fixture(name="appointment_df")
+def fixture_appointment_df() -> pandas.DataFrame:
+    d = {
+        "appointment_clinic": "LWC CARDIOLOGY",
+        "appointment_date": "2022-12-01",
+        "appointment_time": "10:40:00",
+    }
+    return pandas.DataFrame(d, index=[0])
 
 
-@pytest.fixture(name="appointment_headers")
-def fixture_appointment_headers() -> list:
-    return ["DEPARTMENT_NAME", "APPT_DATE_TIME"]
+@pytest.fixture(name="appointment_df_malformed")
+def fixture_appointment_df_malformed() -> pandas.DataFrame:
+    d = {"appointment_clinic": "LWC CARDIOLOGY"}
+    return pandas.DataFrame(d, index=[0])
 
 
-@pytest.fixture(name="appointment_record")
-def fixture_appointment_record() -> list:
-    return ["LWC CARDIOLOGY", "2022-12-01 10:40:00"]
+@pytest.fixture(name="appointment_df_slashes")
+def fixture_appointment_record_slashes() -> pandas.DataFrame:
+    d = {
+        "appointment_clinic": "LWC CARDIOLOGY",
+        "appointment_date": "12/01/2022",
+        "appointment_time": "10:40:00",
+    }
+    return pandas.DataFrame(d, index=[0])
 
 
-@pytest.fixture(name="appointment_record_malformed")
-def fixture_appointment_record_malformed() -> list:
-    return ["LWC CARDIOLOGY", "20220-12-01 100:40:00"]
-
-
-@pytest.fixture(name="appointment_record_partial")
-def fixture_appointment_record_partial() -> list:
-    return ["LWC CARDIOLOGY", ""]
-
-
-@pytest.fixture(name="appointment_record_slashes")
-def fixture_appointment_record_slashes() -> list:
-    return ["LWC CARDIOLOGY", "12/01/2022 10:40:00"]
+@pytest.fixture(name="appointment_fields")
+def fixture_appointment_fields() -> list:
+    return [
+        "appointment_date",
+        "appt_date",
+        "appointment_time",
+        "appt_time",
+        "clinic",
+        "department",
+        "dept",
+    ]
 
 
 @pytest.fixture(name="export_fields")
@@ -61,7 +69,7 @@ def fixture_export_fields() -> list:
 
 
 @pytest.fixture(name="matching_patients")
-def fixture_matching_patients():
+def fixture_matching_patients() -> str:
     """Defines patient match text that IS present in our database."""
     return """
     ---------------
@@ -85,7 +93,7 @@ def fixture_my_location():
 
 
 @pytest.fixture(name="malformed_match_block")
-def fixture_malformed_match_block():
+def fixture_malformed_match_block() -> str:
     """Defines a patient match text that's malformed & will cause errors."""
     return """
     ---------------
@@ -103,7 +111,7 @@ def fixture_malformed_match_block():
 
 
 @pytest.fixture(name="missing_fields_match_block")
-def fixture_missing_fields_match_block():
+def fixture_missing_fields_match_block() -> str:
     """Defines patient match text that's missing the DOB field."""
     return """
     ---------------
@@ -121,7 +129,7 @@ def fixture_missing_fields_match_block():
 
 
 @pytest.fixture(name="non_matching_patients")
-def fixture_non_matching_patients():
+def fixture_non_matching_patients() -> str:
     """Defines patient match text NOT found in database."""
     return """
     ---------------
@@ -139,189 +147,241 @@ def fixture_non_matching_patients():
     """
 
 
-@pytest.fixture(name="patient_headers")
-def fixture_patient_headers() -> list:
+#   For use with .csv() method. Can we rearrange and downselect the .csv output?
+@pytest.fixture(name="patient_headers_scrambled")
+def fixture_patient_headers_scrambled() -> list:
     headers = """
-        PAT_ID
-        MRN
-        EPIC_INTERNAL_ID
-        PAT_FIRST_NAME
-        PAT_LAST_NAME
-        ADD_LINE_1
-        ADD_LINE_2
-        CITY
-        STATE_ABBR
-        ZIP
-        HOME_PHONE
-        WORK_PHONE
-        EMAIL_ADDRESS
-        BIRTH_DATE
-        DEATH_DATE
-        DEPARTMENT_NAME
-        APPT_DATE_TIME
+        mrn
+        last_name
+        first_name
+        appointment_clinic
+        appointment_date
+        appointment_time
         """.split()
     return headers
 
 
 @pytest.fixture(name="patient_record_1")
-def fixture_patient_record_1():
-    return (
-        "1234567",
-        "2345678",
-        "E987654321",
-        "George",
-        "Washington",
-        "1600 Pennsylvania Ave. NW",
-        "Null",
-        "Washington",
-        "DC",
-        "20500",
-        "NULL",
-        "202-456-11111",
-        "george.washington@whitehouse.gov",
-        "1732-02-22",
-        "1799-12-14",
-        "UPC DRAW STATION",
-        "2022-12-26 10:11:12",
-    )
+def fixture_patient_record_1() -> pandas.DataFrame:
+    d = {
+        "study_id": "1234567",
+        "mrn": "2345678",
+        "first_name": "George",
+        "last_name": "Washington",
+        "street_address_1": "1600 Pennsylvania Ave. NW",
+        "street_address_2": "Null",
+        "city": "Washington",
+        "state": "DC",
+        "zip_code": "20500",
+        "phone_number": "202-456-11111",
+        "email_address": "george.washington@whitehouse.gov",
+        "dob": "1732-02-22",
+        "death_datetime": "1799-12-14",
+        "appointment_clinic": "UPC DRAW STATION",
+        "appointment_date": "2022-12-26",
+        "appointment_time": "10:11:12",
+    }
+    return pandas.DataFrame(d, index=[0])
 
 
 @pytest.fixture(name="patient_record_2")
-def fixture_patient_record_2():
-    return (
-        "1234567",
-        "2345678",
-        "E987654321",
-        "George",
-        "Washington",
-        "1600 Pennsylvania Ave. NW",
-        "Null",
-        "Washington",
-        "DC",
-        "20500",
-        "NULL",
-        "202-456-11111",
-        "george.washington@whitehouse.gov",
-        "1732-02-22",
-        "1799-12-14",
-        "UPC INTERNAL MEDICINE",
-        "2022-12-25 11:12:13",
-    )
+def fixture_patient_record_2() -> pandas.DataFrame:
+    d = {
+        "study_id": "1234567",
+        "mrn": "2345678",
+        "first_name": "George",
+        "last_name": "Washington",
+        "street_address_1": "1600 Pennsylvania Ave. NW",
+        "street_address_2": "Null",
+        "city": "Washington",
+        "state": "DC",
+        "zip_code": "20500",
+        "phone_number": "202-456-11111",
+        "email_address": "george.washington@whitehouse.gov",
+        "dob": "1732-02-22",
+        "death_datetime": "1799-12-14",
+        "appointment_clinic": "UPC INTERNAL MEDICINE",
+        "appointment_date": "2022-12-25",
+        "appointment_time": "11:12:13",
+    }
+    return pandas.DataFrame(d, index=[0])
+
+
+@pytest.fixture(name="patient_records_1_2_merged")
+def fixture_patient_records_1_2_merged() -> str:
+    return """,study_id,mrn,first_name,last_name,street_address_1,street_address_2,city,state,zip_code,phone_number,email_address,dob,death_datetime,appointment_clinic,appointment_date,appointment_time
+0,1234567,2345678,George,Washington,1600 Pennsylvania Ave. NW,Null,Washington,DC,20500,202-456-11111,george.washington@whitehouse.gov,1732-02-22,1799-12-14,UPC DRAW STATION,2022-12-26,10:11:12
+"""
+
+
+@pytest.fixture(name="patient_records_1_2_merged_no_header")
+def fixture_patient_records_1_2_merged_no_header() -> str:
+    return """0,1234567,2345678,George,Washington,1600 Pennsylvania Ave. NW,Null,Washington,DC,20500,202-456-11111,george.washington@whitehouse.gov,1732-02-22,1799-12-14,UPC DRAW STATION,2022-12-26,10:11:12
+"""
+
+
+@pytest.fixture(name="patient_records_1_2_merged_limited_cols")
+def fixture_patient_records_1_2_merged_limited_cols() -> str:
+    return """,mrn,last_name,first_name,appointment_clinic,appointment_date,appointment_time
+0,2345678,Washington,George,UPC DRAW STATION,2022-12-26,10:11:12
+"""
 
 
 @pytest.fixture(name="patient_record_3")
-def fixture_patient_record_3():
-    return (
-        "2345678",
-        "3456789",
-        "E876543210",
-        "Martha",
-        "Washington",
-        "1600 Pennsylvania Ave. NW",
-        "Null",
-        "Washington",
-        "DC",
-        "20500",
-        "000-000-0000",
-        "1-202-456-1111",
-        "marthae.washington@whitehouse.gov",
-        "1731-06-02",
-        "1802-05-22",
-        "UNC ORTHOPAEDICS",
-        "2022-12-27 13:14:15",
-    )
+def fixture_patient_record_3() -> pandas.DataFrame:
+    d = {
+        "study_id": "2345678",
+        "mrn": "3456789",
+        "first_name": "Martha",
+        "last_name": "Washington",
+        "street_address_1": "1600 Pennsylvania Ave. NW",
+        "street_address_2": "Null",
+        "city": "Washington",
+        "state": "DC",
+        "zip_code": "20500",
+        "phone_number": "1-202-456-1111",
+        "email_address": "marthae.washington@whitehouse.gov",
+        "dob": "1731-06-02",
+        "death_datetime": "1802-05-22",
+        "appointment_clinic": "UPC ORTHOPAEDICS",
+        "appointment_date": "2022-12-27",
+        "appointment_time": "13:14:15",
+    }
+    return pandas.DataFrame(d, index=[0])
 
 
 @pytest.fixture(name="patient_record_4")
-def fixture_patient_record_4():
-    return (
-        "2345678",
-        "3456789",
-        "E876543210",
-        "Martha",
-        "Washington",
-        "1600 Pennsylvania Ave. NW",
-        "Null",
-        "Washington",
-        "DC",
-        "20500",
-        "NONE",
-        "202-456-1111",
-        "marthae.washington@whitehouse.gov",
-        "06/02/1731",
-        "1802-05-22",
-        "UNC ORTHOPAEDICS",
-        "2022-12-27 13:14:15",
-    )
+def fixture_patient_record_4() -> pandas.DataFrame:
+    d = {
+        "study_id": "2345678",
+        "mrn": "3456789",
+        "first_name": "Martha",
+        "last_name": "Washington",
+        "street_address_1": "1600 Pennsylvania Ave. NW",
+        "street_address_2": "Null",
+        "city": "Washington",
+        "state": "DC",
+        "zip_code": "20500",
+        "phone_number": "1-202-456-1111",
+        "email_address": "marthae.washington@whitehouse.gov",
+        "dob": "06/02/1731",
+        "death_datetime": "1802-05-22",
+        "appointment_clinic": "UPC ORTHOPAEDICS",
+        "appointment_date": "2022-12-27",
+        "appointment_time": "13:14:15",
+    }
+    return pandas.DataFrame(d, index=[0])
 
 
 @pytest.fixture(name="patient_record_5")
-def fixture_patient_record_5():
-    return (
-        "1234567",
-        "2345678",
-        "E987654321",
-        "George",
-        "Washington",
-        "1600 Pennsylvania Ave. NW",
-        "Null",
-        "Washington",
-        "DC",
-        "20500",
-        "NULL",
-        "202-456-11111",
-        "george.washington@whitehouse.gov",
-        "1732-02-22",
-        "1799-12-14",
-        "UPC INTERNAL MEDICINE",
-        "2022-12-26 11:12:13",
-    )
+def fixture_patient_record_5() -> pandas.DataFrame:
+    d = {
+        "study_id": "1234567",
+        "mrn": "2345678",
+        "first_name": "George",
+        "last_name": "Washington",
+        "street_address_1": "1600 Pennsylvania Ave. NW",
+        "street_address_2": "Null",
+        "city": "Washington",
+        "state": "DC",
+        "zip_code": "20500",
+        "phone_number": "202-456-11111",
+        "email_address": "george.washington@whitehouse.gov",
+        "dob": "1732-02-22",
+        "death_datetime": "1799-12-14",
+        "appointment_clinic": "UPC INTERNAL MEDICINE",
+        "appointment_date": "2022-12-25",
+        "appointment_time": "14:15:16",
+    }
+    return pandas.DataFrame(d, index=[0])
 
 
 @pytest.fixture(name="patient_record_6")
-def fixture_patient_record_6():
-    return (
-        "1234567",
-        "2345678",
-        "E987654321",
-        "George",
-        "Washington",
-        "1600 Pennsylvania Ave. NW",
-        "Null",
-        "Washington",
-        "DC",
-        "20500",
-        "NULL",
-        "202-456-11111",
-        "george.washington@whitehouse.gov",
-        None,
-        "1799-12-14",
-        "UPC INTERNAL MEDICINE",
-        "2022-12-26 11:12:13",
-    )
+def fixture_patient_record_6() -> pandas.DataFrame:
+    d = {
+        "study_id": "1234567",
+        "mrn": "2345678",
+        "first_name": "George",
+        "last_name": "Washington",
+        "street_address_1": "1600 Pennsylvania Ave. NW",
+        "street_address_2": "Null",
+        "city": "Washington",
+        "state": "DC",
+        "zip_code": "20500",
+        "phone_number": "202-456-11111",
+        "email_address": "george.washington@whitehouse.gov",
+        "dob": None,
+        "death_datetime": "1799-12-14",
+        "appointment_clinic": "UPC INTERNAL MEDICINE",
+        "appointment_date": "2022-12-25",
+        "appointment_time": "11:12:13",
+    }
+    return pandas.DataFrame(d, index=[0])
 
 
 @pytest.fixture(name="patient_record_7")
-def fixture_patient_record_7():
-    return (
-        "1234567",
-        "2345678",
-        "E987654321",
-        "George",
-        "Washington",
-        "1600 Pennsylvania Ave. NW",
-        "Null",
-        "Washington",
-        "DC",
-        "20500",
-        "NULL",
-        "202-456-11111",
-        "george.washington@whitehouse.gov",
-        "1732A-02-22",
-        "1799-12-14",
-        "UPC INTERNAL MEDICINE",
-        "2022-12-26 11:12:13",
-    )
+def fixture_patient_record_7() -> pandas.DataFrame:
+    d = {
+        "study_id": "1234567",
+        "mrn": "2345678",
+        "first_name": "George",
+        "last_name": "Washington",
+        "street_address_1": "1600 Pennsylvania Ave. NW",
+        "street_address_2": "Null",
+        "city": "Washington",
+        "state": "DC",
+        "zip_code": "20500",
+        "phone_number": "202-456-11111",
+        "email_address": "george.washington@whitehouse.gov",
+        "dob": "1732A-02-22",
+        "death_datetime": "1799-12-14",
+        "appointment_clinic": "UPC INTERNAL MEDICINE",
+        "appointment_date": "2022-12-25",
+        "appointment_time": "11:12:13",
+    }
+    return pandas.DataFrame(d, index=[0])
+
+
+@pytest.fixture(name="patient_record_1_no_appt")
+def fixture_patient_record_1_no_appt() -> pandas.DataFrame:
+    d = {
+        "study_id": "1234567",
+        "mrn": "2345678",
+        "first_name": "George",
+        "last_name": "Washington",
+        "street_address_1": "1600 Pennsylvania Ave. NW",
+        "street_address_2": "Null",
+        "city": "Washington",
+        "state": "DC",
+        "zip_code": "20500",
+        "phone_number": "202-456-11111",
+        "email_address": "george.washington@whitehouse.gov",
+        "dob": "1732-02-22",
+        "death_datetime": "1799-12-14",
+    }
+    return pandas.DataFrame(d, index=[0])
+
+
+@pytest.fixture(name="patient_record_1_with_hpi")
+def fixture_patient_record_1_with_hpi() -> pandas.DataFrame:
+    d = {
+        "study_id": "1234567",
+        "mrn": "2345678",
+        "first_name": "George",
+        "last_name": "Washington",
+        "street_address_1": "1600 Pennsylvania Ave. NW",
+        "street_address_2": "Null",
+        "city": "Washington",
+        "state": "DC",
+        "zip_code": "20500",
+        "phone_number": "202-456-11111",
+        "email_address": "george.washington@whitehouse.gov",
+        "dob": "1732-02-22",
+        "death_datetime": "1799-12-14",
+        "hpi_percentile": "95.0",
+        "hpi_score": "1.1",
+    }
+    return pandas.DataFrame(d, index=[0])
 
 
 if __name__ == "__main__":

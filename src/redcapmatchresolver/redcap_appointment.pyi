@@ -1,9 +1,25 @@
 from datetime import datetime
-from redcapmatchresolver.redcap_clinic import REDCapClinic as REDCapClinic
 from typing import Union
 
+import pandas  # type: ignore[import]
+
+from redcapmatchresolver.redcap_clinic import REDCapClinic as REDCapClinic
+
 class REDCapAppointment:
-    def __init__(self, appointment_headers: list, appointment_info: list, clinics: Union[REDCapClinic, None] = ...) -> None: ...
+    __appointment_date_keywords = list
+    __department_keywords = list
+    __appointment_time_keywords = list
+
+    def __init__(
+        self,
+        df: pandas.DataFrame,
+        clinics: Union[REDCapClinic, None] = ...,
+    ) -> None:
+        self.__date = str
+        self.__department = str
+        self.__priority = int
+        self.__time = str
+        ...
     @staticmethod
     def applicable_header_fields(headers: list) -> list: ...
     @staticmethod
@@ -11,5 +27,8 @@ class REDCapAppointment:
     def csv(self) -> str: ...
     def date(self) -> Union[datetime, None]: ...
     def priority(self) -> int: ...
+    def to_df(self) -> pandas.DataFrame: ...
     def valid(self) -> bool: ...
     def value(self, field: str) -> str: ...
+    def __assign_priority(self, clinics) -> None:
+        pass
