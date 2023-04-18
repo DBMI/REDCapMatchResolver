@@ -11,8 +11,8 @@ from typing import Union
 
 import pandas  # type: ignore[import]
 
-from .redcap_report_reader import CrcReview, REDCapReportReader
-from .utilities import Utilities
+from redcapmatchresolver.redcap_report_reader import CrcReview, REDCapReportReader
+from redcapmatchresolver.utilities import Utilities
 
 
 class REDCapMatchResolver:

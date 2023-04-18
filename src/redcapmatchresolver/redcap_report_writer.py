@@ -4,7 +4,7 @@ used to produce list of patient matches to be reviewed.
 """
 from typing import List
 
-from .utilities import Utilities
+from redcapmatchresolver.utilities import Utilities
 
 
 class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
