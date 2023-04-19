@@ -23,14 +23,12 @@ class REDCapPatient:
     __info_fields = ["hpi_percentile", "hpi_score"]
 
     def __init__(self, df: pandas.DataFrame, clinics: REDCapClinic) -> None:
-        #   Build a dictionary, where the keys come from 'headers' and
-        #   the values come from 'row'. Save room for study_id field.
         if not isinstance(df, pandas.DataFrame):
             raise TypeError("Argument 'df' is not the expected DataFrame.")
 
         #   Make all column names lowercase, to be REDCap compatible.
-        df.columns = map(str.lower, df.columns)
         self.__df = df.copy()
+        self.__df.columns = map(str.lower, self.__df.columns)
         self.__cleanup()
 
         self.__appointments = []
