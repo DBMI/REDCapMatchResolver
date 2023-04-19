@@ -30,7 +30,7 @@ class REDCapPatient:
 
         #   Make all column names lowercase, to be REDCap compatible.
         df.columns = map(str.lower, df.columns)
-        self.__df = df
+        self.__df = df.copy()
         self.__cleanup()
 
         self.__appointments = []
