@@ -77,7 +77,7 @@ class REDCapPatient:
                     appointment
                     for appointment in best_appointments_by_location
                     if appointment.date()
-                    == min(d for d in all_appointment_dates if d is not None)
+                       == min(d for d in all_appointment_dates if d is not None)
                 ]
                 return best_appointment[0]
 
@@ -89,8 +89,8 @@ class REDCapPatient:
         for date_column_name in date_column_names:
             #   https://www.statology.org/pandas-apply-inplace/
             self.__df.loc[:, date_column_name] = self.__df.loc[
-                :, date_column_name
-            ].apply(clean_up_date)
+                                                 :, date_column_name
+                                                 ].apply(clean_up_date)
 
         phone_column_names = [
             col for col in columns_list if col in self.__phone_keywords
@@ -98,8 +98,8 @@ class REDCapPatient:
 
         for phone_column_name in phone_column_names:
             self.__df.loc[:, phone_column_name] = self.__df.loc[
-                :, phone_column_name
-            ].apply(clean_up_phone)
+                                                  :, phone_column_name
+                                                  ].apply(clean_up_phone)
 
     def csv(self, columns: list | None = None, include_headers: bool = True) -> str:
         """Creates one line summary of patient record, suitable for a .csv file.
@@ -121,10 +121,15 @@ class REDCapPatient:
                 c for c in columns if c in df_including_best_appt.columns
             ]
             return df_including_best_appt.to_csv(
-                columns=columns_present, header=include_headers
+                columns=columns_present,
+                header=include_headers,
+                index=False,
+                line_terminator=''
             )
 
-        return df_including_best_appt.to_csv(header=include_headers)
+        return df_including_best_appt.to_csv(header=include_headers,
+                                             index=False,
+                                             line_terminator='')
 
     def __find_appointments(self, clinics: REDCapClinic) -> None:
         if not isinstance(clinics, REDCapClinic):

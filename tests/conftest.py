@@ -209,21 +209,21 @@ def fixture_patient_record_2() -> pandas.DataFrame:
 
 @pytest.fixture(name="patient_records_1_2_merged")
 def fixture_patient_records_1_2_merged() -> str:
-    return """,study_id,mrn,first_name,last_name,street_address_1,street_address_2,city,state,zip_code,phone_number,email_address,dob,death_datetime,appointment_clinic,appointment_date,appointment_time
-0,1234567,2345678,George,Washington,1600 Pennsylvania Ave. NW,Null,Washington,DC,20500,202-456-11111,george.washington@whitehouse.gov,1732-02-22,1799-12-14,UPC DRAW STATION,2022-12-26,10:11:12
+    return """study_id,mrn,first_name,last_name,street_address_1,street_address_2,city,state,zip_code,phone_number,email_address,dob,death_datetime,appointment_clinic,appointment_date,appointment_time
+1234567,2345678,George,Washington,1600 Pennsylvania Ave. NW,Null,Washington,DC,20500,202-456-11111,george.washington@whitehouse.gov,1732-02-22,1799-12-14,UPC DRAW STATION,2022-12-26,10:11:12
 """
 
 
 @pytest.fixture(name="patient_records_1_2_merged_no_header")
 def fixture_patient_records_1_2_merged_no_header() -> str:
-    return """0,1234567,2345678,George,Washington,1600 Pennsylvania Ave. NW,Null,Washington,DC,20500,202-456-11111,george.washington@whitehouse.gov,1732-02-22,1799-12-14,UPC DRAW STATION,2022-12-26,10:11:12
+    return """1234567,2345678,George,Washington,1600 Pennsylvania Ave. NW,Null,Washington,DC,20500,202-456-11111,george.washington@whitehouse.gov,1732-02-22,1799-12-14,UPC DRAW STATION,2022-12-26,10:11:12
 """
 
 
 @pytest.fixture(name="patient_records_1_2_merged_limited_cols")
 def fixture_patient_records_1_2_merged_limited_cols() -> str:
-    return """,mrn,last_name,first_name,appointment_clinic,appointment_date,appointment_time
-0,2345678,Washington,George,UPC DRAW STATION,2022-12-26,10:11:12
+    return """mrn,last_name,first_name,appointment_clinic,appointment_date,appointment_time
+2345678,Washington,George,UPC DRAW STATION,2022-12-26,10:11:12
 """
 
 
