@@ -151,6 +151,7 @@ def fixture_non_matching_patients() -> str:
 @pytest.fixture(name="patient_headers_scrambled")
 def fixture_patient_headers_scrambled() -> list:
     headers = """
+        study_id
         mrn
         last_name
         first_name
@@ -181,7 +182,9 @@ def fixture_patient_record_1() -> pandas.DataFrame:
         "appointment_date": "2022-12-26",
         "appointment_time": "10:11:12",
     }
-    return pandas.DataFrame(d, index=[0])
+    df = pandas.DataFrame(d, index=[0])
+    df.set_index('study_id', inplace=True)
+    return df
 
 
 @pytest.fixture(name="patient_record_2")
@@ -204,7 +207,9 @@ def fixture_patient_record_2() -> pandas.DataFrame:
         "appointment_date": "2022-12-25",
         "appointment_time": "11:12:13",
     }
-    return pandas.DataFrame(d, index=[0])
+    df = pandas.DataFrame(d, index=[0])
+    df.set_index('study_id', inplace=True)
+    return df
 
 
 @pytest.fixture(name="patient_records_1_2_merged")
@@ -222,8 +227,8 @@ def fixture_patient_records_1_2_merged_no_header() -> str:
 
 @pytest.fixture(name="patient_records_1_2_merged_limited_cols")
 def fixture_patient_records_1_2_merged_limited_cols() -> str:
-    return """mrn,last_name,first_name,appointment_clinic,appointment_date,appointment_time
-2345678,Washington,George,UPC DRAW STATION,2022-12-26,10:11:12
+    return """study_id,mrn,last_name,first_name,appointment_clinic,appointment_date,appointment_time
+1234567,2345678,Washington,George,UPC DRAW STATION,2022-12-26,10:11:12
 """
 
 
@@ -247,7 +252,9 @@ def fixture_patient_record_3() -> pandas.DataFrame:
         "appointment_date": "2022-12-27",
         "appointment_time": "13:14:15",
     }
-    return pandas.DataFrame(d, index=[0])
+    df = pandas.DataFrame(d, index=[0])
+    df.set_index('study_id', inplace=True)
+    return df
 
 
 @pytest.fixture(name="patient_record_4")
@@ -270,7 +277,9 @@ def fixture_patient_record_4() -> pandas.DataFrame:
         "appointment_date": "2022-12-27",
         "appointment_time": "13:14:15",
     }
-    return pandas.DataFrame(d, index=[0])
+    df = pandas.DataFrame(d, index=[0])
+    df.set_index('study_id', inplace=True)
+    return df
 
 
 @pytest.fixture(name="patient_record_5")
@@ -293,7 +302,9 @@ def fixture_patient_record_5() -> pandas.DataFrame:
         "appointment_date": "2022-12-25",
         "appointment_time": "14:15:16",
     }
-    return pandas.DataFrame(d, index=[0])
+    df = pandas.DataFrame(d, index=[0])
+    df.set_index('study_id', inplace=True)
+    return df
 
 
 @pytest.fixture(name="patient_record_6")
@@ -316,7 +327,9 @@ def fixture_patient_record_6() -> pandas.DataFrame:
         "appointment_date": "2022-12-25",
         "appointment_time": "11:12:13",
     }
-    return pandas.DataFrame(d, index=[0])
+    df = pandas.DataFrame(d, index=[0])
+    df.set_index('study_id', inplace=True)
+    return df
 
 
 @pytest.fixture(name="patient_record_7")
@@ -339,7 +352,9 @@ def fixture_patient_record_7() -> pandas.DataFrame:
         "appointment_date": "2022-12-25",
         "appointment_time": "11:12:13",
     }
-    return pandas.DataFrame(d, index=[0])
+    df = pandas.DataFrame(d, index=[0])
+    df.set_index('study_id', inplace=True)
+    return df
 
 
 @pytest.fixture(name="patient_record_1_no_appt")
@@ -359,7 +374,9 @@ def fixture_patient_record_1_no_appt() -> pandas.DataFrame:
         "dob": "1732-02-22",
         "death_datetime": "1799-12-14",
     }
-    return pandas.DataFrame(d, index=[0])
+    df = pandas.DataFrame(d, index=[0])
+    df.set_index('study_id', inplace=True)
+    return df
 
 
 @pytest.fixture(name="patient_record_1_with_hpi")
@@ -381,7 +398,9 @@ def fixture_patient_record_1_with_hpi() -> pandas.DataFrame:
         "hpi_percentile": "95.0",
         "hpi_score": "1.1",
     }
-    return pandas.DataFrame(d, index=[0])
+    df = pandas.DataFrame(d, index=[0])
+    df.set_index('study_id', inplace=True)
+    return df
 
 
 if __name__ == "__main__":
