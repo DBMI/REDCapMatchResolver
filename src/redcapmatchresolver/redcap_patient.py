@@ -123,12 +123,10 @@ class REDCapPatient:
             return df_including_best_appt.to_csv(
                 columns=columns_present,
                 header=include_headers,
-                index=False,
                 line_terminator=''
             )
 
         return df_including_best_appt.to_csv(header=include_headers,
-                                             index=False,
                                              line_terminator='')
 
     def __find_appointments(self, clinics: REDCapClinic) -> None:

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "REDCapMatchResolver"
-version = "0.7.8"
+version = "0.7.9"
 description = "Assists with human expert review of possible patient matches."
 authors = [
     "Kevin J. Delaney <kjdelaney@ucsd.edu>",
