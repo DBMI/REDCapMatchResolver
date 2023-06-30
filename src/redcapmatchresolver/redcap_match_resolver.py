@@ -4,6 +4,7 @@ used to create/use a SQLite database from
 human-reviewed match reports.
 """
 import glob
+from itertools import repeat
 import logging
 import os
 import sqlite3
@@ -73,6 +74,7 @@ class REDCapMatchResolver:
             "FIRST",
             "LAST",
             "DOB",
+            "EMAIL",
             "ADDR_CALCULATED",
             "PHONE_CALCULATED",
         ]
@@ -209,6 +211,8 @@ class REDCapMatchResolver:
                                     redcap_last text NOT NULL,
                                     epic_dob date,
                                     redcap_dob date,
+                                    epic_email text,
+                                    redcap_email text,
                                     epic_addr_calculated text,
                                     redcap_addr_calculated text,
                                     epic_phone_calculated text,
@@ -327,10 +331,15 @@ class REDCapMatchResolver:
                 report_df[field] = None
 
         all_database_fields_string = ",".join(self.__database_fields_list)
+        num_fields = len(self.__database_fields_list)
+        question_marks_list = list(repeat('?', num_fields))
+        question_marks = ','.join(question_marks_list)
         insert_sql = (
             " INSERT INTO matches("
             + all_database_fields_string
-            + ") VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?); "
+            + ") VALUES("
+            + question_marks
+            + "); "
         )
         cur = self.__connection.cursor()
 
