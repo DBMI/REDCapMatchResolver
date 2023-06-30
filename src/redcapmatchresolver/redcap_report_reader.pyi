@@ -8,20 +8,23 @@ class ReportLine(NamedTuple):
     epic_value: str
     redcap_value: str
 
-class CrcReason(Enum):
-    FAMILY: int
+class DecisionReason(Enum):
+    RELATIVES: int
     SAME_ADDRESS: int
     PARENT_CHILD: int
     OTHER: int
+    NO_INFO: int
     @classmethod
-    def convert(cls, decision: str) -> CrcReason: ...
+    def convert(cls, decision: str) -> DecisionReason: ...
 
-class CrcReview(Enum):
+class DecisionReview(Enum):
     MATCH: int
     NO_MATCH: int
     NOT_SURE: int
     @classmethod
-    def convert(cls, decisions: Union[str, list, tuple]) -> Union[CrcReview, list]: ...
+    def convert(
+        cls, decisions: Union[str, list, tuple]
+    ) -> Union[DecisionReview, list]: ...
     def __eq__(self, other: object) -> bool: ...
     def __gt__(self, other: object) -> bool: ...
     def __lt__(self, other: object) -> bool: ...
@@ -55,7 +58,7 @@ class REDCapReportReader:
         pass
     def __read(self) -> pandas.DataFrame:
         pass
-    def __read_crc_decision(self) -> tuple:
+    def __read_decision(self) -> tuple:
         pass
     def read_file(self, report_filename: str) -> pandas.DataFrame: ...
     def read_text(self, block_txt: str) -> pandas.DataFrame: ...

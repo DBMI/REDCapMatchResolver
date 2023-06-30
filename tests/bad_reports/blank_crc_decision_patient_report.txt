@@ -8,6 +8,6 @@
     C_ADDR_CALCULATED   1313 Mockingbird Lane  1313 Mockingbird Ln   1.0
     C_PHONE_CALCULATED  800-555-1212           800-555-1212          1.0
     ---------------
-    CRC Review: Patients are
+    Review: Patients are
     ☐ Same
     ☐ NOT Same

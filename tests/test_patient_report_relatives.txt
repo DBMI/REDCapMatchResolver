@@ -12,8 +12,8 @@
     ---------------
     Record 1 of 1
 Review: ABOVE (↑) patients are
-    X Same
-    ☐ NOT Same: Relatives
+    ☐ Same
+    ☑ NOT Same: Relatives
     ☐ NOT Same: Living at same address
     ☐ NOT Same: Parent & child
     ☐ NOT Same: Other

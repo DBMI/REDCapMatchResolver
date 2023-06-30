@@ -9,124 +9,139 @@ import pandas
 import pytest
 
 from redcapmatchresolver.redcap_report_reader import (
-    CrcReason,
-    CrcReview,
+    DecisionReason,
+    DecisionReview,
     REDCapReportReader,
 )
-
-
-@pytest.fixture(name="report_filename")
-def fixture_report_filename():
-    """Temporary report filename"""
-    return os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), "test_patient_report.txt"
-    )
 
 
 def test_crc_reason_class() -> None:
     """Exercise CrcReason enum class."""
     with pytest.raises(TypeError):
-        CrcReason.convert()
+        DecisionReason.convert()
 
-    with pytest.raises(TypeError):
-        CrcReason.convert(None)
+    assert DecisionReason.convert(None) == DecisionReason.OTHER
 
-    with pytest.raises(TypeError):
-        CrcReason.convert(1979)
+    assert DecisionReason.convert(1979) == DecisionReason.OTHER
 
-    assert CrcReason.convert("NOT Same: Family members") == CrcReason.FAMILY
+    assert DecisionReason.convert("NOT Same: Relatives") == DecisionReason.RELATIVES
     assert (
-        CrcReason.convert("NOT Same: Living at same address") == CrcReason.SAME_ADDRESS
+        DecisionReason.convert("NOT Same: Living at same address")
+        == DecisionReason.SAME_ADDRESS
     )
-    assert CrcReason.convert("NOT Same: Parent & child") == CrcReason.PARENT_CHILD
+    assert (
+        DecisionReason.convert("NOT Same: Parent & child")
+        == DecisionReason.PARENT_CHILD
+    )
 
-    with pytest.raises(TypeError):
-        CrcReason.convert("")
+    assert DecisionReason.convert("") == DecisionReason.OTHER
 
 
 def test_crc_review_class() -> None:
     """Exercise CrcReview enum class."""
     with pytest.raises(TypeError):
-        CrcReview.convert()
+        DecisionReview.convert()
 
     with pytest.raises(TypeError):
-        CrcReview.convert(None)
+        DecisionReview.convert(None)
 
     with pytest.raises(TypeError):
-        CrcReview.convert(1979)
+        DecisionReview.convert(1979)
 
-    assert CrcReview.convert("MATCH") == CrcReview.MATCH
-    assert CrcReview.convert("NO_MATCH") == CrcReview.NO_MATCH
-    assert CrcReview.convert("NOT_SURE") == CrcReview.NOT_SURE
-    assert CrcReview.convert("") == CrcReview.NOT_SURE
+    assert DecisionReview.convert("MATCH") == DecisionReview.MATCH
+    assert DecisionReview.convert("NO_MATCH") == DecisionReview.NO_MATCH
+    assert DecisionReview.convert("NOT_SURE") == DecisionReview.NOT_SURE
+    assert DecisionReview.convert("") == DecisionReview.NOT_SURE
 
     #   Exercise list processing.
-    converted_list = CrcReview.convert(["MATCH", "NO_MATCH"])
-    assert converted_list == [CrcReview.MATCH, CrcReview.NO_MATCH]
-    assert CrcReview.MATCH == CrcReview.MATCH
-    assert CrcReview.MATCH > CrcReview.NO_MATCH
-    assert CrcReview.MATCH > CrcReview.NOT_SURE
-    assert CrcReview.NO_MATCH > CrcReview.NOT_SURE
-    assert CrcReview.NOT_SURE < CrcReview.NO_MATCH
+    converted_list = DecisionReview.convert(["MATCH", "NO_MATCH"])
+    assert converted_list == [DecisionReview.MATCH, DecisionReview.NO_MATCH]
+    assert DecisionReview.MATCH == DecisionReview.MATCH
+    assert DecisionReview.MATCH > DecisionReview.NO_MATCH
+    assert DecisionReview.MATCH > DecisionReview.NOT_SURE
+    assert DecisionReview.NO_MATCH > DecisionReview.NOT_SURE
+    assert DecisionReview.NOT_SURE < DecisionReview.NO_MATCH
 
-    assert CrcReview.MATCH != "Something"
-
-    with pytest.raises(TypeError):
-        CrcReview.MATCH > None
+    assert DecisionReview.MATCH != "Something"
 
     with pytest.raises(TypeError):
-        None > CrcReview.MATCH
+        DecisionReview.MATCH > None
 
     with pytest.raises(TypeError):
-        CrcReview.MATCH > 1979
+        None > DecisionReview.MATCH
 
     with pytest.raises(TypeError):
-        1979 > CrcReview.MATCH
+        DecisionReview.MATCH > 1979
 
     with pytest.raises(TypeError):
-        CrcReview.MATCH > "Something"
+        1979 > DecisionReview.MATCH
+
+    with pytest.raises(TypeError):
+        DecisionReview.MATCH > "Something"
 
 
-def test_reading_file(report_filename, my_location) -> None:
+def test_reading_file(
+    report_filename_address,
+    report_filename_blank,
+    report_filename_parent_child,
+    report_filename_relatives,
+    report_filename_same,
+    my_location,
+) -> None:
     """Test reading match report FILE."""
     obj = REDCapReportReader()
-    assert obj is not None
     assert isinstance(obj, REDCapReportReader)
 
-    test_df = obj.read_file(report_filename=report_filename)
-    assert test_df is not None
+    test_df = obj.read_file(report_filename=report_filename_blank)
     assert isinstance(test_df, pandas.DataFrame)
+    assert "DECISION" in test_df
+    assert test_df.iloc[0]["DECISION"] == "DecisionReview.NOT_SURE"
+
+    test_df = obj.read_file(report_filename=report_filename_address)
+    assert isinstance(test_df, pandas.DataFrame)
+    assert "DECISION" in test_df
+    assert test_df.iloc[0]["DECISION"] == "DecisionReview.NO_MATCH"
+
+    test_df = obj.read_file(report_filename=report_filename_parent_child)
+    assert isinstance(test_df, pandas.DataFrame)
+    assert "DECISION" in test_df
+    assert test_df.iloc[0]["DECISION"] == "DecisionReview.NO_MATCH"
+
+    test_df = obj.read_file(report_filename=report_filename_relatives)
+    assert isinstance(test_df, pandas.DataFrame)
+    assert "DECISION" in test_df
+    assert test_df.iloc[0]["DECISION"] == "DecisionReview.NO_MATCH"
+
+    test_df = obj.read_file(report_filename=report_filename_same)
+    assert isinstance(test_df, pandas.DataFrame)
+    assert "DECISION" in test_df
+    assert test_df.iloc[0]["DECISION"] == "DecisionReview.MATCH"
 
     partial_report_filename = os.path.join(
         my_location, "bogus_patient_report_CRC_partial.txt"
     )
     test_df = obj.read_file(report_filename=partial_report_filename)
-    assert test_df is not None
     assert isinstance(test_df, pandas.DataFrame)
 
     partial_report_filename = os.path.join(
         my_location, "bogus_patient_report_CRC_partial_II.txt"
     )
     test_df = obj.read_file(report_filename=partial_report_filename)
-    assert test_df is not None
     assert isinstance(test_df, pandas.DataFrame)
 
     missing_values_filename = os.path.join(
         my_location, "bogus_patient_report_missing_values.txt"
     )
     test_df = obj.read_file(report_filename=missing_values_filename)
-    assert test_df is not None
     assert isinstance(test_df, pandas.DataFrame)
 
 
 def test_reading_text(matching_patients) -> None:
     """Test reading match report TEXT block."""
     obj = REDCapReportReader()
-    assert obj is not None
     assert isinstance(obj, REDCapReportReader)
 
     test_df = obj.read_text(block_txt=matching_patients)
-    assert test_df is not None
     assert isinstance(test_df, pandas.DataFrame)
 
 

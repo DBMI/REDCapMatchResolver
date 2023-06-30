@@ -1,7 +1,7 @@
 """
 Module: contains class REDCapMatchResolver
 used to create/use a SQLite database from
-CRC-reviewed match reports.
+human-reviewed match reports.
 """
 import glob
 import logging
@@ -13,7 +13,8 @@ from typing import Union
 import pandas  # type: ignore[import]
 from redcaputilities.directories import ensure_output_path_exists
 from redcaputilities.logging import patient_data_directory, setup_logging
-from redcapmatchresolver.redcap_report_reader import CrcReview, REDCapReportReader
+
+from redcapmatchresolver.redcap_report_reader import DecisionReview, REDCapReportReader
 
 
 class REDCapMatchResolver:
@@ -56,7 +57,7 @@ class REDCapMatchResolver:
 
         cur = connection.cursor()
 
-        #   We want these values to exactly equal those in the CrcReview enum class.
+        #   We want these values to exactly equal those in the DecisionReview enum class.
         insert_sql = """INSERT INTO decisions(decision) VALUES('MATCH')"""
         cur.execute(insert_sql)
         insert_sql = """INSERT INTO decisions(decision) VALUES('NO_MATCH')"""
@@ -86,8 +87,8 @@ class REDCapMatchResolver:
             self.__database_fields_list.append(redcap_field.lower())
             self.__dataframe_fields_list.append(redcap_field)
 
-        self.__database_fields_list.append("crc_decision")
-        self.__dataframe_fields_list.append("CRC_DECISION")
+        self.__database_fields_list.append("decision_code")
+        self.__dataframe_fields_list.append("DECISION")
 
     def __create_connection(self, db_filename: str) -> sqlite3.Connection:
         """Initializes a SQLite database at the desired location.
@@ -212,7 +213,7 @@ class REDCapMatchResolver:
                                     redcap_addr_calculated text,
                                     epic_phone_calculated text,
                                     redcap_phone_calculated text,
-                                    crc_decision text
+                                    decision_code int
                                 );"""
 
         # pylint: disable=logging-fstring-interpolation
@@ -337,22 +338,22 @@ class REDCapMatchResolver:
             values_list = []
 
             for dataframe_field in [
-                name for name in self.__dataframe_fields_list if name != "CRC_DECISION"
+                name for name in self.__dataframe_fields_list if name != "DECISION"
             ]:
                 values_list.append(report_df[dataframe_field][index])
 
             if (
-                "CRC_DECISION" not in report_df.columns
-                or report_df["CRC_DECISION"] is None
-                or report_df["CRC_DECISION"][index] is None
-                or report_df["CRC_DECISION"][index] == "None"
+                "DECISION" not in report_df.columns
+                or report_df["DECISION"] is None
+                or report_df["DECISION"][index] is None
+                or report_df["DECISION"][index] == "None"
             ):
                 #   Then there's no point in inserting this row into the database.
                 continue
 
-            crc_decision_string = report_df["CRC_DECISION"][index]
-            crc_decision_code = self.__translate_crc_decision(crc_decision_string)
-            values_list.append(str(crc_decision_code))
+            decision_string = report_df["DECISION"][index]
+            decision_code = self.__translate_decision(decision_string)
+            values_list.append(str(decision_code))
 
             # pylint: disable=logging-fstring-interpolation
             try:
@@ -380,7 +381,7 @@ class REDCapMatchResolver:
 
         return connection is not None and isinstance(connection, Connection)
 
-    def lookup_potential_match(self, match_block: str) -> CrcReview:
+    def lookup_potential_match(self, match_block: str) -> DecisionReview:
         """Lookup this potential match in the database.
            Have CRCs already reviewed this pair?
 
@@ -390,7 +391,7 @@ class REDCapMatchResolver:
 
         Returns
         -------
-        decision : CrcReview Reports whether CRCs said match, no match (or not sure).
+        decision : DecisionReview Reports whether CRCs said match, no match (or not sure).
         """
         if not self.__is_connected(connection=None):  # pragma: no cover
             self.__log.error(
@@ -421,7 +422,7 @@ class REDCapMatchResolver:
         # pylint: disable=line-too-long
         query_sql = (
             "SELECT decision FROM matches "
-            + "JOIN decisions on matches.crc_decision = decisions.id"
+            + "JOIN decisions on matches.decision_code = decisions.id"
             + " WHERE"
             + " matches.epic_mrn = ?"
             + " AND matches.redcap_mrn = ?"
@@ -463,11 +464,11 @@ class REDCapMatchResolver:
                     #   We allow for multiple hits from the database.
                     #   If any of them report MATCH, we'll go with that.
                     crc_review_objects = (
-                        CrcReview.convert(r) for r in rows if r is not None
+                        DecisionReview.convert(r) for r in rows if r is not None
                     )
-                    return CrcReview(max(crc_review_objects))
+                    return DecisionReview(max(crc_review_objects))
 
-                return CrcReview(CrcReview.NOT_SURE)
+                return DecisionReview(DecisionReview.NOT_SURE)
             except sqlite3.Error as database_error:  # pragma: no cover
                 self.__log.exception(
                     "Error in running table query method because {database_error}."
@@ -545,7 +546,6 @@ class REDCapMatchResolver:
         ) or not self.__create_matches_table(
             connection=connection
         ):  # pragma: no cover
-
             self.__log.error(
                 "Unable to establish connection to {db_filename}.",
                 extra={"db_filename": db_filename},
@@ -554,8 +554,8 @@ class REDCapMatchResolver:
 
         return connection
 
-    def __translate_crc_decision(self, crc_enum: str) -> int:
-        """Converts CrcReview string into integer, using 'decisions' table.
+    def __translate_decision(self, decision_enum: str) -> int:
+        """Converts DecisionReview string into integer, using 'decisions' table.
 
         Returns
         -------
@@ -564,24 +564,26 @@ class REDCapMatchResolver:
 
         if not self.__is_connected():  # pragma: no cover
             self.__log.error(
-                "Called '__translate_crc_decision' method but database is not connected."
+                "Called '__translate_decision' method but database is not connected."
             )
             raise RuntimeError(
-                "Called '__translate_crc_decision' method but database is not connected."
+                "Called '__translate_decision' method but database is not connected."
             )
 
-        if not isinstance(crc_enum, str) or len(crc_enum) == 0:  # pragma: no cover
+        if (
+            not isinstance(decision_enum, str) or len(decision_enum) == 0
+        ):  # pragma: no cover
             self.__log.error('Input "crc_review" is not a string')
             raise TypeError('Input "crc_review" is not a string.')
 
-        #   Strip off the 'CrcReview.' part.
-        crc_enum_payload = crc_enum.replace("CrcReview.", "")
+        #   Strip off the 'DecisionReview.' part.
+        decision_enum_payload = decision_enum.replace("DecisionReview.", "")
         query_sql = " SELECT id FROM decisions WHERE decision = (?); "
         cur = self.__connection.cursor()
 
         # pylint: disable=logging-fstring-interpolation
         try:
-            cur.execute(query_sql, [crc_enum_payload])
+            cur.execute(query_sql, [decision_enum_payload])
             rows = cur.fetchall()
             return int(rows[0][0])
         except sqlite3.Error as database_error:  # pragma: no cover

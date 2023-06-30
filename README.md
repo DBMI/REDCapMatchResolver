@@ -18,7 +18,7 @@ Assists with human expert review of possible patient matches.
 When software identifies a pair of patient records (one REDCap and one Epic) that *might* refer to the
 same patient, the `REDCapReportWriter` class writes a human-readable,
 machine-parseable report showing potential patient matches that need review by
-a Clinical Research Coordinator (CRC). Once the CRC has reviewed the patient info
+a human. Once someone has reviewed the patient info
 and have marked up the reports with their decisions, the `REDCapReportReader` class
 reads/parses the marked-up reports, producing a pandas DataFrame output.
 Finally, the `REDCapMatchResolver` class reads all the reviewed reports into a temporary database.

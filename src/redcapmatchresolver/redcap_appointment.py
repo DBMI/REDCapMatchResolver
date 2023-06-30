@@ -97,7 +97,6 @@ class REDCapAppointment:
         return applicable_headers
 
     def __assign_priority(self, clinics: Union[REDCapClinic, None]) -> int:
-
         if not isinstance(clinics, REDCapClinic):
             clinics = REDCapClinic()
 

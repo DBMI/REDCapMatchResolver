@@ -12,9 +12,9 @@
     ---------------
     Record 1 of 1
 Review: ABOVE (↑) patients are
-    X Same
+    ☐ Same
     ☐ NOT Same: Relatives
-    ☐ NOT Same: Living at same address
+    X NOT Same: Living at same address
     ☐ NOT Same: Parent & child
     ☐ NOT Same: Other
 

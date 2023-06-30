@@ -16,9 +16,9 @@ class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
     """
 
     addendum = (
-        "CRC Review: ABOVE (↑) patients are\n"
+        "Review: ABOVE (↑) patients are\n"
         "    ☐ Same\n"
-        "    ☐ NOT Same: Family members\n"
+        "    ☐ NOT Same: Relatives\n"
         "    ☐ NOT Same: Living at same address\n"
         "    ☐ NOT Same: Parent & child\n"
         "    ☐ NOT Same: Other\n\n"
@@ -82,7 +82,7 @@ class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
         match_index = 1
         total_number_of_match_reports = len(self.__reports)
 
-        with (open(self.__report_filename, mode="a", encoding="utf-8")) as file_obj:
+        with open(self.__report_filename, mode="a", encoding="utf-8") as file_obj:
             for match in self.__reports:
                 record_numbering_line = (
                     f"Record {match_index} of {total_number_of_match_reports}\n"

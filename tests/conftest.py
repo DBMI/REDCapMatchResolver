@@ -183,7 +183,7 @@ def fixture_patient_record_1() -> pandas.DataFrame:
         "appointment_time": "10:11:12",
     }
     df = pandas.DataFrame(d, index=[0])
-    df.set_index('study_id', inplace=True)
+    df.set_index("study_id", inplace=True)
     return df
 
 
@@ -208,7 +208,7 @@ def fixture_patient_record_2() -> pandas.DataFrame:
         "appointment_time": "11:12:13",
     }
     df = pandas.DataFrame(d, index=[0])
-    df.set_index('study_id', inplace=True)
+    df.set_index("study_id", inplace=True)
     return df
 
 
@@ -253,7 +253,7 @@ def fixture_patient_record_3() -> pandas.DataFrame:
         "appointment_time": "13:14:15",
     }
     df = pandas.DataFrame(d, index=[0])
-    df.set_index('study_id', inplace=True)
+    df.set_index("study_id", inplace=True)
     return df
 
 
@@ -278,7 +278,7 @@ def fixture_patient_record_4() -> pandas.DataFrame:
         "appointment_time": "13:14:15",
     }
     df = pandas.DataFrame(d, index=[0])
-    df.set_index('study_id', inplace=True)
+    df.set_index("study_id", inplace=True)
     return df
 
 
@@ -303,7 +303,7 @@ def fixture_patient_record_5() -> pandas.DataFrame:
         "appointment_time": "14:15:16",
     }
     df = pandas.DataFrame(d, index=[0])
-    df.set_index('study_id', inplace=True)
+    df.set_index("study_id", inplace=True)
     return df
 
 
@@ -328,7 +328,7 @@ def fixture_patient_record_6() -> pandas.DataFrame:
         "appointment_time": "11:12:13",
     }
     df = pandas.DataFrame(d, index=[0])
-    df.set_index('study_id', inplace=True)
+    df.set_index("study_id", inplace=True)
     return df
 
 
@@ -353,7 +353,7 @@ def fixture_patient_record_7() -> pandas.DataFrame:
         "appointment_time": "11:12:13",
     }
     df = pandas.DataFrame(d, index=[0])
-    df.set_index('study_id', inplace=True)
+    df.set_index("study_id", inplace=True)
     return df
 
 
@@ -375,7 +375,7 @@ def fixture_patient_record_1_no_appt() -> pandas.DataFrame:
         "death_datetime": "1799-12-14",
     }
     df = pandas.DataFrame(d, index=[0])
-    df.set_index('study_id', inplace=True)
+    df.set_index("study_id", inplace=True)
     return df
 
 
@@ -399,8 +399,44 @@ def fixture_patient_record_1_with_hpi() -> pandas.DataFrame:
         "hpi_score": "1.1",
     }
     df = pandas.DataFrame(d, index=[0])
-    df.set_index('study_id', inplace=True)
+    df.set_index("study_id", inplace=True)
     return df
+
+
+@pytest.fixture(name="report_filename_address")
+def fixture_report_filename_address():
+    return os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), "test_patient_report_address.txt"
+    )
+
+
+@pytest.fixture(name="report_filename_blank")
+def fixture_report_filename_blank():
+    return os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), "test_patient_report_blank.txt"
+    )
+
+
+@pytest.fixture(name="report_filename_parent_child")
+def fixture_report_filename_parent_child():
+    return os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        "test_patient_report_parent_child.txt",
+    )
+
+
+@pytest.fixture(name="report_filename_relatives")
+def fixture_report_filename_relatives():
+    return os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), "test_patient_report_relatives.txt"
+    )
+
+
+@pytest.fixture(name="report_filename_same")
+def fixture_report_filename_same():
+    return os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), "test_patient_report_same.txt"
+    )
 
 
 if __name__ == "__main__":

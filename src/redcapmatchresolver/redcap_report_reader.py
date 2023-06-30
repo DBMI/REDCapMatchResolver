@@ -18,19 +18,20 @@ ReportLine = collections.namedtuple(
 )
 
 
-class CrcReason(Enum):  # pylint: disable=too-few-public-methods
+class DecisionReason(Enum):  # pylint: disable=too-few-public-methods
     """
-    Why did the CRC decide two records are NOT the same patient?
+    Why did we decide two records are NOT the same patient?
     """
 
-    FAMILY = 1
+    RELATIVES = 1
     SAME_ADDRESS = 2
     PARENT_CHILD = 3
     OTHER = 4
+    NO_INFO = 5
 
     @classmethod
-    def convert(cls, decision: str) -> CrcReason:
-        """Allow us to create a CrcReason object from a string.
+    def convert(cls, decision: str) -> DecisionReason:
+        """Allow us to create a DecisionReason object from a string.
 
         Parameters
         ----------
@@ -38,26 +39,26 @@ class CrcReason(Enum):  # pylint: disable=too-few-public-methods
 
         Returns
         -------
-        object : CrcReason object
+        object : DecisionReason object
         """
         if not isinstance(decision, str) or len(decision) == 0:
-            raise TypeError("Input 'decisions' is not the expected string.")
+            return DecisionReason(DecisionReason.OTHER)
 
-        if "family members" in decision.lower():
-            return CrcReason(CrcReason.FAMILY)
+        if "relatives" in decision.lower():
+            return DecisionReason(DecisionReason.RELATIVES)
 
         if "same address" in decision.lower():
-            return CrcReason(CrcReason.SAME_ADDRESS)
+            return DecisionReason(DecisionReason.SAME_ADDRESS)
 
         if "parent" in decision.lower():
-            return CrcReason(CrcReason.PARENT_CHILD)
+            return DecisionReason(DecisionReason.PARENT_CHILD)
 
-        return CrcReason(CrcReason.OTHER)
+        return DecisionReason(DecisionReason.OTHER)
 
 
-class CrcReview(Enum):  # pylint: disable=too-few-public-methods
+class DecisionReview(Enum):  # pylint: disable=too-few-public-methods
     """
-    What did the CRC decide?
+    What did the reviewer decide?
     Are these patient records from the same person or not?
     """
 
@@ -68,8 +69,8 @@ class CrcReview(Enum):  # pylint: disable=too-few-public-methods
     NOT_SURE = 1
 
     @classmethod
-    def convert(cls, decisions: str | list | tuple) -> CrcReview | list:
-        """Allow us to create a CrcReview object from a string.
+    def convert(cls, decisions: str | list | tuple) -> DecisionReview | list:
+        """Allow us to create a DecisionReview object from a string.
 
         Parameters
         ----------
@@ -79,7 +80,7 @@ class CrcReview(Enum):  # pylint: disable=too-few-public-methods
 
         Returns
         -------
-        object : CrcReview object or a list of such objects.
+        object : DecisionReview object or a list of such objects.
         """
         if decisions is None:
             raise TypeError(
@@ -90,27 +91,27 @@ class CrcReview(Enum):  # pylint: disable=too-few-public-methods
             decision_list = []
 
             for this_decision in decisions:
-                decision_list.append(CrcReview.convert(this_decision))
+                decision_list.append(DecisionReview.convert(this_decision))
 
             return decision_list
 
         if isinstance(decisions, tuple) and len(decisions) == 1:
-            return CrcReview.convert(decisions[0])
+            return DecisionReview.convert(decisions[0])
 
         if not isinstance(decisions, str):
             raise TypeError("Input 'decisions' is not the expected string.")
 
         if decisions == "MATCH":
-            return CrcReview(CrcReview.MATCH)
+            return DecisionReview(DecisionReview.MATCH)
 
         if decisions == "NO_MATCH":
-            return CrcReview(CrcReview.NO_MATCH)
+            return DecisionReview(DecisionReview.NO_MATCH)
 
-        return CrcReview(CrcReview.NOT_SURE)
+        return DecisionReview(DecisionReview.NOT_SURE)
 
     def __eq__(self, other: object) -> bool:
         """Defines the == method."""
-        if isinstance(other, CrcReview):
+        if isinstance(other, DecisionReview):
             same = self.value == other.value
             return same
         else:
@@ -118,7 +119,7 @@ class CrcReview(Enum):  # pylint: disable=too-few-public-methods
 
     def __gt__(self, other: object) -> bool:
         """Defines the > method."""
-        if isinstance(other, CrcReview):
+        if isinstance(other, DecisionReview):
             more_than = self.value > other.value
             return more_than
         else:
@@ -126,7 +127,7 @@ class CrcReview(Enum):  # pylint: disable=too-few-public-methods
 
     def __lt__(self, other: object) -> bool:
         """Defines the < method."""
-        if isinstance(other, CrcReview):
+        if isinstance(other, DecisionReview):
             less_than = self.value < other.value
             return less_than
         else:
@@ -333,9 +334,9 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
                 break
 
             #   Read "Same/Not Same" lines.
-            crc_decision, crc_reason = self.__read_crc_decision()
+            decision, reason = self.__read_decision()
 
-            match_dict["CRC_DECISION"] = str(crc_decision)
+            match_dict["DECISION"] = str(decision)
             this_row_df = pandas.DataFrame(match_dict, index=[match_index])
             match_index += 1
 
@@ -349,62 +350,46 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
 
         return reviewed_matches
 
-    def __read_crc_decision(self) -> tuple:
+    def __read_decision(self) -> tuple:
         """From where we are in the report, find the "Same" or "Not Same" sections
         and figure out which one is checked.
 
         Returns
         -------
-        decision, reason : tuple containing CrcReview, CrcReason objects
+        decision, reason : tuple containing DecisionReview, DecisionReason objects
         """
         # https://fsymbols.com/signs/tick/
-        positive_marks = r".xXyY✓✔√✅❎☒☑✕✗✘✖❌"
-        crc_decision = None
-        crc_reason = None
+        decision_marks = r".xXyY✓✔√✅❎☒☑✕✗✘✖❌"
+        decision: DecisionReview = DecisionReview.NOT_SURE
+        reason: DecisionReason = DecisionReason.NO_INFO
 
-        #   We assume we've just read the final separator in this section
-        #   and the Same/Not Same lines are close by.
+        #   Scroll down until we:
+        #       find a checkmark
+        #       find a separator line
+        #       reach the end of the file.
         decision_line = self.__next_line()
 
         while (
-            decision_line is not None
-            and isinstance(decision_line, str)
-            and "Same" not in decision_line
-        ):
-            decision_line = self.__next_line()
-
-        if not isinstance(decision_line, str) or len(decision_line) == 0:
-            return crc_decision, crc_reason
-
-        #   Parse what we've found so far.
-        same_checked = any(elem in decision_line for elem in positive_marks)
-
-        if same_checked:
-            crc_decision = CrcReview.MATCH
-            return crc_decision, crc_reason
-
-        #   Continue reading & until we find a  checkmark or the next separator line.
-        decision_line = self.__next_line()
-
-        while (
-            decision_line is not None
-            and isinstance(decision_line, str)
+            isinstance(decision_line, str)
             and REDCapReportReader.__separator not in decision_line
-            and not any(elem in decision_line for elem in positive_marks)
+            and not any(mark in decision_line for mark in decision_marks)
         ):
             decision_line = self.__next_line()
 
-        #   Did we run out of lines before finding a checkmark?
-        if (
-            not isinstance(decision_line, str)
-            or REDCapReportReader.__separator in decision_line
-        ):
-            return crc_decision, crc_reason
+        reason = DecisionReason.convert(decision_line)
 
-        #   Then we must have found a "NOT Same:" line checked.
-        crc_decision = CrcReview.NO_MATCH
-        crc_reason = CrcReason.convert(decision_line)
-        return crc_decision, crc_reason
+        if isinstance(decision_line, str) and len(decision_line) > 0:
+            #   Does the line say "Same" or "NOT Same"?
+            if "NOT Same" in decision_line:
+                decision = DecisionReview.NO_MATCH
+                return decision, reason
+
+            if "Same" in decision_line:
+                decision = DecisionReview.MATCH
+                return decision, reason
+
+        #   Ran out of data.
+        return decision, reason
 
     def read_file(self, report_filename: str) -> pandas.DataFrame:
         """Lets user specify we are to open a FILE.
