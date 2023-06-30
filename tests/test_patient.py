@@ -185,8 +185,8 @@ def test_patient_appointments(
     #   to_df() method is using the BEST appt.
     df = patient_obj_2.to_df()
     assert isinstance(df, pandas.DataFrame)
-    assert "study_id" in df
-    assert df["study_id"].values[0] == "1234567"
+    assert df.index.name == "study_id"
+    assert df.index.values[0] == "1234567"
     assert "appointment_clinic" in df
     assert df["appointment_clinic"].values[0] == "UPC INTERNAL MEDICINE"
     assert "appointment_date" in df

@@ -7,7 +7,7 @@ import os
 import pytest
 
 from redcapmatchresolver.redcap_match_resolver import REDCapMatchResolver
-from redcapmatchresolver.redcap_report_reader import CrcReview
+from redcapmatchresolver.redcap_report_reader import DecisionReview
 
 
 @pytest.fixture(name="bad_reports_directory")
@@ -55,13 +55,13 @@ def test_match_resolver_db_operation(
 
     #   Can we query the db with a new potential match?
     past_decision = mr_obj.lookup_potential_match(match_block=matching_patients)
-    assert isinstance(past_decision, CrcReview)
-    assert past_decision == CrcReview.MATCH
+    assert isinstance(past_decision, DecisionReview)
+    assert past_decision == DecisionReview.MATCH
 
     #   Can we query the db with a match NOT present in the database?
     past_decision = mr_obj.lookup_potential_match(match_block=non_matching_patients)
-    assert isinstance(past_decision, CrcReview)
-    assert past_decision == CrcReview.NOT_SURE
+    assert isinstance(past_decision, DecisionReview)
+    assert past_decision == DecisionReview.NOT_SURE
 
 
 def test_match_resolver_corner_cases(
@@ -73,7 +73,7 @@ def test_match_resolver_corner_cases(
     #   Exercise section in _insert_reports that fills in missing fields.
     assert mr_obj.read_reports(import_folder=bad_reports_directory)
 
-    #   Exercise section in _insert_reports that skips if CRC decision not shown.
+    #   Exercise section in _insert_reports that skips if decision not shown.
     assert mr_obj.read_reports(import_folder=bad_reports_directory)
 
     #   What if there ARE no previous records? (This is how we'll start, after all.)
@@ -81,8 +81,8 @@ def test_match_resolver_corner_cases(
 
     #   Can we query an EMPTY db with a new potential match?
     past_decision = mr_obj.lookup_potential_match(match_block=matching_patients)
-    assert isinstance(past_decision, CrcReview)
-    assert past_decision == CrcReview.NOT_SURE
+    assert isinstance(past_decision, DecisionReview)
+    assert past_decision == DecisionReview.NOT_SURE
 
 
 def test_match_resolver_errors(
