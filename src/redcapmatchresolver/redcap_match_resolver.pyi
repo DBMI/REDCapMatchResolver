@@ -6,10 +6,10 @@ import pandas  # type: ignore[import]
 from .redcap_report_reader import DecisionReview as CrcReview
 
 class REDCapMatchResolver:
-    def __init__(self, db_filename: str = ...) -> None:
+    def __init__(self, connection: sqlite3.Connection = ...) -> None:
         self.__dataframe_fields_list = None
         self.__database_fields_list = None
-        self.__conn = None
+        self.__connection = sqlite3.Connection
         self.__redcap_reader = None
         self.__log = None
         ...

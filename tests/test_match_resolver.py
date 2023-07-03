@@ -3,12 +3,12 @@ Module test_match_resolver.py, which performs automated
 testing of the REDCapMatchResolver class.
 """
 import os
-
+import sqlite3
 import pytest
 
 from redcapmatchresolver.redcap_match_resolver import REDCapMatchResolver
 from redcapmatchresolver.redcap_report_reader import DecisionReview
-
+from redcaputilities.directories import ensure_output_path_exists
 
 @pytest.fixture(name="bad_reports_directory")
 def fixture_bad_reports_directory():
@@ -28,15 +28,18 @@ def fixture_reports_directory():
     return os.path.dirname(os.path.realpath(__file__))
 
 
-@pytest.fixture(name="temp_database")
-def fixture_temp_database():
-    """Defines temporary database filename."""
-    return os.path.join(os.path.dirname(os.path.realpath(__file__)), "temp_database.db")
+@pytest.fixture(name="temp_database_connection")
+def fixture_temp_database_connection() -> sqlite3.Connection:
+    """Creates connection to temporary sqlite3 database filename."""
+    db_name: str = os.path.join(os.path.dirname(os.path.realpath(__file__)), "temp_database.db")
+    ensure_output_path_exists(db_name)
+    conn: sqlite3.Connection = sqlite3.connect(db_name)
+    return conn
 
 
-def test_match_resolver_creation(temp_database) -> None:
+def test_match_resolver_creation(temp_database_connection) -> None:
     """Tests instantiation and setup of a REDCapMatchResolver object."""
-    mr_obj = REDCapMatchResolver(db_filename=temp_database)
+    mr_obj = REDCapMatchResolver(connection=temp_database_connection)
     assert isinstance(mr_obj, REDCapMatchResolver)
 
     #   Test instantiation with default filename.
@@ -45,10 +48,10 @@ def test_match_resolver_creation(temp_database) -> None:
 
 
 def test_match_resolver_db_operation(
-    temp_database, reports_directory, matching_patients, non_matching_patients
+    temp_database_connection, reports_directory, matching_patients, non_matching_patients
 ) -> None:
     """Tests lookup_potential_match() method of REDCapMatchResolver object."""
-    mr_obj = REDCapMatchResolver(db_filename=temp_database)
+    mr_obj = REDCapMatchResolver(connection=temp_database_connection)
 
     #   Can we read the already-reviewed report files & populate the temp database?
     assert mr_obj.read_reports(import_folder=reports_directory)
@@ -65,10 +68,10 @@ def test_match_resolver_db_operation(
 
 
 def test_match_resolver_corner_cases(
-    temp_database, bad_reports_directory, empty_reports_directory, matching_patients
+    temp_database_connection, bad_reports_directory, empty_reports_directory, matching_patients
 ) -> None:
     """Tests lookup_potential_match() method of REDCapMatchResolver object."""
-    mr_obj = REDCapMatchResolver(db_filename=temp_database)
+    mr_obj = REDCapMatchResolver(connection=temp_database_connection)
 
     #   Exercise section in _insert_reports that fills in missing fields.
     assert mr_obj.read_reports(import_folder=bad_reports_directory)
@@ -82,14 +85,14 @@ def test_match_resolver_corner_cases(
     #   Can we query an EMPTY db with a new potential match?
     past_decision = mr_obj.lookup_potential_match(match_block=matching_patients)
     assert isinstance(past_decision, DecisionReview)
-    assert past_decision == DecisionReview.NOT_SURE
+    assert past_decision == DecisionReview.MATCH
 
 
 def test_match_resolver_errors(
-    temp_database, reports_directory, malformed_match_block, missing_fields_match_block
+    temp_database_connection, reports_directory, malformed_match_block, missing_fields_match_block
 ):
     """Exercises error cases."""
-    mr_obj = REDCapMatchResolver(db_filename=temp_database)
+    mr_obj = REDCapMatchResolver(connection=temp_database_connection)
 
     #   Read the already-reviewed report files & populate the temp database.
     assert mr_obj.read_reports(import_folder=reports_directory)

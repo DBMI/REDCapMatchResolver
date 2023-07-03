@@ -20,12 +20,12 @@ from redcapmatchresolver.redcap_report_reader import DecisionReview, REDCapRepor
 
 class REDCapMatchResolver:
     """
-    Creates a SQLite database from stacks of match reports reviewed by CRCs.
+    Creates a SQLite database from stacks of human-reviewed match reports.
     Allows other code to ask "has this match already been reviewed?" so that
-    we're not asking the CRCs about the same patients over and over.
+    we're not asking reviewers about the same patients over and over.
     """
 
-    def __init__(self, db_filename: str = ""):
+    def __init__(self, connection: sqlite3.Connection = None):
         self.__log: logging.Logger = setup_logging(
             log_filename="redcap_match_resolver.log"
         )
@@ -34,13 +34,19 @@ class REDCapMatchResolver:
         self.__redcap_reader = REDCapReportReader()
 
         self.__build_required_fields()
+        self.__connection: sqlite3.Connection
 
-        if not isinstance(db_filename, str) or len(db_filename) == 0:
+        if isinstance(connection, sqlite3.Connection):
+            self.__connection = connection
+        else:
+            #   Create our own.
             db_filename = os.path.join(
                 patient_data_directory(), "redcap", "temp_matches_database.db"
             )
 
-        self.__connection = self.__setup_db(db_filename=db_filename)
+            self.__connection: sqlite3.Connection = self.__setup_db(
+                db_filename=db_filename
+            )
 
     def __build_decision_table(self, connection: sqlite3.Connection) -> bool:
         """Creates & populates table that translates integer codes to text like 'Same' or 'Not Same'.
@@ -56,15 +62,14 @@ class REDCapMatchResolver:
             self.__log.error("Unable to create 'decisions' table.")
             raise RuntimeError("Unable to create 'decisions' table.")
 
-        cur = connection.cursor()
-
         #   We want these values to exactly equal those in the DecisionReview enum class.
+        cursor: sqlite3.Cursor = connection.cursor()
         insert_sql = """INSERT INTO decisions(decision) VALUES('MATCH')"""
-        cur.execute(insert_sql)
+        cursor.execute(insert_sql)
         insert_sql = """INSERT INTO decisions(decision) VALUES('NO_MATCH')"""
-        cur.execute(insert_sql)
+        cursor.execute(insert_sql)
         insert_sql = """INSERT INTO decisions(decision) VALUES('NOT_SURE')"""
-        cur.execute(insert_sql)
+        cursor.execute(insert_sql)
         connection.commit()
         return True
 
@@ -144,6 +149,7 @@ class REDCapMatchResolver:
         -------
         success : bool
         """
+
         if not isinstance(connection, sqlite3.Connection):  # pragma: no cover
             raise TypeError("Argument 'connection' is not a sqlite3.Connection object.")
 
@@ -166,10 +172,10 @@ class REDCapMatchResolver:
 
         # pylint: disable=logging-fstring-interpolation
         try:
-            database_cursor = connection.cursor()
+            database_cursor: sqlite3.Cursor = connection.cursor()
             database_cursor.execute(create_table_sql)
             connection.commit()
-            success = True
+            success: bool = True
         except sqlite3.Error as database_error:  # pragma: no cover
             self.__log.exception(
                 "Unable to run 'create_table_sql' because {database_error}."
@@ -201,7 +207,7 @@ class REDCapMatchResolver:
             self.__log.error('Unable to drop "matches" table.')
             raise RuntimeError('Unable to drop "matches" table.')
 
-        create_table_sql = """ CREATE TABLE IF NOT EXISTS matches (
+        create_table_sql: str = """ CREATE TABLE IF NOT EXISTS matches (
                                     id integer PRIMARY KEY AUTOINCREMENT,
                                     epic_mrn integer NOT NULL,
                                     redcap_mrn integer NOT NULL,
@@ -222,7 +228,7 @@ class REDCapMatchResolver:
 
         # pylint: disable=logging-fstring-interpolation
         try:
-            database_cursor = connection.cursor()
+            database_cursor: sqlite3.Cursor = connection.cursor()
             database_cursor.execute(create_table_sql)
             connection.commit()
             success = True
@@ -252,14 +258,14 @@ class REDCapMatchResolver:
                 "Called 'drop_decisions_table' method but database is not connected."
             )
 
-        drop_table_sql = """ DROP TABLE IF EXISTS decisions; """
+        drop_table_sql: str = """ DROP TABLE IF EXISTS decisions; """
 
         # pylint: disable=logging-fstring-interpolation
         try:
-            database_cursor = connection.cursor()
+            database_cursor: sqlite3.Cursor = connection.cursor()
             database_cursor.execute(drop_table_sql)
             connection.commit()
-            success = True
+            success: bool = True
         except sqlite3.Error as database_error:  # pragma: no cover
             self.__log.exception(
                 "Unable to run 'drop_decisions_table' because {database_error}."
@@ -290,10 +296,10 @@ class REDCapMatchResolver:
 
         # pylint: disable=logging-fstring-interpolation
         try:
-            database_cursor = connection.cursor()
+            database_cursor: sqlite3.Cursor = connection.cursor()
             database_cursor.execute(drop_table_sql)
             connection.commit()
-            success = True
+            success: bool = True
         except sqlite3.Error as database_error:  # pragma: no cover
             self.__log.exception(
                 "Unable to run 'drop_matches_table' because {database_error}."
@@ -330,21 +336,21 @@ class REDCapMatchResolver:
             if field not in report_df.columns:
                 report_df[field] = None
 
-        all_database_fields_string = ",".join(self.__database_fields_list)
-        num_fields = len(self.__database_fields_list)
-        question_marks_list = list(repeat('?', num_fields))
-        question_marks = ','.join(question_marks_list)
-        insert_sql = (
+        all_database_fields_string: str = ",".join(self.__database_fields_list)
+        num_fields: int = len(self.__database_fields_list)
+        question_marks_list: list = list(repeat("?", num_fields))
+        question_marks: str = ",".join(question_marks_list)
+        insert_sql: str = (
             " INSERT INTO matches("
             + all_database_fields_string
             + ") VALUES("
             + question_marks
             + "); "
         )
-        cur = self.__connection.cursor()
+        cur: sqlite3.Cursor = self.__connection.cursor()
 
         for index in range(len(report_df)):
-            values_list = []
+            values_list: list = []
 
             for dataframe_field in [
                 name for name in self.__dataframe_fields_list if name != "DECISION"
@@ -360,7 +366,7 @@ class REDCapMatchResolver:
                 #   Then there's no point in inserting this row into the database.
                 continue
 
-            decision_string = report_df["DECISION"][index]
+            decision_string: str = report_df["DECISION"][index]
             decision_code = self.__translate_decision(decision_string)
             values_list.append(str(decision_code))
 
