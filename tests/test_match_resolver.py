@@ -85,7 +85,7 @@ def test_match_resolver_corner_cases(
     #   Can we query an EMPTY db with a new potential match?
     past_decision = mr_obj.lookup_potential_match(match_block=matching_patients)
     assert isinstance(past_decision, DecisionReview)
-    assert past_decision == DecisionReview.MATCH
+    assert past_decision == DecisionReview.NOT_SURE
 
 
 def test_match_resolver_errors(
