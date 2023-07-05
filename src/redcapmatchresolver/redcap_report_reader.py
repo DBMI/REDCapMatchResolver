@@ -152,10 +152,14 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def __break_into_pieces(data_line: str) -> list:
-        pieces = re.split(r"\s{2,}", data_line)
+        pieces = re.split(r";", data_line)
 
         # Get rid of empty strings.
         pieces[:] = [piece for piece in pieces if piece]
+
+        # Trim excess whitespace.
+        pieces[:] = [piece.strip() for piece in pieces]
+
         return pieces
 
     @staticmethod
