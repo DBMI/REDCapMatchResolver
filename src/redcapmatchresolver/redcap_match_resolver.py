@@ -4,10 +4,10 @@ used to create/use a SQLite database from
 human-reviewed match reports.
 """
 import glob
-from itertools import repeat
 import logging
 import os
 import sqlite3
+from itertools import repeat
 from sqlite3 import Connection
 from typing import Union
 

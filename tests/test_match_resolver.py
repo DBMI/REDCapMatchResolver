@@ -10,6 +10,7 @@ from redcapmatchresolver.redcap_match_resolver import REDCapMatchResolver
 from redcapmatchresolver.redcap_report_reader import DecisionReview
 from redcaputilities.directories import ensure_output_path_exists
 
+
 @pytest.fixture(name="bad_reports_directory")
 def fixture_bad_reports_directory():
     """Defines temporary bad reports directory."""
@@ -31,7 +32,9 @@ def fixture_reports_directory():
 @pytest.fixture(name="temp_database_connection")
 def fixture_temp_database_connection() -> sqlite3.Connection:
     """Creates connection to temporary sqlite3 database filename."""
-    db_name: str = os.path.join(os.path.dirname(os.path.realpath(__file__)), "temp_database.db")
+    db_name: str = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), "temp_database.db"
+    )
     ensure_output_path_exists(db_name)
     conn: sqlite3.Connection = sqlite3.connect(db_name)
     return conn
@@ -48,7 +51,10 @@ def test_match_resolver_creation(temp_database_connection) -> None:
 
 
 def test_match_resolver_db_operation(
-    temp_database_connection, reports_directory, matching_patients, non_matching_patients
+    temp_database_connection,
+    reports_directory,
+    matching_patients,
+    non_matching_patients,
 ) -> None:
     """Tests lookup_potential_match() method of REDCapMatchResolver object."""
     mr_obj = REDCapMatchResolver(connection=temp_database_connection)
@@ -68,7 +74,10 @@ def test_match_resolver_db_operation(
 
 
 def test_match_resolver_corner_cases(
-    temp_database_connection, bad_reports_directory, empty_reports_directory, matching_patients
+    temp_database_connection,
+    bad_reports_directory,
+    empty_reports_directory,
+    matching_patients,
 ) -> None:
     """Tests lookup_potential_match() method of REDCapMatchResolver object."""
     mr_obj = REDCapMatchResolver(connection=temp_database_connection)
@@ -89,7 +98,10 @@ def test_match_resolver_corner_cases(
 
 
 def test_match_resolver_errors(
-    temp_database_connection, reports_directory, malformed_match_block, missing_fields_match_block
+    temp_database_connection,
+    reports_directory,
+    malformed_match_block,
+    missing_fields_match_block,
 ):
     """Exercises error cases."""
     mr_obj = REDCapMatchResolver(connection=temp_database_connection)

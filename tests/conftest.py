@@ -74,14 +74,14 @@ def fixture_matching_patients() -> str:
     return """
     ---------------
     Study ID: 1234
-    Common Name         Epic Val               RedCap Val           Score
-    C_MRN               123                    123                   1.0
-    C_FIRST             John                   Jon                   0.8
-    C_LAST              Smith                  Smith                 1.0
-    C_DOB               2022-11-01             Nov 1, 2022           1.0
-    C_EMAIL             jsmith@yahoo.com       j.smith@gmail.com     1.0
-    C_ADDR_CALCULATED   1313 Mockingbird Lane  1313 Mockingbird Ln   1.0
-    C_PHONE_CALCULATED  800-555-1212           800-555-1212          1.0
+    Common Name         ;Epic Val               ;RedCap Val            ;Score
+    C_MRN               ;123                    ;123                   ;1.0
+    C_FIRST             ;John                   ;Jon                   ;0.8
+    C_LAST              ;Smith                  ;Smith                 ;1.0
+    C_DOB               ;2022-11-01             ;Nov 1, 2022           ;1.0
+    C_EMAIL             ;jsmith@yahoo.com       ;j.smith@gmail.com     ;1.0
+    C_ADDR_CALCULATED   ;1313 Mockingbird Lane  ;1313 Mockingbird Ln   ;1.0
+    C_PHONE_CALCULATED  ;800-555-1212           ;800-555-1212          ;1.0
     ---------------
     """
 
