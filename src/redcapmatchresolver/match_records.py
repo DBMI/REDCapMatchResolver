@@ -62,152 +62,31 @@ class MatchRecord:
     internal variable 'record' is a dictionary of MatchVariable objects.
     """
 
-    COMMON_FIELDS = [
+    COMMON_FIELDS: list = [
         CommonField("C_MRN", "MRN", "mrn"),
         CommonField("C_FIRST", "PAT_FIRST_NAME", "first_name"),
         CommonField("C_LAST", "PAT_LAST_NAME", "last_name"),
-        CommonField("C_DOB", "BIRTH_DATE", "dob"),
-        CommonField("C_ADDR1", "ADD_LINE_1", "street_address_line_1"),
-        CommonField("C_ADDR2", "ADD_LINE_2", "street_address_line_2"),
-        CommonField("C_CITY", "CITY", "city"),
-        CommonField("C_STATE", "STATE_ABBR", "state"),
-        CommonField("C_ZIP", "ZIP", "zip_code"),
         CommonField("C_EMAIL", "EMAIL_ADDRESS", "email_address"),
+        CommonField("C_ADDR_CALCULATED", "C_ADDR_CALCULATED", "C_ADDR_CALCULATED"),
     ]
 
-    EPIC_FIELDS = """
-        EPIC_MERGE_ID
-        PAT_ID
-        MRN
-        EPIC_INTERNAL_ID
-        PAT_FIRST_NAME
-        PAT_LAST_NAME
-        ADD_LINE_1
-        ADD_LINE_2
-        CITY
-        STATE_ABBR
-        ZIP
-        COUNTY_NAME
-        HOME_PHONE
-        WORK_PHONE
-        EMAIL_ADDRESS
-        BIRTH_DATE
-        SEX_NAME
-        LANGUAGE
-        STATE_C
-        COUNTY_C
-        COUNTRY_C
-        PAT_STATUS_C
-        LANGUAGE_C
-        REG_DATE
-        PAT_UPDATE_DATE
-        DEATH_DATE
-        LANG_CARE_C
-        DEPARTMENT_ID
-        CUR_PCP_PROV_ID
-        PAT_ENC_CSN_ID
-        SERV_AREA_ID
-        DEPARTMENT_NAME
-        APPT_STATUS_C
-        APPT_UPDATE_DATE
-        APPT_MADE_DTTM
-        APPT_CANC_DTTM
-        APPT_DTTM
-        APPT_LENGTH
-        CHECKIN_DTTM
-        CHECKOUT_DTTM
-        PROV_NAME
-        HPI_SCORE
-        HPI_PERCENTILE
-    """.split()
+    FORMAT: str = "%-20s; %-40s; %-40s;"
 
-    # RedCap fields of interest.  Should match to csv header.
-    REDCAP_FIELDS = """
-        REDCAP_MERGE_ID
-        study_id
-        mrn
-        first_name
-        last_name
-        dob
-        street_address_line_1
-        street_address_line_2
-        city
-        state
-        zip_code
-        email_address
-        phone_number
-        appointment_clinic
-        appointment_date
-        appointment_time
-        hpi_score
-        hpi_percentile
-    """.split()
+    SCORE_FIELDS: list = [
+        "C_MRN",
+        "C_FIRST",
+        "C_LAST",
+        "C_DOB",
+        "C_EMAIL",
+        "C_ADDR_CALCULATED",
+        "C_PHONE_CALCULATED",
+    ]
 
     def __init__(self, row: pandas.Series):
         self.__record: dict = {}
         self.__score: int
 
-        if not isinstance(row, pandas.Series):
-            raise TypeError("Argument 'row' is not the expected pandas.Series.")
-
-        column_names = row.axes[0]
-
-        for column_name in column_names:
-            common_field_obj = [
-                cf
-                for cf in MatchRecord.COMMON_FIELDS
-                if cf.epic_field_present(column_name)
-            ]
-
-            if common_field_obj:
-                this_common_field_obj = common_field_obj[0]
-                epic_field = this_common_field_obj.epic_field()
-                epic_value = str(row[epic_field])
-                common_name = this_common_field_obj.common_name()
-                redcap_value = ""
-
-                if common_name in self.__record:
-                    old_record = self.__record[common_name]
-                    redcap_value = old_record.redcap_value()
-
-                self.__record[common_name] = MatchVariable(
-                    epic_value=epic_value, redcap_value=redcap_value
-                )
-
-            common_field_obj = [
-                cf
-                for cf in MatchRecord.COMMON_FIELDS
-                if cf.redcap_field_present(column_name)
-            ]
-
-            if common_field_obj:
-                this_common_field_obj = common_field_obj[0]
-                redcap_field = this_common_field_obj.redcap_field()
-                redcap_value = str(row[redcap_field])
-                common_name = this_common_field_obj.common_name()
-                epic_value = ""
-
-                if common_name in self.__record:
-                    old_record = self.__record[common_name]
-                    epic_value = old_record.epic_value()
-
-                self.__record[common_name] = MatchVariable(
-                    epic_value=epic_value, redcap_value=redcap_value
-                )
-
-            value = str(row[column_name])
-
-            # NOT A COMMON FIELD
-            if column_name in MatchRecord.EPIC_FIELDS:
-                self.__record[column_name] = MatchVariable(
-                    epic_value=value, redcap_value=""
-                )
-
-            if column_name in MatchRecord.REDCAP_FIELDS:
-                self.__record[column_name] = MatchVariable(
-                    epic_value="", redcap_value=value
-                )
-
+        self.__build_dictionary(row)
         self.__score_record()
 
     # Helper...  strip everything but alphanumerics from a string
@@ -217,34 +96,93 @@ class MatchRecord:
         _string = "".join(_filter)
         return _string
 
+    def __build_dictionary(self, row: pandas.Series) -> None:
+        if not isinstance(row, pandas.Series):
+            raise TypeError("Argument 'row' is not the expected pandas.Series.")
+
+        if "study_id" in row:
+            self.__record["study_id"] = MatchVariable(
+                epic_value="", redcap_value=str(row["study_id"])
+            )
+
+        for cf_obj in MatchRecord.COMMON_FIELDS:
+            common_name: str = cf_obj.common_name()
+            epic_value: str = ""
+            epic_field: str = cf_obj.epic_field()
+
+            if epic_field in row:
+                epic_value = str(row[epic_field])
+
+            redcap_field: str = cf_obj.redcap_field()
+            redcap_value: str = ""
+
+            if redcap_field in row:
+                redcap_value = str(row[redcap_field])
+
+            self.__record[common_name] = MatchVariable(
+                epic_value=epic_value, redcap_value=redcap_value
+            )
+        #
+        # Match phone numbers.
+        #
+        epic_home_phone: str = ""
+        epic_work_phone: str = ""
+        redcap_phone: str = ""
+
+        if "WORK_PHONE" in row:
+            epic_work_phone = str(clean_up_phone(row["WORK_PHONE"]))
+
+        if "HOME_PHONE" in row:
+            epic_home_phone = str(clean_up_phone(row["HOME_PHONE"]))
+
+        if "phone_number" in row:
+            redcap_phone = str(clean_up_phone(row["phone_number"]))
+
+        # Try each Epic phone number against the REDCap phone number...
+        match_variable = MatchVariable(
+            epic_value=epic_home_phone, redcap_value=redcap_phone
+        )
+
+        if not match_variable.good_enough():
+            match_variable = MatchVariable(
+                epic_value=epic_work_phone, redcap_value=redcap_phone
+            )
+
+        # ...and use whichever matches (if any).
+        self.__record["C_PHONE_CALCULATED"] = match_variable
+        #
+        #   Date of birth
+        #
+        epic_dob: str = ""
+        redcap_dob: str = ""
+
+        if "BIRTH_DATE" in row:
+            # Use clean_up_date() method from REDCapUtilities--it handles date formatting.
+            epic_dob = str(clean_up_date(row["BIRTH_DATE"]))
+
+        if "dob" in row:
+            redcap_dob = str(clean_up_date(row["dob"]))
+
+        self.__record["C_DOB"] = MatchVariable(
+            epic_value=epic_dob, redcap_value=redcap_dob
+        )
+
     # see if a universal record is a match between its epic fields and redcap fields.
     def is_match(self, exact: bool = False, criteria: int = 4) -> MatchTuple:
         redcap_study_id = self.__record["study_id"].redcap_value()
-        self.__score = 0
+        format: str = MatchRecord.FORMAT + "%s\n"
         summary: str = ""
         summary += "-------------\n"
         summary += "Study ID: " + redcap_study_id + "\n"
-        summary += "%-30s %-30s %-30s %s\n" % (
+        summary += format % (
             "Common Name",
             "Epic Val",
             "RedCap Val",
             "Match Quality",
         )
 
-        for key_fieldname in [
-            "C_MRN",
-            "C_FIRST",
-            "C_LAST",
-            "C_DOB",
-            "C_EMAIL",
-            "C_ADDR_CALCULATED",
-            "C_PHONE_CALCULATED",
-        ]:
+        for key_fieldname in MatchRecord.SCORE_FIELDS:
             this_record = self.__record[key_fieldname]
-
-            if this_record.good_enough():
-                self.__score += 1
-
             summary += this_record.summarize_match(common_name=key_fieldname) + "\n"
 
         summary += "-------------\n"
@@ -260,79 +198,16 @@ class MatchRecord:
 
     # Scores a record and assigns a matching result
     def __score_record(self) -> None:
-        # 1. Easy matches
+        self.__score = 0
+
         # Match all the common fields of a universal record.
         # Common fields are defined at the beginning of this class.  This chunk of code
         # also scores things that are handled explicitly elsewhere, such as phone, date of birth, etc.
-        for common_field_obj in self.COMMON_FIELDS:
-            common_name = common_field_obj.common_name()
-            epic_field = common_field_obj.epic_field()
-            epic_value = self.__record[epic_field].epic_value()
-            redcap_field = common_field_obj.redcap_field()
-            redcap_value = self.__record[redcap_field].redcap_value()
-            self.__record[common_name] = MatchVariable(
-                epic_value=epic_value, redcap_value=redcap_value
-            )
+        for common_name in MatchRecord.SCORE_FIELDS:
+            this_record = self.__record[common_name]
 
-        # 2. Match street address
-        # This is a more difficult match.  We're going to do what credit cards do with AVS.
-        # Namely, we're going to partially match.  We actually have a higher criteria v AVS.
-        # We match street line 1 and zip, call it a day.
-        epic_addr_value: str = ""
-        redcap_addr_value: str = ""
-
-        for common_name in ["C_ADDR1", "C_ZIP"]:
-            match_variable = self.__record[common_name]
-            epic_value = match_variable.epic_value()
-            redcap_value = match_variable.redcap_value()
-            epic_addr_value += epic_value + " | "
-            redcap_addr_value += redcap_value + " | "
-
-        self.__record["C_ADDR_CALCULATED"] = MatchVariable(
-            epic_value=epic_addr_value,
-            redcap_value=redcap_addr_value,
-        )
-
-        # 3. Match phone numbers.
-        # First, clean up formatting...
-        epic_work_phone = str(clean_up_phone(self.__record["WORK_PHONE"].epic_value()))
-        epic_home_phone = str(clean_up_phone(self.__record["HOME_PHONE"].epic_value()))
-        redcap_phone = str(clean_up_phone(self.__record["phone_number"].redcap_value()))
-
-        # ...then try each Epic phone number against the REDCap phone number...
-        match_variable = MatchVariable(
-            epic_value=epic_home_phone, redcap_value=redcap_phone
-        )
-
-        if not match_variable.good_enough():
-            match_variable = MatchVariable(
-                epic_value=epic_work_phone, redcap_value=redcap_phone
-            )
-
-        # ...and use whichever matches (if any).
-        self.__record["C_PHONE_CALCULATED"] = match_variable
-
-        # 4. Match date of birth.
-        # Use clean_up_date() method from REDCapUtilities--it handles date formatting.
-        epic_dob: str = str(clean_up_date(self.__record["BIRTH_DATE"].epic_value()))
-        redcap_dob: str = str(clean_up_date(self.__record["dob"].redcap_value()))
-        self.__record["C_DOB"] = MatchVariable(
-            epic_value=epic_dob, redcap_value=redcap_dob
-        )
-
-        # 5. Match state names, allowing for both abbreviations ("CA") and full names ("California").
-        state_abbreviation_converter: StateAbbreviationConverter = (
-            StateAbbreviationConverter()
-        )
-        epic_state: str = state_abbreviation_converter.full_name(
-            self.__record["STATE_ABBR"].epic_value()
-        )
-        redcap_state: str = state_abbreviation_converter.full_name(
-            self.__record["state"].redcap_value()
-        )
-        self.__record["C_STATE"] = MatchVariable(
-            epic_value=epic_state, redcap_value=redcap_state
-        )
+            if this_record.good_enough():
+                self.__score += 1
 
 
 class MatchVariable:
@@ -400,7 +275,8 @@ class MatchVariable:
 
     # simple enum to string conversion.  Useful for output.
     def summarize_match(self, common_name: str) -> str:
-        return "%-30s %-30s %-30s [%s]" % (
+        format: str = MatchRecord.FORMAT + "[%s]"
+        return format % (
             common_name,
             self.__epic_value,
             self.__redcap_value,

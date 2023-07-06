@@ -96,7 +96,7 @@ def fixture_fake_records_dataframe() -> pandas.DataFrame:
         phone_number: str = fake.phone_number()
         phone_number: str = re.sub(r"x\d+", "", phone_number)
         state_abbr: str = fake.state_abbr(include_territories=False)
-        full_state_name: str = state_abbr_converter.full_name(state_abbr)
+        # full_state_name: str = state_abbr_converter.full_name(state_abbr)
 
         record = {
             "study_id": fake.random_int(min=1000, max=50000),
@@ -112,10 +112,10 @@ def fixture_fake_records_dataframe() -> pandas.DataFrame:
             "street_address_line_1": fake.street_address(),
             "ADD_LINE_2": "",
             "street_address_line_2": "",
-            "CITY": "",
-            "city": fake.city(),
-            "STATE_ABBR": "",
-            "state": full_state_name,
+            # "CITY": "",
+            # "city": fake.city(),
+            # "STATE_ABBR": "",
+            # "state": full_state_name,
             "ZIP": "",
             "zip_code": fake.zipcode_in_state(state_abbr),
             "email_address": fake.email(),  # The order here is REVERSED (first REDCap, then Epic)
@@ -123,6 +123,7 @@ def fixture_fake_records_dataframe() -> pandas.DataFrame:
             "HOME_PHONE": "",
             "WORK_PHONE": "",
             "phone_number": phone_number,
+            "C_ADDR_CALCULATED": "",
         }
 
         # We'll start out with mostly identical REDCap and Epic fields.
@@ -133,6 +134,7 @@ def fixture_fake_records_dataframe() -> pandas.DataFrame:
         record["EMAIL_ADDRESS"] = record["email_address"]
         record["HOME_PHONE"] = record["phone_number"]
         record["WORK_PHONE"] = record["phone_number"]
+        record["C_ADDR_CALCULATED"] = record["ADD_LINE_1"] + " | " + record["ZIP"]
 
         # Add a non-alphanumeric character to the patient's first name
         # to exercise MATCH_QUALITY.MATCHED_ALPHA_NUM.
@@ -143,12 +145,6 @@ def fixture_fake_records_dataframe() -> pandas.DataFrame:
 
         # Use a different date format to exercise clean_up_date() method.
         record["BIRTH_DATE"] = birthdate.strftime("%Y-%m-%d %H:%M:%S")
-
-        # Add a character to the city to exercise MATCH_QUALITY.MATCHED_SUBSTRING.
-        record["CITY"] = record["city"] + "A"
-
-        # Use the abbreviation, not the full name, for Epic STATE_ABBR.
-        record["STATE_ABBR"] = state_abbr
 
         dataframes.append(pandas.DataFrame([record], index=[index]))
 

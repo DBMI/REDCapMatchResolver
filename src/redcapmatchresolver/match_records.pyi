@@ -21,16 +21,15 @@ class CommonField:
 
 class MatchRecord:
     COMMON_FIELDS: List[CommonField]
-    EPIC_FIELDS: List[str]
-    REDCAP_FIELDS: List[str]
+    FORMAT: str
+    SCORE_FIELDS: List[str]
     def __init__(self, row: pandas.Series) -> None:
         self.__score: int
         self.__record: dict
         ...
     @staticmethod
     def as_alphanum(string: str) -> str: ...
-    def __clean_up_record(self) -> None:
-        pass
+    def __build_dictionary(self, row: pandas.Series) -> None: ...
     @staticmethod
     def evaluate_single_variable(
         epic_value: str, redcap_value: str
