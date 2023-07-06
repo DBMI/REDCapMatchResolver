@@ -2,8 +2,12 @@
 Contains test fixtures available across all test_*.py files.
 """
 import os
+import datetime
+import re
 import pandas
 import pytest
+from faker import Faker
+from redcaprecordsynthesizer.state_abbr_conversion import StateAbbreviationConverter
 
 
 @pytest.fixture(name="appointment_df")
@@ -66,6 +70,89 @@ def fixture_export_fields() -> list:
         primary_consent_date
         paired_status
     """.split()
+
+
+# https://stackoverflow.com/a/33879151/20241849
+@pytest.fixture(name="fake_records_dataframe")
+def fixture_fake_records_dataframe() -> pandas.DataFrame:
+    """
+    Synthesize multiple records for testing.
+
+    Return
+    ------
+    pandas.DataFrame
+    """
+    num_records_to_synthesize: int = 1
+    fake: Faker = Faker()
+    dataframes = []
+    state_abbr_converter: StateAbbreviationConverter = StateAbbreviationConverter()
+
+    for index in range(num_records_to_synthesize):
+        birthdate: datetime.datetime = fake.date_of_birth(
+            minimum_age=18, maximum_age=115
+        )
+
+        # Strip off the extension.
+        phone_number: str = fake.phone_number()
+        phone_number: str = re.sub(r"x\d+", "", phone_number)
+        state_abbr: str = fake.state_abbr(include_territories=False)
+        full_state_name: str = state_abbr_converter.full_name(state_abbr)
+
+        record = {
+            "study_id": fake.random_int(min=1000, max=50000),
+            "MRN": "",
+            "mrn": fake.random_int(min=1000, max=100000),
+            "PAT_FIRST_NAME": "",
+            "first_name": fake.first_name(),
+            "PAT_LAST_NAME": "",
+            "last_name": fake.last_name(),
+            "BIRTH_DATE": "",
+            "dob": birthdate.strftime("%Y-%m-%d"),
+            "ADD_LINE_1": "",
+            "street_address_line_1": fake.street_address(),
+            "ADD_LINE_2": "",
+            "street_address_line_2": "",
+            "CITY": "",
+            "city": fake.city(),
+            "STATE_ABBR": "",
+            "state": full_state_name,
+            "ZIP": "",
+            "zip_code": fake.zipcode_in_state(state_abbr),
+            "email_address": fake.email(),  # The order here is REVERSED (first REDCap, then Epic)
+            "EMAIL_ADDRESS": "",  # to exercise a different part of the code.
+            "HOME_PHONE": "",
+            "WORK_PHONE": "",
+            "phone_number": phone_number,
+        }
+
+        # We'll start out with mostly identical REDCap and Epic fields.
+        record["MRN"] = record["mrn"]
+        record["ADD_LINE_1"] = record["street_address_line_1"]
+        record["ADD_LINE_2"] = record["street_address_line_2"]
+        record["ZIP"] = record["zip_code"]
+        record["EMAIL_ADDRESS"] = record["email_address"]
+        record["HOME_PHONE"] = record["phone_number"]
+        record["WORK_PHONE"] = record["phone_number"]
+
+        # Add a non-alphanumeric character to the patient's first name
+        # to exercise MATCH_QUALITY.MATCHED_ALPHA_NUM.
+        record["PAT_FIRST_NAME"] = record["first_name"] + ";"
+
+        # Set PAT_LAST_NAME to all lowercase to exercise MATCH_QUALITY..MATCHED_CASE_INSENSITIVE.
+        record["PAT_LAST_NAME"] = record["last_name"].lower()
+
+        # Use a different date format to exercise clean_up_date() method.
+        record["BIRTH_DATE"] = birthdate.strftime("%Y-%m-%d %H:%M:%S")
+
+        # Add a character to the city to exercise MATCH_QUALITY.MATCHED_SUBSTRING.
+        record["CITY"] = record["city"] + "A"
+
+        # Use the abbreviation, not the full name, for Epic STATE_ABBR.
+        record["STATE_ABBR"] = state_abbr
+
+        dataframes.append(pandas.DataFrame([record], index=[index]))
+
+    return pandas.concat(dataframes)
 
 
 @pytest.fixture(name="matching_patients")
