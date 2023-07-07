@@ -298,16 +298,12 @@ class REDCapMatchResolver:
 
         return success
 
-    def __insert_report(self, report_df: pandas.DataFrame = None) -> bool:
+    def __insert_report(self, report_df: pandas.DataFrame = None) -> None:
         """Inserts the report's DataFrame as a row in the database.
 
         Parameters
         ----------
         report_df : pandas.DataFrame
-
-        Returns
-        -------
-        success : bool
         """
         if not isinstance(report_df, pandas.DataFrame):  # pragma: no cover
             self.__log.error("Input 'df' is not a pandas.DataFrame.")
@@ -365,12 +361,11 @@ class REDCapMatchResolver:
                 cur.execute(insert_sql, values_list)
                 self.__connection.commit()
             except sqlite3.Error as database_error:  # pragma: no cover
+                # We won't raise this error, because there could be something
+                # wrong with the text report & we don't want to kill the whole process.
                 self.__log.exception(
                     "Error in running table insert method because {database_error}."
                 )
-                raise database_error
-
-        return True
 
     def __is_connected(self) -> bool:
         """Tests to ensure we've already created the '.__conn' property.
@@ -477,16 +472,12 @@ class REDCapMatchResolver:
                 )
                 raise database_error
 
-    def read_reports(self, import_folder: str) -> bool:
+    def read_reports(self, import_folder: str) -> None:
         """Read all the report files & imports into db.
 
         Parameters
         ----------
         import_folder : str
-
-        Returns
-        -------
-        success : bool
         """
         if not self.__reader_ready():  # pragma: no cover
             self.__log.error("Unable to create REDCapReportReader object.")
@@ -507,13 +498,7 @@ class REDCapMatchResolver:
                 )
                 raise TypeError(f"Unable to read '{file}'.")
 
-            insert_success = self.__insert_report(report_df)
-
-            if not insert_success:  # pragma: no cover
-                self.__log.error("Unable to insert into db.")
-                raise RuntimeError("Unable to insert into db.")
-
-        return True
+            self.__insert_report(report_df)
 
     def __reader_ready(self) -> bool:
         """Tests to see if REDCapReportReader object was properly instantiated.

@@ -3,7 +3,7 @@ from typing import Union
 
 import pandas  # type: ignore[import]
 
-from .redcap_report_reader import DecisionReview as CrcReview
+from .redcap_report_reader import DecisionReview
 
 class REDCapMatchResolver:
     def __init__(self, connection: sqlite3.Connection = ...) -> None:
@@ -26,12 +26,12 @@ class REDCapMatchResolver:
         pass
     def __drop_matches_table(self, connection: sqlite3.Connection) -> bool:
         pass
-    def __insert_report(self, report_df: pandas.DataFrame) -> bool:
+    def __insert_report(self, report_df: pandas.DataFrame) -> None:
         pass
     def __is_connected(self, connection: Union[sqlite3.Connection, None]) -> bool:
         pass
     def lookup_potential_match(self, match_block: str) -> DecisionReview: ...
-    def read_reports(self, import_folder: str) -> bool: ...
+    def read_reports(self, import_folder: str) -> None: ...
     def __setup_db(self, db_filename: str) -> sqlite3.Connection:
         pass
     def __reader_ready(self):

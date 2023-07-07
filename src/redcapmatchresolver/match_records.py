@@ -176,8 +176,8 @@ class MatchRecord:
         summary += "Study ID: " + redcap_study_id + "\n"
         summary += format % (
             "Common Name",
-            "Epic Val",
-            "RedCap Val",
+            "Epic Value",
+            "RedCap Value",
             "Match Quality",
         )
 
