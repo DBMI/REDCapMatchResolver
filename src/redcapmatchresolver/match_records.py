@@ -62,12 +62,18 @@ class MatchRecord:
     internal variable 'record' is a dictionary of MatchVariable objects.
     """
 
+    # A note on phone matching. Epic has two phone numbers (home and work) but REDCap has only one.
+    # We'll try to match both but expect only one to match. By keeping the score threshold the same,
+    # we'll still get the same score as when we pre-filtered the phone numbers to match.
     COMMON_FIELDS: list = [
         CommonField("C_MRN", "MRN", "mrn"),
         CommonField("C_FIRST", "PAT_FIRST_NAME", "first_name"),
         CommonField("C_LAST", "PAT_LAST_NAME", "last_name"),
+        CommonField("C_DOB", "BIRTH_DATE", "dob"),
         CommonField("C_EMAIL", "EMAIL_ADDRESS", "email_address"),
-        CommonField("C_ADDR_CALCULATED", "C_ADDR_CALCULATED", "C_ADDR_CALCULATED"),
+        CommonField("C_ADDR_CALCULATED", "E_ADDR_CALCULATED", "R_ADDR_CALCULATED"),
+        CommonField("C_HOME_PHONE", "HOME_PHONE", "phone_number"),
+        CommonField("C_WORK_PHONE", "WORK_PHONE", "phone_number"),
     ]
 
     FORMAT: str = "%-20s; %-40s; %-40s;"
@@ -150,22 +156,6 @@ class MatchRecord:
 
         # ...and use whichever matches (if any).
         self.__record["C_PHONE_CALCULATED"] = match_variable
-        #
-        #   Date of birth
-        #
-        epic_dob: str = ""
-        redcap_dob: str = ""
-
-        if "BIRTH_DATE" in row:
-            # Use clean_up_date() method from REDCapUtilities--it handles date formatting.
-            epic_dob = str(clean_up_date(row["BIRTH_DATE"]))
-
-        if "dob" in row:
-            redcap_dob = str(clean_up_date(row["dob"]))
-
-        self.__record["C_DOB"] = MatchVariable(
-            epic_value=epic_dob, redcap_value=redcap_dob
-        )
 
     # see if a universal record is a match between its epic fields and redcap fields.
     def is_match(self, exact: bool = False, criteria: int = 4) -> MatchTuple:

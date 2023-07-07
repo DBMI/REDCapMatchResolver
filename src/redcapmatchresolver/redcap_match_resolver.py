@@ -98,6 +98,7 @@ class REDCapMatchResolver:
             self.__database_fields_list.append(redcap_field.lower())
             self.__dataframe_fields_list.append(redcap_field)
 
+        #   Tack on the decision.
         self.__database_fields_list.append("decision_code")
         self.__dataframe_fields_list.append("DECISION")
 
@@ -472,12 +473,16 @@ class REDCapMatchResolver:
                 )
                 raise database_error
 
-    def read_reports(self, import_folder: str) -> None:
+    def read_reports(self, import_folder: str) -> bool:
         """Read all the report files & imports into db.
 
         Parameters
         ----------
         import_folder : str
+
+        Returns
+        -------
+        success : bool
         """
         if not self.__reader_ready():  # pragma: no cover
             self.__log.error("Unable to create REDCapReportReader object.")
@@ -499,6 +504,8 @@ class REDCapMatchResolver:
                 raise TypeError(f"Unable to read '{file}'.")
 
             self.__insert_report(report_df)
+
+        return True
 
     def __reader_ready(self) -> bool:
         """Tests to see if REDCapReportReader object was properly instantiated.

@@ -1,7 +1,7 @@
 
     ---------------
     Study ID: 1234
-    Common Name                   ;Epic Val                      ;RedCap Val                    ;Score
+    Common Name                   ;Epic Value                    ;RedCap Value                  ;Score
     C_MRN                         ;123                           ;123                           ;1.0
     C_FIRST                       ;John                          ;Jon                           ;0.8
     C_LAST                        ;Smith                         ;Smith                         ;1.0
