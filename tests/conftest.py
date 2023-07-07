@@ -123,7 +123,8 @@ def fixture_fake_records_dataframe() -> pandas.DataFrame:
             "HOME_PHONE": "",
             "WORK_PHONE": "",
             "phone_number": phone_number,
-            "C_ADDR_CALCULATED": "",
+            "E_ADDR_CALCULATED": "",
+            "R_ADDR_CALCULATED": "",
         }
 
         # We'll start out with mostly identical REDCap and Epic fields.
@@ -134,7 +135,10 @@ def fixture_fake_records_dataframe() -> pandas.DataFrame:
         record["EMAIL_ADDRESS"] = record["email_address"]
         record["HOME_PHONE"] = record["phone_number"]
         record["WORK_PHONE"] = record["phone_number"]
-        record["C_ADDR_CALCULATED"] = record["ADD_LINE_1"] + " | " + record["ZIP"]
+        record["E_ADDR_CALCULATED"] = record["ADD_LINE_1"] + " | " + record["ZIP"]
+        record["R_ADDR_CALCULATED"] = (
+            record["street_address_line_1"] + " | " + record["zip_code"]
+        )
 
         # Add a non-alphanumeric character to the patient's first name
         # to exercise MATCH_QUALITY.MATCHED_ALPHA_NUM.
@@ -157,7 +161,7 @@ def fixture_matching_patients() -> str:
     return """
     ---------------
     Study ID: 1234
-    Common Name         ;Epic Val               ;RedCap Val            ;Score
+    Common Name         ;Epic Value             ;RedCap Value          ;Score
     C_MRN               ;123                    ;123                   ;1.0
     C_FIRST             ;John                   ;Jon                   ;0.8
     C_LAST              ;Smith                  ;Smith                 ;1.0
@@ -182,13 +186,13 @@ def fixture_malformed_match_block() -> str:
     ---------------
     Study ID: 1234
     Record: 1 of 1000
-    Common Name         Epic Val                         Score
-    C_MRN               1234                   1235                  0.7
-    C_FIRST             Johnnie                Jonfen                0.8
-    C_LAST              Schmidt                Schmidt               1.0
-    C_EMAIL             jsmith@yahoo.com       j.smith@gmail.com     1.0
-    C_ADDR_CALCULATED   4 Privet Drive         4 Privet Drive        1.0
-    C_PHONE_CALCULATED  800-555-1212           800-555-1212          1.0
+    Common Name         ;Epic Value                                   ;Score
+    C_MRN               ;1234                   ;1235                 ;0.7
+    C_FIRST             ;Johnnie                ;Jonfen               ;0.8
+    C_LAST              ;Schmidt                ;Schmidt              ;1.0
+    C_EMAIL             ;jsmith@yahoo.com       ;j.smith@gmail.com    ;1.0
+    C_ADDR_CALCULATED   ;4 Privet Drive         ;4 Privet Drive       ;1.0
+    C_PHONE_CALCULATED  ;800-555-1212           ;800-555-1212          ;1.0
     ---------------
     """
 
@@ -200,13 +204,13 @@ def fixture_missing_fields_match_block() -> str:
     ---------------
     Study ID: 1234
     Record: 1 of 1000
-    Common Name         Epic Val               RedCap Val           Score
-    C_MRN               1234                   1235                  0.7
-    C_FIRST             Johnnie                Jonfen                0.8
-    C_LAST              Schmidt                Schmidt               1.0
-    C_EMAIL             jsmith@yahoo.com       j.smith@gmail.com     1.0
-    C_ADDR_CALCULATED   4 Privet Drive         4 Privet Drive        1.0
-    C_PHONE_CALCULATED  800-555-1212           800-555-1212          1.0
+    Common Name         ;Epic Value             ;RedCap Value         ;Score
+    C_MRN               ;1234                   ;1235                 ;0.7
+    C_FIRST             ;Johnnie                ;Jonfen               ;0.8
+    C_LAST              ;Schmidt                ;Schmidt              ;1.0
+    C_EMAIL             ;jsmith@yahoo.com       ;j.smith@gmail.com    ;1.0
+    C_ADDR_CALCULATED   ;4 Privet Drive         ;4 Privet Drive       ;1.0
+    C_PHONE_CALCULATED  ;800-555-1212           ;800-555-1212          ;1.0
     ---------------
     """
 
@@ -218,14 +222,14 @@ def fixture_non_matching_patients() -> str:
     ---------------
     Study ID: 1234
     Record: 1 of 1000
-    Common Name         Epic Val               RedCap Val           Score
-    C_MRN               1234                   1235                  0.7
-    C_FIRST             Johnnie                Jonfen                0.8
-    C_LAST              Schmidt                Schmidt               1.0
-    C_DOB               2022-11-18             Nov 18, 2022          1.0
-    C_EMAIL             jsmith@yahoo.com       j.smith@gmail.com     1.0
-    C_ADDR_CALCULATED   4 Privet Drive         4 Privet Drive        1.0
-    C_PHONE_CALCULATED  800-555-1212           800-555-1212          1.0
+    Common Name         ;Epic Value             ;RedCap Value          ;Score
+    C_MRN               ;1234                   ;1235                  ;0.7
+    C_FIRST             ;Johnnie                ;Jonfen                ;0.8
+    C_LAST              ;Schmidt                ;Schmidt               ;1.0
+    C_DOB               ;2022-11-18             ;Nov 18, 2022          ;1.0
+    C_EMAIL             ;jsmith@yahoo.com       ;j.smith@gmail.com     ;1.0
+    C_ADDR_CALCULATED   ;4 Privet Drive         ;4 Privet Drive        ;1.0
+    C_PHONE_CALCULATED  ;800-555-1212           ;800-555-1212          ;1.0
     ---------------
     """
 

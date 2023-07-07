@@ -189,7 +189,7 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
         Parameters
         ----------
         data_line : str Line from the report
-        keyword : Desired keyword (like 'Epic Val')
+        keyword : Desired keyword (like 'Epic Value')
 
         Returns
         -------
@@ -290,15 +290,15 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
 
         while True:
             #   Search through to the start of the next match pair.
-            while next_line is not None and "Epic Val" not in next_line:
+            while next_line is not None and "Epic Value" not in next_line:
                 next_line = self.__next_line()
 
             if next_line is None:
                 break
 
             #   Figure out which column holds Epic, RedCap values.
-            epic_index = REDCapReportReader._find_column(next_line, "Epic Val")
-            redcap_index = REDCapReportReader._find_column(next_line, "RedCap Val")
+            epic_index = REDCapReportReader._find_column(next_line, "Epic Value")
+            redcap_index = REDCapReportReader._find_column(next_line, "RedCap Value")
 
             #   Initialize dictionary for this match.
             match_dict = {}
