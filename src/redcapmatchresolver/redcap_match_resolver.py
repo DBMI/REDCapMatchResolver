@@ -134,12 +134,13 @@ class REDCapMatchResolver:
                 raise RuntimeError(
                     f"Unable to establish connection to '{db_filename}'."
                 )
-        except sqlite3.Error as database_error:  # pragma: no cover
+        except (
+            sqlite3.IntegrityError,
+            sqlite3.InternalError,
+        ) as database_error:  # pragma: no cover
             self.__log.exception(
                 "Unable to open file {db_filename} because {database_error}.",
-                extra={
-                    "db_filename": db_filename,
-                },
+                extra={"db_filename": db_filename, "database_error": database_error},
             )
             raise database_error
 
@@ -176,9 +177,13 @@ class REDCapMatchResolver:
             database_cursor.execute(create_table_sql)
             self.__connection.commit()
             success: bool = True
-        except sqlite3.Error as database_error:  # pragma: no cover
+        except (
+            sqlite3.IntegrityError,
+            sqlite3.InternalError,
+        ) as database_error:  # pragma: no cover
             self.__log.exception(
-                "Unable to run 'create_table_sql' because {database_error}."
+                "Unable to run 'create_table_sql' because {database_error}.",
+                extra={"database_error": database_error},
             )
             raise database_error
 
@@ -229,9 +234,13 @@ class REDCapMatchResolver:
             database_cursor.execute(create_table_sql)
             self.__connection.commit()
             success = True
-        except sqlite3.Error as database_error:  # pragma: no cover
+        except (
+            sqlite3.IntegrityError,
+            sqlite3.InternalError,
+        ) as database_error:  # pragma: no cover
             self.__log.exception(
-                "Unable to run 'create_table_sql' because {database_error}."
+                "Unable to run 'create_table_sql' because {database_error}.",
+                extra={"database_error": database_error},
             )
             raise database_error
 
@@ -260,9 +269,13 @@ class REDCapMatchResolver:
             database_cursor.execute(drop_table_sql)
             self.__connection.commit()
             success: bool = True
-        except sqlite3.Error as database_error:  # pragma: no cover
+        except (
+            sqlite3.IntegrityError,
+            sqlite3.InternalError,
+        ) as database_error:  # pragma: no cover
             self.__log.exception(
-                "Unable to run 'drop_decisions_table' because {database_error}."
+                "Unable to run 'drop_decisions_table' because {database_error}.",
+                extra={"database_error": database_error},
             )
             raise database_error
 
@@ -291,9 +304,13 @@ class REDCapMatchResolver:
             database_cursor.execute(drop_table_sql)
             self.__connection.commit()
             success: bool = True
-        except sqlite3.Error as database_error:  # pragma: no cover
+        except (
+            sqlite3.IntegrityError,
+            sqlite3.InternalError,
+        ) as database_error:  # pragma: no cover
             self.__log.exception(
-                "Unable to run 'drop_matches_table' because {database_error}."
+                "Unable to run 'drop_matches_table' because {database_error}.",
+                extra={"database_error": database_error},
             )
             raise database_error
 
@@ -361,11 +378,15 @@ class REDCapMatchResolver:
             try:
                 cur.execute(insert_sql, values_list)
                 self.__connection.commit()
-            except sqlite3.Error as database_error:  # pragma: no cover
+            except (
+                sqlite3.IntegrityError,
+                sqlite3.InternalError,
+            ) as database_error:  # pragma: no cover
                 # We won't raise this error, because there could be something
                 # wrong with the text report & we don't want to kill the whole process.
                 self.__log.exception(
-                    "Error in running table insert method because {database_error}."
+                    "Error in running table insert method because {database_error}.",
+                    extra={"database_error": database_error},
                 )
 
     def __is_connected(self) -> bool:
@@ -467,9 +488,13 @@ class REDCapMatchResolver:
                     return DecisionReview(max(crc_review_objects))
 
                 return DecisionReview(DecisionReview.NOT_SURE)
-            except sqlite3.Error as database_error:  # pragma: no cover
+            except (
+                sqlite3.IntegrityError,
+                sqlite3.InternalError,
+            ) as database_error:  # pragma: no cover
                 self.__log.exception(
-                    "Error in running table query method because {database_error}."
+                    "Error in running table query method because {database_error}.",
+                    extra={"database_error": database_error},
                 )
                 raise database_error
 
@@ -550,8 +575,12 @@ class REDCapMatchResolver:
             cur.execute(query_sql, [decision_enum_payload])
             rows = cur.fetchall()
             return int(rows[0][0])
-        except sqlite3.Error as database_error:  # pragma: no cover
+        except (
+            sqlite3.IntegrityError,
+            sqlite3.InternalError,
+        ) as database_error:  # pragma: no cover
             self.__log.exception(
-                "Error in running 'decisions' table query because {database_error}."
+                "Error in running 'decisions' table query because {database_error}.",
+                extra={"database_error": database_error},
             )
             raise database_error
