@@ -6,7 +6,7 @@ testing of the classes:
     MatchVariable
 """
 from redcapduplicatedetector.match_quality import MatchQuality
-from src.redcapmatchresolver.match_records import (
+from redcapmatchresolver.match_records import (
     CommonField,
     MatchRecord,
     MatchTuple,

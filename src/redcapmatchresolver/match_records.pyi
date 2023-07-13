@@ -36,9 +36,13 @@ class MatchRecord:
     def evaluate_single_variable(
         epic_value: str, redcap_value: str
     ) -> MatchQuality: ...
+    def __init_summary(self) -> str:
+        pass
     def is_match(self, exact: bool = ..., criteria: int = ...) -> MatchTuple: ...
     def score(self) -> int: ...
     def __score_record(self) -> None:
+        pass
+    def __select_best_phone(self, row: pandas.Series) -> None:
         pass
 
 class MatchVariable:

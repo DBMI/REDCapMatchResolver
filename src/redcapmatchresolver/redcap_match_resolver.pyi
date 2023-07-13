@@ -1,19 +1,19 @@
 import sqlite3
+from logging import Logger
 from typing import Union
 
 import pandas  # type: ignore[import]
 
-from .redcap_report_reader import DecisionReview
+from .redcap_report_reader import DecisionReview, REDCapReportReader
 
 class REDCapMatchResolver:
     def __init__(self, connection: sqlite3.Connection = ...) -> None:
-        self.__dataframe_fields_list = None
-        self.__database_fields_list = None
-        self.__connection = sqlite3.Connection
-        self.__redcap_reader = None
-        self.__log = None
+        self.__dataframe_fields_list: list = None
+        self.__database_fields_list: list = None
+        self.__connection: sqlite3.Connection = None
+        self.__redcap_reader: REDCapReportReader = None
+        self.__log: Logger = None
         ...
-        pass
     def __build_required_fields(self) -> None:
         pass
     def __create_connection(self, db_filename: str) -> sqlite3.Connection:

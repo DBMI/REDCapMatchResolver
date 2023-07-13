@@ -5,9 +5,9 @@ from setuptools import find_packages, setup
 
 setup(
     name="REDCapMatchResolver",
-    version="0.9.9",
+    version="1.0.0",
     packages=find_packages(),
-    package_dir={"": "src"},
+    package_dir={"src": "src"},
     include_package_data=True,
     package_data={'': ['data/*.xlsx']},
     url="https://github.com/DBMI/REDCapMatchResolver",

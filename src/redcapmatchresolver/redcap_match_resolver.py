@@ -9,7 +9,6 @@ import os
 import sqlite3
 from itertools import repeat
 from sqlite3 import Connection
-from typing import Union
 
 import pandas  # type: ignore[import]
 from redcaputilities.directories import ensure_output_path_exists
@@ -29,9 +28,9 @@ class REDCapMatchResolver:
         self.__log: logging.Logger = setup_logging(
             log_filename="redcap_match_resolver.log"
         )
-        self.__database_fields_list = []  # type: ignore[var-annotated]
-        self.__dataframe_fields_list = []  # type: ignore[var-annotated]
-        self.__redcap_reader = REDCapReportReader()
+        self.__database_fields_list: list = []  # type: ignore[var-annotated]
+        self.__dataframe_fields_list: list = []  # type: ignore[var-annotated]
+        self.__redcap_reader: REDCapReportReader = REDCapReportReader()
 
         self.__build_required_fields()
         self.__connection: sqlite3.Connection
@@ -78,25 +77,12 @@ class REDCapMatchResolver:
         return True
 
     def __build_required_fields(self) -> None:
-        fields_list = [
-            "MRN",
-            "FIRST",
-            "LAST",
-            "DOB",
-            "EMAIL",
-            "ADDR_CALCULATED",
-            "PHONE_CALCULATED",
-        ]
-
         #   Ensure all expected fields are present.
-        for field in fields_list:
-            epic_field = "EPIC_" + field
-            self.__database_fields_list.append(epic_field.lower())
-            self.__dataframe_fields_list.append(epic_field)
+        self.__database_fields_list.append("PAT_ID")
+        self.__dataframe_fields_list.append("PAT_ID")
 
-            redcap_field = "REDCAP_" + field
-            self.__database_fields_list.append(redcap_field.lower())
-            self.__dataframe_fields_list.append(redcap_field)
+        self.__database_fields_list.append("study_id")
+        self.__dataframe_fields_list.append("study_id")
 
         #   Tack on the decision.
         self.__database_fields_list.append("decision_code")
@@ -211,20 +197,8 @@ class REDCapMatchResolver:
 
         create_table_sql: str = """ CREATE TABLE IF NOT EXISTS matches (
                                     id integer PRIMARY KEY AUTOINCREMENT,
-                                    epic_mrn integer NOT NULL,
-                                    redcap_mrn integer NOT NULL,
-                                    epic_first text NOT NULL,
-                                    redcap_first text NOT NULL,
-                                    epic_last text NOT NULL,
-                                    redcap_last text NOT NULL,
-                                    epic_dob date,
-                                    redcap_dob date,
-                                    epic_email text,
-                                    redcap_email text,
-                                    epic_addr_calculated text,
-                                    redcap_addr_calculated text,
-                                    epic_phone_calculated text,
-                                    redcap_phone_calculated text,
+                                    PAT_ID varchar NOT NULL,
+                                    study_id integer NOT NULL,
                                     decision_code int
                                 );"""
 
@@ -443,35 +417,15 @@ class REDCapMatchResolver:
             "SELECT decision FROM matches "
             + "JOIN decisions on matches.decision_code = decisions.id"
             + " WHERE"
-            + " matches.epic_mrn = ?"
-            + " AND matches.redcap_mrn = ?"
-            + " AND matches.epic_first = ?"
-            + " AND matches.redcap_first = ?"
-            + " AND matches.epic_last = ?"
-            + " AND matches.redcap_last = ?"
-            + " AND (matches.epic_dob = ? OR matches.epic_dob ISNULL)"
-            + " AND (matches.redcap_dob = ? OR matches.redcap_dob ISNULL)"
-            + " AND (matches.epic_addr_calculated = ? OR matches.epic_addr_calculated IS NULL)"
-            + " AND (matches.redcap_addr_calculated = ? OR matches.redcap_addr_calculated IS NULL)"
-            + " AND (matches.epic_phone_calculated = ? OR matches.epic_phone_calculated IS NULL)"
-            + " AND (matches.redcap_phone_calculated = ? OR matches.redcap_phone_calculated IS NULL);"
+            + " matches.PAT_ID = ?"
+            + " AND matches.study_id = ?"
         )
         cur = self.__connection.cursor()
 
         for index in range(len(match_df)):
             values_list = [
-                match_df["EPIC_MRN"][index],
-                match_df["REDCAP_MRN"][index],
-                match_df["EPIC_FIRST"][index],
-                match_df["REDCAP_FIRST"][index],
-                match_df["EPIC_LAST"][index],
-                match_df["REDCAP_LAST"][index],
-                match_df["EPIC_DOB"][index],
-                match_df["REDCAP_DOB"][index],
-                match_df["EPIC_ADDR_CALCULATED"][index],
-                match_df["REDCAP_ADDR_CALCULATED"][index],
-                match_df["EPIC_PHONE_CALCULATED"][index],
-                match_df["REDCAP_PHONE_CALCULATED"][index],
+                match_df["PAT_ID"][index],
+                match_df["study_id"][index],
             ]
 
             # pylint: disable=logging-fstring-interpolation
