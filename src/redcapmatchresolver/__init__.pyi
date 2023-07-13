@@ -1,3 +1,4 @@
+from .match_records import CommonField, MatchRecord, MatchTuple, MatchVariable
 from .redcap_appointment import REDCapAppointment
 from .redcap_clinic import REDCapClinic
 from .redcap_match_resolver import REDCapMatchResolver

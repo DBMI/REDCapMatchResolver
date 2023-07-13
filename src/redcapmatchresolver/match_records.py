@@ -5,8 +5,7 @@ from collections import namedtuple
 
 import pandas  # type: ignore[import]
 from redcapduplicatedetector.match_quality import MatchQuality
-from redcaprecordsynthesizer.state_abbr_conversion import StateAbbreviationConverter
-from redcaputilities.string_cleanup import clean_up_date, clean_up_phone
+from redcaputilities.string_cleanup import clean_up_phone
 
 MatchTuple = namedtuple(
     typename="MatchTuple", field_names=["bool", "summary"]  # type: ignore[misc]
@@ -76,7 +75,7 @@ class MatchRecord:
         CommonField("C_WORK_PHONE", "WORK_PHONE", "phone_number"),
     ]
 
-    FORMAT: str = "%-20s; %-40s; %-40s;"
+    FORMAT: str = "%-20s %-40s %-40s"
 
     SCORE_FIELDS: list = [
         "C_MRN",
@@ -103,12 +102,26 @@ class MatchRecord:
         return _string
 
     def __build_dictionary(self, row: pandas.Series) -> None:
+        """Builds the self.__record dict of MatchVariables describing the match between the Epic and REDCap values.
+
+        Parameters
+        ----------
+        row : pandas.Series extracted from the database epic and redcap tables.
+        """
         if not isinstance(row, pandas.Series):
             raise TypeError("Argument 'row' is not the expected pandas.Series.")
 
+        #   Only expect these merge fields to appear in ONE system:
+        #   First, REDCap study_id ...
         if "study_id" in row:
             self.__record["study_id"] = MatchVariable(
                 epic_value="", redcap_value=str(row["study_id"])
+            )
+
+        #   ...Second, Epic PAT_ID.
+        if "PAT_ID" in row:
+            self.__record["PAT_ID"] = MatchVariable(
+                epic_value=str(row["PAT_ID"]), redcap_value=""
             )
 
         for cf_obj in MatchRecord.COMMON_FIELDS:
@@ -128,48 +141,46 @@ class MatchRecord:
             self.__record[common_name] = MatchVariable(
                 epic_value=epic_value, redcap_value=redcap_value
             )
-        #
+
         # Match phone numbers.
-        #
-        epic_home_phone: str = ""
-        epic_work_phone: str = ""
-        redcap_phone: str = ""
+        self.__select_best_phone(row)
 
-        if "WORK_PHONE" in row:
-            epic_work_phone = str(clean_up_phone(row["WORK_PHONE"]))
+    def __init_summary(self) -> str:
+        """Initializes the 'summary' block describing the match between Epic and REDCap records.
 
-        if "HOME_PHONE" in row:
-            epic_home_phone = str(clean_up_phone(row["HOME_PHONE"]))
+        Returns
+        -------
+        summary : str
+        """
+        epic_pat_id: str = self.__record["PAT_ID"].epic_value()
+        redcap_study_id: str = self.__record["study_id"].redcap_value()
 
-        if "phone_number" in row:
-            redcap_phone = str(clean_up_phone(row["phone_number"]))
-
-        # Try each Epic phone number against the REDCap phone number...
-        match_variable = MatchVariable(
-            epic_value=epic_home_phone, redcap_value=redcap_phone
-        )
-
-        if not match_variable.good_enough():
-            match_variable = MatchVariable(
-                epic_value=epic_work_phone, redcap_value=redcap_phone
-            )
-
-        # ...and use whichever matches (if any).
-        self.__record["C_PHONE_CALCULATED"] = match_variable
-
-    # see if a universal record is a match between its epic fields and redcap fields.
-    def is_match(self, exact: bool = False, criteria: int = 4) -> MatchTuple:
-        redcap_study_id = self.__record["study_id"].redcap_value()
         format: str = MatchRecord.FORMAT + "%s\n"
         summary: str = ""
         summary += "-------------\n"
         summary += "Study ID: " + redcap_study_id + "\n"
+        summary += "PAT_ID: " + epic_pat_id + "\n"
         summary += format % (
             "Common Name",
             "Epic Value",
             "RedCap Value",
             "Match Quality",
         )
+        return summary
+
+    def is_match(self, exact: bool = False, criteria: int = 4) -> MatchTuple:
+        """See if a universal record is a match between its Epic fields and REDCap fields.
+
+        Parameters
+        ----------
+        exact : bool  Do we only call a match if score EQUALS the criterion? Or >=?
+        criteria : int Threshold for deciding it's a match.
+
+        Returns
+        -------
+        MatchTuple containing a bool (match/no match) & a str summary
+        """
+        summary: str = self.__init_summary()
 
         for key_fieldname in MatchRecord.SCORE_FIELDS:
             this_record = self.__record[key_fieldname]
@@ -188,6 +199,8 @@ class MatchRecord:
 
     # Scores a record and assigns a matching result
     def __score_record(self) -> None:
+        """Based on the matches in each field, assign a numeric score."""
+
         self.__score = 0
 
         # Match all the common fields of a universal record.
@@ -198,6 +211,38 @@ class MatchRecord:
 
             if this_record.good_enough():
                 self.__score += 1
+
+    def __select_best_phone(self, row: pandas.Series) -> None:
+        """Try each Epic phone number against the REDCap phone number
+        and use whichever matches (if any).
+
+        Parameters
+        ----------
+        row : pandas.Series extracted from the database epic and redcap tables.
+        """
+        epic_home_phone: str = ""
+        epic_work_phone: str = ""
+        redcap_phone: str = ""
+
+        if "WORK_PHONE" in row:
+            epic_work_phone = str(clean_up_phone(row["WORK_PHONE"]))
+
+        if "HOME_PHONE" in row:
+            epic_home_phone = str(clean_up_phone(row["HOME_PHONE"]))
+
+        if "phone_number" in row:
+            redcap_phone = str(clean_up_phone(row["phone_number"]))
+
+        match_variable = MatchVariable(
+            epic_value=epic_home_phone, redcap_value=redcap_phone
+        )
+
+        if not match_variable.good_enough():
+            match_variable = MatchVariable(
+                epic_value=epic_work_phone, redcap_value=redcap_phone
+            )
+
+        self.__record["C_PHONE_CALCULATED"] = match_variable
 
 
 class MatchVariable:

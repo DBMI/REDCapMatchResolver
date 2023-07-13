@@ -164,25 +164,13 @@ def test_reader_errors(my_location) -> None:
     with pytest.raises(FileNotFoundError):
         obj.read_file(report_filename="C:/unobtanium/report.txt")
 
-    with pytest.raises(RuntimeError):
-        bad_filename = os.path.join(
-            my_location, "bogus_patient_report_partial_header.txt"
-        )
-        obj.read_file(report_filename=bad_filename)
-
     bad_filename = os.path.join(
         my_location, "bogus_patient_report_ends_before_data.txt"
     )
-    assert obj.read_file(report_filename=bad_filename) is None
+    assert isinstance(obj.read_file(report_filename=bad_filename), pandas.DataFrame)
 
     bad_filename = os.path.join(my_location, "bogus_patient_report_ends_too_soon.txt")
-    assert obj.read_file(report_filename=bad_filename) is None
-
-
-def test_static_methods() -> None:
-    """Exercise the public static methods of the REDCapReportReader class."""
-    assert REDCapReportReader.convert_nulls(None) is None
-    assert REDCapReportReader.convert_nulls(1979) is None
+    assert isinstance(obj.read_file(report_filename=bad_filename), pandas.DataFrame)
 
 
 if __name__ == "__main__":

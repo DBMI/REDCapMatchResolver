@@ -152,7 +152,7 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def __break_into_pieces(data_line: str) -> list:
-        pieces = re.split(r";", data_line)
+        pieces = re.split(r" {2,}", data_line)
 
         # Get rid of empty strings.
         pieces[:] = [piece for piece in pieces if piece]
@@ -161,26 +161,6 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
         pieces[:] = [piece.strip() for piece in pieces]
 
         return pieces
-
-    @staticmethod
-    def convert_nulls(value: str) -> str | None:
-        """Turn strings that SAY 'NULL' into Python Nones that will become NULL db values.
-
-        Parameters
-        ----------
-        value : str String to be converted.
-
-        Returns
-        -------
-        value_converted : str or None
-        """
-        if not isinstance(value, str) or len(value) == 0:
-            return None
-
-        if value.upper() == "NULL":
-            return None
-
-        return value
 
     @staticmethod
     def _find_column(data_line: str, keyword: str) -> int:
@@ -213,7 +193,13 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
             return None
 
         self.__row_index += 1
-        return str(self.__report_contents[self.__row_index])
+
+        next_line: str = str(self.__report_contents[self.__row_index])
+
+        if next_line:
+            next_line = next_line.strip()
+
+        return next_line
 
     def __open_file(self, report_filename: str) -> None:
         """Handles opening the input file.
@@ -247,58 +233,32 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
             # Read all the lines into a list.
             self.__report_contents = text_block.readlines()
 
-    @staticmethod
-    def __parse_line(data_line: str, epic_index: int, redcap_index: int) -> ReportLine:
-        """Reads a line like 'C_MRN   123    456' and returns the ReportLine named tuple
-        with fields 'name': 'MRN', 'epic_value': 123, 'redcap_value': 456.
-
-        Parameters
-        ----------
-        data_line : str   Entire report row
-        epic_index : int Index of which column contains the Epic value
-        redcap_index : int Index of which column contains the REDCap value
+    def __read(self) -> pandas.DataFrame:
+        """Parses the report & forms a pandas DataFrame from the text.
 
         Returns
         -------
-        report_line_obj : ReportLine named tuple
+        reviewed_matches: pandas.DataFrame
         """
-        pieces = REDCapReportReader.__break_into_pieces(data_line)
-        variable_name = pieces[0].replace("C_", "").strip()
-
-        epic_value = None
-        redcap_value = None
-
-        if epic_index < len(pieces):
-            epic_value = pieces[epic_index]
-
-        if redcap_index < len(pieces):
-            redcap_value = pieces[redcap_index]
-
-        return ReportLine(
-            name=variable_name, epic_value=epic_value, redcap_value=redcap_value
-        )
-
-    def __read(self) -> pandas.DataFrame:
-        """Parses the report & forms a pandas DataFrame from the text."""
-        reviewed_matches = None
-        match_index = 0
+        reviewed_matches: pandas.DataFrame = pandas.DataFrame()
+        match_index: int = 0
 
         #   Must be reset at every read.
         self.__row_index = 0
 
-        next_line = self.__next_line()
+        next_line: str = self.__next_line()
 
         while True:
-            #   Search through to the start of the next match pair.
-            while next_line is not None and "Epic Value" not in next_line:
+            #   Search through to the start of the next report.
+            while (
+                next_line is not None
+                and "Study ID" not in next_line
+                and "PAT_ID" not in next_line
+            ):
                 next_line = self.__next_line()
 
             if next_line is None:
                 break
-
-            #   Figure out which column holds Epic, RedCap values.
-            epic_index = REDCapReportReader._find_column(next_line, "Epic Value")
-            redcap_index = REDCapReportReader._find_column(next_line, "RedCap Value")
 
             #   Initialize dictionary for this match.
             match_dict = {}
@@ -309,29 +269,25 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
                 next_line is not None
                 and REDCapReportReader.__separator not in next_line
             ):
+                pat_id: str = self.__read_pat_id(next_line)
+
+                if isinstance(pat_id, str) and len(pat_id) > 0:
+                    match_dict["PAT_ID"] = pat_id
+
+                study_id: str = self.__read_study_id(next_line)
+
+                if isinstance(study_id, str) and len(study_id) > 0:
+                    match_dict["study_id"] = study_id
+
                 next_line = self.__next_line()
 
+                #   Chew up lines until we hit the separator.
                 if (
                     not isinstance(next_line, str)
                     or len(next_line) == 0
                     or REDCapReportReader.__separator in next_line
                 ):
                     break
-
-                this_line = REDCapReportReader.__parse_line(
-                    data_line=next_line,
-                    epic_index=epic_index,
-                    redcap_index=redcap_index,
-                )
-
-                #   Don't insert strings that SAY 'NULL'.
-                #   Convert to actual NULL value.
-                match_dict["EPIC_" + this_line.name] = REDCapReportReader.convert_nulls(
-                    this_line.epic_value
-                )
-                match_dict[
-                    "REDCAP_" + this_line.name
-                ] = REDCapReportReader.convert_nulls(this_line.redcap_value)
 
             #   Did we get here because we ran out of data?
             if not isinstance(next_line, str) or len(next_line) == 0:
@@ -407,8 +363,49 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
         self.__open_file(report_filename=report_filename)
         return self.__read()
 
+    def __read_pat_id(self, text_line: str) -> str:
+        """Parse the value from th e"PAT_ID" line.
+
+        Returns
+        -------
+        pat_id : str
+        """
+        pat_id: str = ""
+        pattern: re.Pattern = re.compile(r"PAT_ID: *(\w?\d+)")
+        result: re.Match = pattern.match(text_line)
+
+        if result and result.groups():
+            pat_id = result.groups()[0]
+
+        return pat_id
+
+    def __read_study_id(self, text_line: str) -> str:
+        """Parse the value out of the "study_id" line.
+
+        Returns
+        -------
+        study_id : str
+        """
+        study_id: str = ""
+        pattern: re.Pattern = re.compile(r"Study ID: *(\d+)")
+        result: re.Match = pattern.match(text_line)
+
+        if result and result.groups():
+            study_id = result.groups()[0]
+
+        return study_id
+
     def read_text(self, block_txt: str) -> pandas.DataFrame:
-        """Lets user specify we are to open a BLOCK of TEXT."""
+        """Lets user specify we are to open a BLOCK of TEXT.
+
+        Parameters
+        ----------
+        block_txt : str
+
+        Returns
+        -------
+        pandas.DataFrame
+        """
         if not isinstance(block_txt, str) or len(block_txt) == 0:
             raise TypeError("Argument 'block_txt' is not the expected str.")
 

@@ -98,10 +98,7 @@ def test_match_resolver_corner_cases(
 
 
 def test_match_resolver_errors(
-    temp_database_connection,
-    reports_directory,
-    malformed_match_block,
-    missing_fields_match_block,
+    temp_database_connection, reports_directory, malformed_match_block, my_location
 ):
     """Exercises error cases."""
     mr_obj = REDCapMatchResolver(connection=temp_database_connection)
@@ -118,9 +115,6 @@ def test_match_resolver_errors(
 
     with pytest.raises(RuntimeError):
         mr_obj.lookup_potential_match(match_block=malformed_match_block)
-
-    with pytest.raises(RuntimeError):
-        mr_obj.lookup_potential_match(match_block=missing_fields_match_block)
 
 
 if __name__ == "__main__":

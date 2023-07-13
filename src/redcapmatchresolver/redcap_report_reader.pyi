@@ -61,4 +61,8 @@ class REDCapReportReader:
     def __read_decision(self) -> tuple:
         pass
     def read_file(self, report_filename: str) -> pandas.DataFrame: ...
+    def __read_pat_id(self) -> str:
+        pass
+    def __read_study_id(self) -> str:
+        pass
     def read_text(self, block_txt: str) -> pandas.DataFrame: ...
