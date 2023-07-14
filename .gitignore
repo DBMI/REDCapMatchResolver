@@ -91,3 +91,4 @@ venv.bak/
 /tests/temp_database.db
 /tests/temp_matches_database.db
 /tests/patient_report.txt
+/tests/temp_database.db-journal

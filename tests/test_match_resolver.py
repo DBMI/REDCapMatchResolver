@@ -40,6 +40,30 @@ def fixture_temp_database_connection() -> sqlite3.Connection:
     return conn
 
 
+def test_match_resolver_corner_cases(
+    temp_database_connection,
+    bad_reports_directory,
+    empty_reports_directory,
+    matching_patients,
+) -> None:
+    """Tests lookup_potential_match() method of REDCapMatchResolver object."""
+    mr_obj = REDCapMatchResolver(connection=temp_database_connection)
+
+    #   Exercise section in _insert_reports that fills in missing fields.
+    assert mr_obj.read_reports(import_folder=bad_reports_directory)
+
+    #   Exercise section in _insert_reports that skips if decision not shown.
+    assert mr_obj.read_reports(import_folder=bad_reports_directory)
+
+    #   What if there ARE no previous records? (This is how we'll start, after all.)
+    assert mr_obj.read_reports(import_folder=empty_reports_directory)
+
+    #   Can we query an EMPTY db with a new potential match?
+    past_decision = mr_obj.lookup_potential_match(match_block=matching_patients)
+    assert isinstance(past_decision, DecisionReview)
+    assert past_decision == DecisionReview.NOT_SURE
+
+
 def test_match_resolver_creation(temp_database_connection) -> None:
     """Tests instantiation and setup of a REDCapMatchResolver object."""
     mr_obj = REDCapMatchResolver(connection=temp_database_connection)
@@ -73,30 +97,6 @@ def test_match_resolver_db_operation(
     assert past_decision == DecisionReview.NOT_SURE
 
 
-def test_match_resolver_corner_cases(
-    temp_database_connection,
-    bad_reports_directory,
-    empty_reports_directory,
-    matching_patients,
-) -> None:
-    """Tests lookup_potential_match() method of REDCapMatchResolver object."""
-    mr_obj = REDCapMatchResolver(connection=temp_database_connection)
-
-    #   Exercise section in _insert_reports that fills in missing fields.
-    assert mr_obj.read_reports(import_folder=bad_reports_directory)
-
-    #   Exercise section in _insert_reports that skips if decision not shown.
-    assert mr_obj.read_reports(import_folder=bad_reports_directory)
-
-    #   What if there ARE no previous records? (This is how we'll start, after all.)
-    assert mr_obj.read_reports(import_folder=empty_reports_directory)
-
-    #   Can we query an EMPTY db with a new potential match?
-    past_decision = mr_obj.lookup_potential_match(match_block=matching_patients)
-    assert isinstance(past_decision, DecisionReview)
-    assert past_decision == DecisionReview.NOT_SURE
-
-
 def test_match_resolver_errors(
     temp_database_connection, reports_directory, malformed_match_block, my_location
 ):
@@ -115,6 +115,35 @@ def test_match_resolver_errors(
 
     with pytest.raises(RuntimeError):
         mr_obj.lookup_potential_match(match_block=malformed_match_block)
+
+
+def test_resolved_table(temp_database_connection, reports_directory):
+    mr_obj = REDCapMatchResolver(connection=temp_database_connection)
+    assert isinstance(mr_obj, REDCapMatchResolver)
+
+    cursor: sqlite3.Cursor = temp_database_connection.cursor()
+
+    #   Insert test data into 'matches' table.
+    cursor.execute("INSERT INTO matches (PAT_ID, study_id, decision_code) VALUES ('A56789', '1234', '1')")
+    temp_database_connection.commit()
+
+    #   Build the 'resolved' table that is ordinarily created by the refresh_redcap_upcoming_appointments code.
+    cursor.execute("DROP TABLE IF EXISTS resolved")
+    cursor.execute(
+        "CREATE TABLE resolved (PAT_ID varchar, study_id integer, score integer)"
+    )
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx1 ON resolved (PAT_ID)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx2 ON resolved (study_id)")
+    temp_database_connection.commit()
+
+    #   Exercise the 'insert_reviewed_reports' method & add the report(s) read above into the 'resolved' table.
+    assert mr_obj.insert_reviewed_reports()
+
+    #   Query the 'resolved' table to ensure test report made it.
+    sql: str = 'SELECT * FROM resolved;'
+    cursor.execute(sql)
+    rows = cursor.fetchall()
+    cursor.close()
 
 
 if __name__ == "__main__":
