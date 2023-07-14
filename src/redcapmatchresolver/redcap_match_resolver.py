@@ -49,32 +49,10 @@ class REDCapMatchResolver:
 
         # Now create the required tables.
         if (
-            not self.__build_decision_table() or not self.__create_matches_table()
+            not self.__init_decisions_table() or not self.__init_matches_table()
         ):  # pragma: no cover
             self.__log.error("Unable to build required database tables.")
             raise RuntimeError("Unable to build required database tables.")
-
-    def __build_decision_table(self) -> bool:
-        """Creates & populates table that translates integer codes to text like 'Same' or 'Not Same'.
-
-        Returns
-        -------
-        success : bool
-        """
-        if not self.__create_decisions_table():  # pragma: no cover
-            self.__log.error("Unable to create 'decisions' table.")
-            raise RuntimeError("Unable to create 'decisions' table.")
-
-        #   We want these values to exactly equal those in the DecisionReview enum class.
-        cursor: sqlite3.Cursor = self.__connection.cursor()
-        insert_sql = """INSERT INTO decisions(decision) VALUES('MATCH')"""
-        cursor.execute(insert_sql)
-        insert_sql = """INSERT INTO decisions(decision) VALUES('NO_MATCH')"""
-        cursor.execute(insert_sql)
-        insert_sql = """INSERT INTO decisions(decision) VALUES('NOT_SURE')"""
-        cursor.execute(insert_sql)
-        self.__connection.commit()
-        return True
 
     def __build_required_fields(self) -> None:
         #   Ensure all expected fields are present.
@@ -175,51 +153,6 @@ class REDCapMatchResolver:
 
         return success
 
-    def __create_matches_table(self) -> bool:
-        """Creates an empty 'matches' table in the database.
-
-        Returns
-        -------
-        success : bool
-        """
-
-        if not self.__is_connected():  # pragma: no cover
-            self.__log.error(
-                "Called '__create_matches_table' method but database is not connected."
-            )
-            raise RuntimeError(
-                "Called '__create_matches_table' method but database is not connected."
-            )
-
-        if not self.__drop_matches_table():  # pragma: no cover
-            self.__log.error('Unable to drop "matches" table.')
-            raise RuntimeError('Unable to drop "matches" table.')
-
-        create_table_sql: str = """ CREATE TABLE IF NOT EXISTS matches (
-                                    id integer PRIMARY KEY AUTOINCREMENT,
-                                    PAT_ID varchar NOT NULL,
-                                    study_id integer NOT NULL,
-                                    decision_code int
-                                );"""
-
-        # pylint: disable=logging-fstring-interpolation
-        try:
-            database_cursor: sqlite3.Cursor = self.__connection.cursor()
-            database_cursor.execute(create_table_sql)
-            self.__connection.commit()
-            success = True
-        except (
-            sqlite3.IntegrityError,
-            sqlite3.InternalError,
-        ) as database_error:  # pragma: no cover
-            self.__log.exception(
-                "Unable to run 'create_table_sql' because {database_error}.",
-                extra={"database_error": database_error},
-            )
-            raise database_error
-
-        return success
-
     def __drop_decisions_table(self) -> bool:
         """Drops decisions table so it can be created fresh.
 
@@ -284,6 +217,73 @@ class REDCapMatchResolver:
         ) as database_error:  # pragma: no cover
             self.__log.exception(
                 "Unable to run 'drop_matches_table' because {database_error}.",
+                extra={"database_error": database_error},
+            )
+            raise database_error
+
+        return success
+
+    def __init_decisions_table(self) -> bool:
+        """Creates & populates table that translates integer codes to text like 'Same' or 'Not Same'.
+
+        Returns
+        -------
+        success : bool
+        """
+        if not self.__create_decisions_table():  # pragma: no cover
+            self.__log.error("Unable to create 'decisions' table.")
+            raise RuntimeError("Unable to create 'decisions' table.")
+
+        #   We want these values to exactly equal those in the DecisionReview enum class.
+        cursor: sqlite3.Cursor = self.__connection.cursor()
+        insert_sql = """INSERT INTO decisions(decision) VALUES('MATCH')"""
+        cursor.execute(insert_sql)
+        insert_sql = """INSERT INTO decisions(decision) VALUES('NO_MATCH')"""
+        cursor.execute(insert_sql)
+        insert_sql = """INSERT INTO decisions(decision) VALUES('NOT_SURE')"""
+        cursor.execute(insert_sql)
+        self.__connection.commit()
+        return True
+
+    def __init_matches_table(self) -> bool:
+        """Creates an empty 'matches' table in the database.
+
+        Returns
+        -------
+        success : bool
+        """
+
+        if not self.__is_connected():  # pragma: no cover
+            self.__log.error(
+                "Called '__init_matches_table' method but database is not connected."
+            )
+            raise RuntimeError(
+                "Called '__init_matches_table' method but database is not connected."
+            )
+
+        if not self.__drop_matches_table():  # pragma: no cover
+            self.__log.error('Unable to drop "matches" table.')
+            raise RuntimeError('Unable to drop "matches" table.')
+
+        create_table_sql: str = """ CREATE TABLE IF NOT EXISTS matches (
+                                    id integer PRIMARY KEY AUTOINCREMENT,
+                                    PAT_ID varchar NOT NULL,
+                                    study_id integer NOT NULL,
+                                    decision_code int
+                                );"""
+
+        # pylint: disable=logging-fstring-interpolation
+        try:
+            database_cursor: sqlite3.Cursor = self.__connection.cursor()
+            database_cursor.execute(create_table_sql)
+            self.__connection.commit()
+            success = True
+        except (
+            sqlite3.IntegrityError,
+            sqlite3.InternalError,
+        ) as database_error:  # pragma: no cover
+            self.__log.exception(
+                "Unable to run 'create_table_sql' because {database_error}.",
                 extra={"database_error": database_error},
             )
             raise database_error
@@ -362,6 +362,35 @@ class REDCapMatchResolver:
                     "Error in running table insert method because {database_error}.",
                     extra={"database_error": database_error},
                 )
+
+    def insert_reviewed_reports(self) -> bool:
+        """Insert the human-reviewed matches (from text files read by REDCapMatchResolver)
+        into the SQLite3 database's `resolved` table.
+
+        Returns
+        -------
+        success : bool
+        """
+        sql: str = """
+            INSERT INTO resolved (PAT_ID, study_id, score)
+                SELECT DISTINCT m.PAT_ID, m.study_id, 10
+                FROM matches m
+                JOIN resolved res
+                    ON m.PAT_ID = res.PAT_ID
+                   AND m.study_id = res.study_id
+                WHERE
+                    m.decision_code = 1
+                AND (res.score IS NULL OR res.score < 10);
+        """
+
+        self.__log.debug("Inserting human-reviewed matches into resolved table.")
+
+        #   Run query & convert to DataFrame.
+        cursor = self.__connection.cursor()
+        cursor.execute(sql)
+        self.__connection.commit()
+        cursor.close()
+        return True
 
     def __is_connected(self) -> bool:
         """Tests to ensure we've already created the '.__conn' property.
