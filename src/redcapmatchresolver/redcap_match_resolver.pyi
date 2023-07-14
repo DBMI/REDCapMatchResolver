@@ -32,6 +32,10 @@ class REDCapMatchResolver:
         pass
     def insert_reviewed_reports(self) -> bool:
         pass
+    def __insert_reviewed_match_reports(self) -> bool:
+        pass
+    def __insert_reviewed_no_match_reports(self) -> bool:
+        pass
     def __is_connected(self, connection: Union[sqlite3.Connection, None]) -> bool:
         pass
     def lookup_potential_match(self, match_block: str) -> DecisionReview: ...

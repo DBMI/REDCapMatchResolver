@@ -132,8 +132,8 @@ class REDCapMatchResolver:
 
         create_table_sql = """ CREATE TABLE IF NOT EXISTS decisions (
                                     id integer PRIMARY KEY AUTOINCREMENT,
-                                    decision text NOT NULL
-                                );"""
+                                    decision text NOT NULL,
+                                    score integer);"""
 
         # pylint: disable=logging-fstring-interpolation
         try:
@@ -236,11 +236,11 @@ class REDCapMatchResolver:
 
         #   We want these values to exactly equal those in the DecisionReview enum class.
         cursor: sqlite3.Cursor = self.__connection.cursor()
-        insert_sql = """INSERT INTO decisions(decision) VALUES('MATCH')"""
-        cursor.execute(insert_sql)
-        insert_sql = """INSERT INTO decisions(decision) VALUES('NO_MATCH')"""
-        cursor.execute(insert_sql)
-        insert_sql = """INSERT INTO decisions(decision) VALUES('NOT_SURE')"""
+        insert_sql = """INSERT INTO decisions(decision, score)
+                        VALUES
+                            ('MATCH', 10),
+                            ('NO_MATCH', 0),
+                            ('NOT_SURE', NULL);"""
         cursor.execute(insert_sql)
         self.__connection.commit()
         return True
@@ -371,16 +371,63 @@ class REDCapMatchResolver:
         -------
         success : bool
         """
+        match_result: bool = self.__insert_reviewed_match_reports()
+        no_match_result: bool = self.__insert_reviewed_no_match_reports()
+        return match_result and no_match_result
+
+    def __insert_reviewed_match_reports(self) -> bool:
+        """Insert the human-reviewed matches scored as 'MATCH'
+        into the SQLite3 database's `resolved` table.
+
+        Returns
+        -------
+        success : bool
+        """
         sql: str = """
             INSERT INTO resolved (PAT_ID, study_id, score)
-                SELECT DISTINCT m.PAT_ID, m.study_id, 10
+                SELECT DISTINCT m.PAT_ID, m.study_id, d.score
                 FROM matches m
-                JOIN resolved res
+                LEFT JOIN resolved res
                     ON m.PAT_ID = res.PAT_ID
                    AND m.study_id = res.study_id
+                JOIN decisions d
+                    ON m.decision_code = d.id
+                   AND d.decision = 'MATCH'
                 WHERE
-                    m.decision_code = 1
-                AND (res.score IS NULL OR res.score < 10);
+                    res.score IS NULL
+                 OR res.score < 10;
+        """
+
+        self.__log.debug("Inserting human-reviewed matches into resolved table.")
+
+        #   Run query & convert to DataFrame.
+        cursor = self.__connection.cursor()
+        cursor.execute(sql)
+        self.__connection.commit()
+        cursor.close()
+        return True
+
+    def insert_reviewed_no_match_reports(self) -> bool:
+        """Insert the human-reviewed matches scored as 'NO_MATCH'
+        into the SQLite3 database's `resolved` table.
+
+        Returns
+        -------
+        success : bool
+        """
+        sql: str = """
+            INSERT INTO resolved (PAT_ID, study_id, score)
+                SELECT DISTINCT m.PAT_ID, m.study_id, d.score
+                FROM matches m
+                LEFT JOIN resolved res
+                    ON m.PAT_ID = res.PAT_ID
+                   AND m.study_id = res.study_id
+                JOIN decisions d
+                    ON m.decision_code = d.id
+                   AND d.decision = 'NO_MATCH'
+                WHERE
+                    res.score IS NULL
+                 OR res.score < 10;
         """
 
         self.__log.debug("Inserting human-reviewed matches into resolved table.")
