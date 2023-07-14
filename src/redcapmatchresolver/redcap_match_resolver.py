@@ -407,7 +407,7 @@ class REDCapMatchResolver:
         cursor.close()
         return True
 
-    def insert_reviewed_no_match_reports(self) -> bool:
+    def __insert_reviewed_no_match_reports(self) -> bool:
         """Insert the human-reviewed matches scored as 'NO_MATCH'
         into the SQLite3 database's `resolved` table.
 
