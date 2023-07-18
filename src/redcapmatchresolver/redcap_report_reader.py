@@ -180,7 +180,7 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
         if any(piece == keyword for piece in pieces):
             return pieces.index(keyword)
 
-        raise RuntimeError(f"Unable to find '{keyword}' in line.")
+        raise RuntimeError(f"Unable to find '{keyword}' in '{data_line}'.")
 
     def __next_line(self) -> str | None:
         """Get the next line in the report, or None if no more available.
@@ -215,10 +215,7 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
                 # Read all the lines into a list.
                 self.__report_contents = file_obj.readlines()
         else:
-            self.__log.error(
-                "Unable to find file {report_filename}.",
-                extra={"report_filename": report_filename},
-            )
+            self.__log.error(f"Unable to find file '{report_filename}'.")
             raise FileNotFoundError(f"Unable to find file '{report_filename}'.")
 
     def __open_text(self, block_txt: str) -> None:

@@ -61,8 +61,8 @@ class MatchRecord:
     internal variable 'record' is a dictionary of MatchVariable objects.
     """
 
-    # A note on phone matching. Epic has two phone numbers (home and work) but REDCap has only one.
-    # We'll try to match both but expect only one to match. By keeping the score threshold the same,
+    # A note on phone matching. Epic has THREE phone numbers (home, work and mobile) but REDCap has only one.
+    # We'll try to match all but expect only one to match. By keeping the score threshold the same,
     # we'll still get the same score as when we pre-filtered the phone numbers to match.
     COMMON_FIELDS: list = [
         CommonField("C_MRN", "MRN", "mrn"),
@@ -73,6 +73,7 @@ class MatchRecord:
         CommonField("C_ADDR_CALCULATED", "E_ADDR_CALCULATED", "R_ADDR_CALCULATED"),
         CommonField("C_HOME_PHONE", "HOME_PHONE", "phone_number"),
         CommonField("C_WORK_PHONE", "WORK_PHONE", "phone_number"),
+        CommonField("C_MOBILE_PHONE", "Mobil_Phone", "phone_number"),
     ]
 
     FORMAT: str = "%-20s %-40s %-40s"
@@ -222,13 +223,17 @@ class MatchRecord:
         """
         epic_home_phone: str = ""
         epic_work_phone: str = ""
+        epic_mobile_phone: str = ""
         redcap_phone: str = ""
-
-        if "WORK_PHONE" in row:
-            epic_work_phone = str(clean_up_phone(row["WORK_PHONE"]))
 
         if "HOME_PHONE" in row:
             epic_home_phone = str(clean_up_phone(row["HOME_PHONE"]))
+
+        if "Mobile_Phone" in row:
+            epic_mobile_phone = str(clean_up_phone(row["Mobile_Phone"]))
+
+        if "WORK_PHONE" in row:
+            epic_work_phone = str(clean_up_phone(row["WORK_PHONE"]))
 
         if "phone_number" in row:
             redcap_phone = str(clean_up_phone(row["phone_number"]))
@@ -240,6 +245,11 @@ class MatchRecord:
         if not match_variable.good_enough():
             match_variable = MatchVariable(
                 epic_value=epic_work_phone, redcap_value=redcap_phone
+            )
+
+        if not match_variable.good_enough():
+            match_variable = MatchVariable(
+                epic_value=epic_mobile_phone, redcap_value=redcap_phone
             )
 
         self.__record["C_PHONE_CALCULATED"] = match_variable
@@ -275,8 +285,6 @@ class MatchVariable:
     def __evaluate(self) -> None:
         self.__match_quality = MatchQuality.MATCHED_NOPE
 
-        if not self.__epic_value and not self.__redcap_value:
-            self.__match_quality = MatchQuality.MATCHED_NULL
         if self.__epic_value == "" and self.__redcap_value == "":
             self.__match_quality = MatchQuality.MATCHED_NULL
         elif not self.__epic_value or not self.__redcap_value:

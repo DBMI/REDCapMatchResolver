@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "REDCapMatchResolver"
-version = "1.0.3"
+version = "1.0.4"
 description = "Assists with human expert review of possible patient matches."
 authors = [
     "Kevin J. Delaney <kjdelaney@ucsd.edu>",
@@ -88,6 +88,9 @@ addopts = """\
     --cov-report term-missing \
     --no-cov-on-fail \
 """
+pythonpath = [
+  ".", "src", "src/redcapmatchresolver"
+]
 testpaths= ["redcapmatchresolver"]
 
 [tool.coverage.report]

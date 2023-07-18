@@ -3,14 +3,15 @@ Module test_match.py, which performs automated
 testing of the classes:
     CommonField
     MatchRecord
+    MatchTuple
     MatchVariable
 """
 from redcapduplicatedetector.match_quality import MatchQuality
-from redcapmatchresolver.match_records import (
+from src.redcapmatchresolver.match_records import (
     CommonField,
     MatchRecord,
     MatchTuple,
-    MatchVariable,
+    MatchVariable
 )
 import pytest
 
@@ -92,7 +93,7 @@ def test_match_record_errors(fake_records_dataframe) -> None:
 
 def test_match_record_corner_cases(fake_records_dataframe) -> None:
     #   Delete the Epic HOME_PHONE field to force use of WORK_PHONE.
-    row = fake_records_dataframe.iloc[0]
+    row = fake_records_dataframe.iloc[0].copy()
     row["HOME_PHONE"] = ""
     match_record = MatchRecord(row)
     assert isinstance(match_record, MatchRecord)
@@ -131,6 +132,11 @@ def test_match_variable() -> None:
     match_variable_obj = MatchVariable(epic_value="Alice", redcap_value="AliceBob")
     assert isinstance(match_variable_obj, MatchVariable)
     assert match_variable_obj.match_quality() == MatchQuality.MATCHED_SUBSTRING
+
+    #   Exercise NULL match.
+    match_variable_obj = MatchVariable(epic_value="", redcap_value="")
+    assert isinstance(match_variable_obj, MatchVariable)
+    assert match_variable_obj.match_quality() == MatchQuality.MATCHED_NULL
 
 
 def test_match_variable_error() -> None:
