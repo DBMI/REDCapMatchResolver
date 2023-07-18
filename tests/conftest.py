@@ -119,6 +119,7 @@ def fixture_fake_records_dataframe() -> pandas.DataFrame:
             "EMAIL_ADDRESS": "",  # to exercise a different part of the code.
             "HOME_PHONE": "",
             "WORK_PHONE": "",
+            "Mobile_Phone": "",
             "phone_number": phone_number,
             "E_ADDR_CALCULATED": "",
             "R_ADDR_CALCULATED": "",
@@ -132,6 +133,7 @@ def fixture_fake_records_dataframe() -> pandas.DataFrame:
         record["EMAIL_ADDRESS"] = record["email_address"]
         record["HOME_PHONE"] = record["phone_number"]
         record["WORK_PHONE"] = record["phone_number"]
+        record["Mobile_Phone"] = record["phone_number"]
         record["E_ADDR_CALCULATED"] = record["ADD_LINE_1"] + " | " + record["ZIP"]
         record["R_ADDR_CALCULATED"] = (
             record["street_address_line_1"] + " | " + record["zip_code"]

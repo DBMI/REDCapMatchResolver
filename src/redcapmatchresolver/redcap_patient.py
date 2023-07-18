@@ -17,7 +17,13 @@ class REDCapPatient:
 
     #   Mark these for special handling.
     __dob_keywords = ["birth_date", "dob"]
-    __phone_keywords = ["home_phone", "phone", "phone_number", "work_phone"]
+    __phone_keywords = [
+        "home_phone",
+        "phone",
+        "phone_number",
+        "work_phone",
+        "mobile_phone",
+    ]
 
     #   These fields --describe-- the patient but don't --indentify-- them.
     __info_fields = ["hpi_percentile", "hpi_score"]
