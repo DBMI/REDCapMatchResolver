@@ -11,7 +11,7 @@ from src.redcapmatchresolver.match_records import (
     CommonField,
     MatchRecord,
     MatchTuple,
-    MatchVariable
+    MatchVariable,
 )
 import pytest
 
@@ -81,14 +81,9 @@ def test_match_record(fake_records_dataframe) -> None:
     score = match_record.score()
     assert isinstance(score, int)
     assert score == 7
-
-
-def test_match_record_errors(fake_records_dataframe) -> None:
-    with pytest.raises(TypeError):
-        MatchRecord(row=None)
-
-    with pytest.raises(TypeError):
-        MatchRecord(row=1979)
+    pat_id = match_record.pat_id()
+    assert isinstance(pat_id, str)
+    assert pat_id == fake_records_dataframe.iloc[0]["PAT_ID"]
 
 
 def test_match_record_corner_cases(fake_records_dataframe) -> None:
@@ -118,6 +113,47 @@ def test_match_record_corner_cases(fake_records_dataframe) -> None:
     assert isinstance(result, MatchTuple)
     assert hasattr(result, "bool")
     assert not result.bool
+
+
+def test_match_record_errors(fake_records_dataframe) -> None:
+    with pytest.raises(TypeError):
+        MatchRecord(row=None)
+
+    with pytest.raises(TypeError):
+        MatchRecord(row=1979)
+
+
+def test_match_record_revision(fake_records_dataframe) -> None:
+    row = fake_records_dataframe.iloc[0].copy()
+
+    # Manipulate so names DON'T match, but alias will.
+    #   The name in Epic:
+    row["PAT_FIRST_NAME"] = "Alice"
+    row["PAT_LAST_NAME"] = "Smith"
+
+    #   The name in REDCap:
+    row["first_name"] = "Alan"
+    row["last_name"] = "Smyth"
+    match_record = MatchRecord(row)
+    assert isinstance(match_record, MatchRecord)
+
+    names_match = match_record.names_match()
+    assert isinstance(names_match, bool)
+    assert not names_match
+
+    score = match_record.score()
+    assert isinstance(score, int)
+    assert score == 5
+
+    #   Revise with alias.
+    match_record.use_aliases("Smith,Alice;Smyth,Alan")
+    names_match = match_record.names_match()
+    assert isinstance(names_match, bool)
+    assert names_match
+
+    score = match_record.score()
+    assert isinstance(score, int)
+    assert score == 7
 
 
 def test_match_variable() -> None:
