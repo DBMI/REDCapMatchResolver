@@ -188,14 +188,44 @@ class MatchRecord:
             summary += this_record.summarize_match(common_name=key_fieldname) + "\n"
 
         summary += "-------------\n"
-        good_match = self.__score >= criteria
+        good_match: bool = self.__score >= criteria
 
         if exact:
             good_match = self.__score == criteria
 
         return MatchTuple(bool=good_match, summary=summary)
 
+    def names_match(self) -> bool:
+        """Allows external code to ask if the Epic & REDCap names match.
+
+        Returns
+        -------
+        match : bool
+        """
+        first_name_match: MatchVariable = self.__record["C_FIRST"]
+        last_name_match: MatchVariable = self.__record["C_LAST"]
+        return first_name_match.good_enough() & last_name_match.good_enough()
+
+    def pat_id(self) -> str:
+        """Allows external code to ask for the Epic PAT_ID of this object.
+
+        Returns
+        -------
+        pat_id : str
+        """
+        if "PAT_ID" in self.__record:
+            pat_id_mv: MatchVariable = self.__record["PAT_ID"]
+            return pat_id_mv.epic_value()
+
+        return ""
+
     def score(self) -> int:
+        """Returns the match score.
+
+        Returns
+        -------
+        score : int
+        """
         return self.__score
 
     # Scores a record and assigns a matching result
@@ -253,6 +283,44 @@ class MatchRecord:
             )
 
         self.__record["C_PHONE_CALCULATED"] = match_variable
+
+    def use_aliases(self, aliases: str) -> None:
+        """Allows us to reconsider the match given patient aliases from Epic.
+
+        Parameters
+        ----------
+        aliases : str  example: 'Smyth,Alan;Smith,Alice'
+        """
+        if not isinstance(aliases, str):
+            raise TypeError('Argument "aliases" is not the expected string.')
+
+        first_name_match: MatchVariable = self.__record["C_FIRST"]
+        redcap_first_name: str = first_name_match.redcap_value()
+        last_name_match: MatchVariable = self.__record["C_LAST"]
+        redcap_last_name: str = last_name_match.redcap_value()
+        assembled_name: str = redcap_last_name.strip() + "," + redcap_first_name.strip()
+
+        #   Try to match each alias in list.
+        alias_list: list = aliases.split(";")
+
+        for alias in alias_list:
+            #   If Epic alias matches the REDCap name,
+            #   revise the dictionary to use the alias name and recompute score.
+            if assembled_name == alias:
+                #   We're assuming names are delivered as last_name,first_name
+                alias_pieces: list = alias.split(",")
+
+                if len(alias_pieces) > 1:
+                    self.__record["C_FIRST"] = MatchVariable(
+                        epic_value=alias_pieces[1].strip(),
+                        redcap_value=redcap_first_name,
+                    )
+                    self.__record["C_LAST"] = MatchVariable(
+                        epic_value=alias_pieces[0].strip(),
+                        redcap_value=redcap_last_name,
+                    )
+                    self.__score_record()
+                    return
 
 
 class MatchVariable:
