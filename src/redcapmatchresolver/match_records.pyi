@@ -46,7 +46,7 @@ class MatchRecord:
         pass
     def __select_best_phone(self, row: pandas.Series) -> None:
         pass
-    def use_aliases(self, aliases: str) -> None: ...
+    def use_aliases(self, aliases: list) -> None: ...
 
 class MatchVariable:
     def __init__(

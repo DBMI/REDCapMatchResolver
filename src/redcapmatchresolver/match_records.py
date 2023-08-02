@@ -284,15 +284,15 @@ class MatchRecord:
 
         self.__record["C_PHONE_CALCULATED"] = match_variable
 
-    def use_aliases(self, aliases: str) -> None:
+    def use_aliases(self, aliases: list) -> None:
         """Allows us to reconsider the match given patient aliases from Epic.
 
         Parameters
         ----------
-        aliases : str  example: 'Smyth,Alan;Smith,Alice'
+        aliases : list  example: ['Smyth,Alan', 'Smith,Alice']
         """
-        if not isinstance(aliases, str):
-            raise TypeError('Argument "aliases" is not the expected string.')
+        if not isinstance(aliases, list):
+            raise TypeError('Argument "aliases" is not the expected list.')
 
         first_name_match: MatchVariable = self.__record["C_FIRST"]
         redcap_first_name: str = first_name_match.redcap_value()
@@ -301,9 +301,7 @@ class MatchRecord:
         assembled_name: str = redcap_last_name.strip() + "," + redcap_first_name.strip()
 
         #   Try to match each alias in list.
-        alias_list: list = aliases.split(";")
-
-        for alias in alias_list:
+        for alias in aliases:
             #   If Epic alias matches the REDCap name,
             #   revise the dictionary to use the alias name and recompute score.
             if assembled_name == alias:
