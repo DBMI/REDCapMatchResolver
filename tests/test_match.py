@@ -146,7 +146,7 @@ def test_match_record_revision(fake_records_dataframe) -> None:
     assert score == 5
 
     #   Revise with alias.
-    match_record.use_aliases("Smith,Alice;Smyth,Alan")
+    match_record.use_aliases(["Smith,Alice", "Smyth,Alan"])
     names_match = match_record.names_match()
     assert isinstance(names_match, bool)
     assert names_match
