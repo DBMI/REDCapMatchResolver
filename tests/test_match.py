@@ -86,6 +86,17 @@ def test_match_record(fake_records_dataframe) -> None:
     assert pat_id == fake_records_dataframe.iloc[0]["PAT_ID"]
 
 
+def test_match_record_alias(fake_records_dataframe) -> None:
+    match_record = MatchRecord(fake_records_dataframe.iloc[0])
+    assert isinstance(match_record, MatchRecord)
+    result = match_record.is_match(aliases=["Smith,Alice", "Smyth,Alan"])
+    assert isinstance(result, MatchTuple)
+    assert hasattr(result, "bool")
+    assert result.bool
+    assert hasattr(result, "summary")
+    assert isinstance(result.summary, str)
+
+
 def test_match_record_corner_cases(fake_records_dataframe) -> None:
     #   Delete the Epic HOME_PHONE field to force use of WORK_PHONE.
     row = fake_records_dataframe.iloc[0].copy()

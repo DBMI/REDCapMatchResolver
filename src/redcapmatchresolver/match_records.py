@@ -146,8 +146,12 @@ class MatchRecord:
         # Match phone numbers.
         self.__select_best_phone(row)
 
-    def __init_summary(self) -> str:
+    def __init_summary(self, aliases: list = []) -> str:
         """Initializes the 'summary' block describing the match between Epic and REDCap records.
+
+        Parameters
+        ----------
+        aliases : list Other names for this patient.
 
         Returns
         -------
@@ -161,6 +165,10 @@ class MatchRecord:
         summary += "-------------\n"
         summary += "Study ID: " + redcap_study_id + "\n"
         summary += "PAT_ID: " + epic_pat_id + "\n"
+
+        if aliases:
+            summary += "Aliases: " + "; ".join(aliases) + "\n"
+
         summary += format % (
             "Common Name",
             "Epic Value",
@@ -169,19 +177,22 @@ class MatchRecord:
         )
         return summary
 
-    def is_match(self, exact: bool = False, criteria: int = 4) -> MatchTuple:
+    def is_match(
+        self, exact: bool = False, criteria: int = 4, aliases: list = []
+    ) -> MatchTuple:
         """See if a universal record is a match between its Epic fields and REDCap fields.
 
         Parameters
         ----------
         exact : bool  Do we only call a match if score EQUALS the criterion? Or >=?
         criteria : int Threshold for deciding it's a match.
+        aliases : list Other names for this patient.
 
         Returns
         -------
         MatchTuple containing a bool (match/no match) & a str summary
         """
-        summary: str = self.__init_summary()
+        summary: str = self.__init_summary(aliases=aliases)
 
         for key_fieldname in MatchRecord.SCORE_FIELDS:
             this_record = self.__record[key_fieldname]
