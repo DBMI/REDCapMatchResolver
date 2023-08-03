@@ -88,3 +88,19 @@ class REDCapUpdate:
             return
 
         raise KeyError(f'Property "{property}" is unexpected.')
+
+    def to_query(self) -> str:
+        """Builds 'column = value' strings from update package.
+
+        Returns
+        -------
+        update_text : str
+        """
+        package: dict = self.package()
+        update_text = []
+
+        for property_name in list(package.keys()):
+            property_value = package[property_name]
+            update_text.append(property_name + " = " + str(property_value))
+
+        return "\n".join(update_text)
