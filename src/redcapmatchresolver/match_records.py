@@ -6,6 +6,7 @@ from collections import namedtuple
 import pandas  # type: ignore[import]
 from redcapduplicatedetector.match_quality import MatchQuality
 from redcaputilities.string_cleanup import clean_up_phone
+from redcap_update import REDCapUpdate
 
 MatchTuple = namedtuple(
     typename="MatchTuple", field_names=["bool", "summary"]  # type: ignore[misc]
@@ -90,6 +91,8 @@ class MatchRecord:
 
     def __init__(self, row: pandas.Series):
         self.__record: dict = {}
+        self.__redcap_update: REDCapUpdate = REDCapUpdate()
+
         self.__score: int
 
         self.__build_dictionary(row)
@@ -146,6 +149,19 @@ class MatchRecord:
         # Match phone numbers.
         self.__select_best_phone(row)
 
+    def __epic_name(self) -> tuple:
+        """Simplifies getting Epic first, last name.
+
+        Returns
+        -------
+        names : tuple (first, last)
+        """
+        first_name_match: MatchVariable = self.__record["C_FIRST"]
+        epic_first_name: str = first_name_match.epic_value().strip()
+        last_name_match: MatchVariable = self.__record["C_LAST"]
+        epic_last_name: str = last_name_match.epic_value().strip()
+        return epic_first_name, epic_last_name
+
     def __init_summary(self, aliases: list = []) -> str:
         """Initializes the 'summary' block describing the match between Epic and REDCap records.
 
@@ -157,19 +173,16 @@ class MatchRecord:
         -------
         summary : str
         """
-        epic_pat_id: str = self.__record["PAT_ID"].epic_value()
-        redcap_study_id: str = self.__record["study_id"].redcap_value()
-
-        format: str = MatchRecord.FORMAT + "%s\n"
+        format_spec: str = MatchRecord.FORMAT + "%s\n"
         summary: str = ""
         summary += "-------------\n"
-        summary += "Study ID: " + redcap_study_id + "\n"
-        summary += "PAT_ID: " + epic_pat_id + "\n"
+        summary += "Study ID: " + self.__study_id() + "\n"
+        summary += "PAT_ID: " + self.pat_id() + "\n"
 
         if aliases:
             summary += "Aliases: " + "; ".join(aliases) + "\n"
 
-        summary += format % (
+        summary += format_spec % (
             "Common Name",
             "Epic Value",
             "RedCap Value",
@@ -240,6 +253,29 @@ class MatchRecord:
 
         return ""
 
+    def __redcap_name(self) -> tuple:
+        """Simplifies getting REDCap first, last name.
+
+        Returns
+        -------
+        names : tuple (first, last)
+        """
+        first_name_match: MatchVariable = self.__record["C_FIRST"]
+        redcap_first_name: str = first_name_match.redcap_value().strip()
+        last_name_match: MatchVariable = self.__record["C_LAST"]
+        redcap_last_name: str = last_name_match.redcap_value().strip()
+        return redcap_first_name, redcap_last_name
+
+    def redcap_update(self) -> REDCapUpdate:
+        """Allows external code to get the REDCapUpdate object,
+        describing if--and how--REDCap record should be updated.
+
+        Returns
+        -------
+        update : REDCapUpdate
+        """
+        return self.__redcap_update
+
     def score(self) -> int:
         """Returns the match score.
 
@@ -305,6 +341,15 @@ class MatchRecord:
 
         self.__record["C_PHONE_CALCULATED"] = match_variable
 
+    def __study_id(self) -> int:
+        """Retrieve the REDCap study id.
+
+        Returns
+        -------
+        study_id : int
+        """
+        return int(self.__record["study_id"].redcap_value())
+
     def use_aliases(self, aliases: list) -> None:
         """Allows us to reconsider the match given patient aliases from Epic.
 
@@ -315,31 +360,29 @@ class MatchRecord:
         if not isinstance(aliases, list):
             raise TypeError('Argument "aliases" is not the expected list.')
 
-        first_name_match: MatchVariable = self.__record["C_FIRST"]
-        redcap_first_name: str = first_name_match.redcap_value()
-        last_name_match: MatchVariable = self.__record["C_LAST"]
-        redcap_last_name: str = last_name_match.redcap_value()
-        assembled_name: str = redcap_last_name.strip() + "," + redcap_first_name.strip()
+        redcap_first_name, redcap_last_name = self.__redcap_name()
+        assembled_name: str = redcap_last_name + "," + redcap_first_name
 
         #   Try to match each alias in list.
         for alias in aliases:
             #   If Epic alias matches the REDCap name,
-            #   revise the dictionary to use the alias name and recompute score.
+            #   alert external code to update REDCap to use the Epic name
+            #   (since we assume the Epic name is most current)
+            #   and increment score-we're FORCING the names to match.
             if assembled_name == alias:
-                #   We're assuming names are delivered as last_name,first_name
-                alias_pieces: list = alias.split(",")
+                epic_first_name, epic_last_name = self.__epic_name()
+                self.__redcap_update.set('first_name', epic_first_name)
+                self.__redcap_update.set('last_name', epic_last_name)
 
-                if len(alias_pieces) > 1:
-                    self.__record["C_FIRST"] = MatchVariable(
-                        epic_value=alias_pieces[1].strip(),
-                        redcap_value=redcap_first_name,
-                    )
-                    self.__record["C_LAST"] = MatchVariable(
-                        epic_value=alias_pieces[0].strip(),
-                        redcap_value=redcap_last_name,
-                    )
-                    self.__score_record()
-                    return
+                #   By how much should we increment the score?
+                if redcap_first_name != epic_first_name:
+                    self.__score += 1   # First names now match.
+
+                if redcap_last_name != epic_last_name:
+                    self.__score += 1   # Last names now match.
+
+                #   No need to consider further aliases in list.
+                return
 
 
 class MatchVariable:
