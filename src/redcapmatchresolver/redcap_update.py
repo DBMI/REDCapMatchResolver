@@ -7,18 +7,13 @@ import pandas  # type: ignore[import]
 
 class REDCapUpdate:
     """
-    Describes whether (and--if so--how) REDCap needs to be updated for a given patient.
+    Describes if--and how--REDCap needs to be updated for a given patient.
     """
 
-    def __init__(self, study_id: int):
-        self.__update_needed: bool = False
-
-        if not isinstance(study_id, int):
-            raise TypeError('Argument "study_id" is not the expected int.')
-
-        self.__study_id: int = study_id
+    def __init__(self):
         self.__first_name: str = ""
         self.__last_name: str = ""
+        self.__update_needed: bool = False
 
     def needed(self) -> bool:
         """Allows external code to ask if an update is needed at all.

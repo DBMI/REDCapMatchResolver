@@ -8,7 +8,7 @@ from redcapmatchresolver.redcap_update import REDCapUpdate
 
 def test_redcap_update_creation() -> None:
     """Tests instantiation and setup of a REDCapUpdate object."""
-    update_obj = REDCapUpdate(study_id=12345)
+    update_obj = REDCapUpdate()
     assert isinstance(update_obj, REDCapUpdate)
 
     update_needed = update_obj.needed()
@@ -28,14 +28,7 @@ def test_redcap_update_creation() -> None:
 
 
 def test_redcap_update_errors() -> None:
-    #   Send improper inputs.
-    with pytest.raises(TypeError):
-        update_obj = REDCapUpdate()
-
-    with pytest.raises(TypeError):
-        update_obj = REDCapUpdate(study_id="abc")
-
-    update_obj = REDCapUpdate(study_id=12345)
+    update_obj = REDCapUpdate()
     assert isinstance(update_obj, REDCapUpdate)
 
     with pytest.raises(TypeError):

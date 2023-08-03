@@ -7,12 +7,15 @@ testing of the classes:
     MatchVariable
 """
 from redcapduplicatedetector.match_quality import MatchQuality
+
+import redcap_update
 from src.redcapmatchresolver.match_records import (
     CommonField,
     MatchRecord,
     MatchTuple,
     MatchVariable,
 )
+from src.redcapmatchresolver.redcap_update import REDCapUpdate
 import pytest
 
 
@@ -176,13 +179,23 @@ def test_match_record_revision(fake_records_dataframe) -> None:
 
     #   Revise with alias.
     match_record.use_aliases(["Smith,Alice", "Smyth,Alan"])
+
+    #   The names still won't match, because even though
+    #   we recognize that the REDCap name is one of the Epic aliases,
+    #   the names haven't been changed....
     names_match = match_record.names_match()
     assert isinstance(names_match, bool)
-    assert names_match
+    assert not names_match
 
+    #   ...but the score improves.
     score = match_record.score()
     assert isinstance(score, int)
     assert score == 7
+
+    #   Retrieve the update package from MatchRecord object.
+    update_obj = match_record.redcap_update()
+    assert isinstance(update_obj, redcap_update.REDCapUpdate)
+    assert update_obj.needed()
 
 
 def test_match_variable() -> None:
