@@ -324,22 +324,19 @@ class MatchRecord:
         #   Try to match each alias in list.
         for alias in aliases:
             #   If Epic alias matches the REDCap name,
-            #   revise the dictionary to use the alias name and recompute score.
+            #   revise the dictionary so that REDCap uses the Epic name
+            #   (since we assume the Epic name is most current) and recompute score.
             if assembled_name == alias:
-                #   We're assuming names are delivered as last_name,first_name
-                alias_pieces: list = alias.split(",")
-
-                if len(alias_pieces) > 1:
-                    self.__record["C_FIRST"] = MatchVariable(
-                        epic_value=alias_pieces[1].strip(),
-                        redcap_value=redcap_first_name,
-                    )
-                    self.__record["C_LAST"] = MatchVariable(
-                        epic_value=alias_pieces[0].strip(),
-                        redcap_value=redcap_last_name,
-                    )
-                    self.__score_record()
-                    return
+                self.__record["C_FIRST"] = MatchVariable(
+                    epic_value=alias_pieces[1].strip(),
+                    redcap_value=redcap_first_name,
+                )
+                self.__record["C_LAST"] = MatchVariable(
+                    epic_value=alias_pieces[0].strip(),
+                    redcap_value=redcap_last_name,
+                )
+                self.__score_record()
+                return
 
 
 class MatchVariable:
