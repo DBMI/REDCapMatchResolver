@@ -87,6 +87,9 @@ def test_match_record(fake_records_dataframe) -> None:
     pat_id = match_record.pat_id()
     assert isinstance(pat_id, str)
     assert pat_id == fake_records_dataframe.iloc[0]["PAT_ID"]
+    study_id = match_record.study_id()
+    assert isinstance(study_id, int)
+    assert study_id == int(fake_records_dataframe.iloc[0]["study_id"])
 
 
 def test_match_record_alias(fake_records_dataframe) -> None:

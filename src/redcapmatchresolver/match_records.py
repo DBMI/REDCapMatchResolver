@@ -176,7 +176,7 @@ class MatchRecord:
         format_spec: str = MatchRecord.FORMAT + "%s\n"
         summary: str = ""
         summary += "-------------\n"
-        summary += "Study ID: " + self.__study_id() + "\n"
+        summary += "Study ID: " + str(self.study_id()) + "\n"
         summary += "PAT_ID: " + self.pat_id() + "\n"
 
         if aliases:
@@ -341,7 +341,7 @@ class MatchRecord:
 
         self.__record["C_PHONE_CALCULATED"] = match_variable
 
-    def __study_id(self) -> int:
+    def study_id(self) -> int:
         """Retrieve the REDCap study id.
 
         Returns
