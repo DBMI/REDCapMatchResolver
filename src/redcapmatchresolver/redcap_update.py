@@ -103,6 +103,6 @@ class REDCapUpdate:
             #   We're not updating the study_id.
             if property_name != "study_id":
                 property_value = package[property_name]
-                update_text.append(property_name + " = " + str(property_value))
+                update_text.append(property_name + " = '" + str(property_value) + "'")
 
-        return "\n".join(update_text)
+        return ",\n".join(update_text)
