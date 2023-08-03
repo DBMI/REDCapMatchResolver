@@ -9,6 +9,7 @@ testing of the classes:
 from redcapduplicatedetector.match_quality import MatchQuality
 
 import redcap_update
+import redcapmatchresolver.redcap_update
 from src.redcapmatchresolver.match_records import (
     CommonField,
     MatchRecord,
@@ -197,7 +198,7 @@ def test_match_record_revision(fake_records_dataframe) -> None:
 
     #   Retrieve the update package from MatchRecord object.
     update_obj = match_record.redcap_update()
-    assert isinstance(update_obj, redcap_update.REDCapUpdate)
+    assert isinstance(update_obj, redcapmatchresolver.redcap_update.REDCapUpdate)
     assert update_obj.needed()
 
 

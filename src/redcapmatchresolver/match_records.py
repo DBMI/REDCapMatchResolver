@@ -369,7 +369,7 @@ class MatchRecord:
             #   alert external code to update REDCap to use the Epic name
             #   (since we assume the Epic name is most current)
             #   and increment score-we're FORCING the names to match.
-            if assembled_name == alias:
+            if assembled_name.upper() == alias.upper():
                 epic_first_name, epic_last_name = self.__epic_name()
                 self.__redcap_update.set("first_name", epic_first_name)
                 self.__redcap_update.set("last_name", epic_last_name)
