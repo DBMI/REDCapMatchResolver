@@ -24,7 +24,7 @@ def test_redcap_update_creation() -> None:
     assert isinstance(package, dict)
     assert "first_name" in package
     assert package["first_name"] == "Alice"
-    assert not "last_name" in package
+    assert "last_name" not in package
 
 
 def test_redcap_update_errors() -> None:

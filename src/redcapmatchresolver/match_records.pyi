@@ -1,8 +1,8 @@
 from typing import List, NamedTuple, Union
 
 import pandas
-from redcapduplicatedetector.match_quality import MatchQuality
 from redcap_update import REDCapUpdate
+from redcapduplicatedetector.match_quality import MatchQuality
 
 class MatchTuple(NamedTuple):
     bool: bool
@@ -54,7 +54,6 @@ class MatchRecord:
     def __select_best_phone(self, row: pandas.Series) -> None: ...
     def study_id(self) -> int: ...
     def use_aliases(self, aliases: list) -> None: ...
-
 
 class MatchVariable:
     def __init__(

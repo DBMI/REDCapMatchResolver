@@ -4,9 +4,9 @@ Module: contains the MatchRecord and MatchVariable classes.
 from collections import namedtuple
 
 import pandas  # type: ignore[import]
+from redcap_update import REDCapUpdate
 from redcapduplicatedetector.match_quality import MatchQuality
 from redcaputilities.string_cleanup import clean_up_phone
-from redcap_update import REDCapUpdate
 
 MatchTuple = namedtuple(
     typename="MatchTuple", field_names=["bool", "summary"]  # type: ignore[misc]
@@ -371,15 +371,16 @@ class MatchRecord:
             #   and increment score-we're FORCING the names to match.
             if assembled_name == alias:
                 epic_first_name, epic_last_name = self.__epic_name()
-                self.__redcap_update.set('first_name', epic_first_name)
-                self.__redcap_update.set('last_name', epic_last_name)
+                self.__redcap_update.set("first_name", epic_first_name)
+                self.__redcap_update.set("last_name", epic_last_name)
+                self.__redcap_update.set("study_id", self.study_id())
 
                 #   By how much should we increment the score?
                 if redcap_first_name != epic_first_name:
-                    self.__score += 1   # First names now match.
+                    self.__score += 1  # First names now match.
 
                 if redcap_last_name != epic_last_name:
-                    self.__score += 1   # Last names now match.
+                    self.__score += 1  # Last names now match.
 
                 #   No need to consider further aliases in list.
                 return
