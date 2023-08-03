@@ -134,6 +134,24 @@ def test_match_record_errors(fake_records_dataframe) -> None:
         MatchRecord(row=1979)
 
 
+def test_match_record_mrn_match(fake_records_dataframe) -> None:
+    row = fake_records_dataframe.iloc[0].copy()
+    match_record = MatchRecord(row)
+    assert isinstance(match_record, MatchRecord)
+
+    mrns_match = match_record.mrns_match()
+    assert isinstance(mrns_match, bool)
+    assert mrns_match
+
+    # Force MRNs not to match.
+    row["MRN"] = row["mrn"] + 1
+    match_record = MatchRecord(row)
+    assert isinstance(match_record, MatchRecord)
+    mrns_match = match_record.mrns_match()
+    assert isinstance(mrns_match, bool)
+    assert not mrns_match
+
+
 def test_match_record_revision(fake_records_dataframe) -> None:
     row = fake_records_dataframe.iloc[0].copy()
 
