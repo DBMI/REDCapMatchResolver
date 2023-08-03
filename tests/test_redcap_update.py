@@ -26,6 +26,11 @@ def test_redcap_update_creation() -> None:
     assert package["first_name"] == "Alice"
     assert "last_name" not in package
 
+    update_obj.set(property="last_name", value="Smith")
+    query = update_obj.to_query()
+    assert isinstance(query, str)
+    assert query == "first_name = Alice\nlast_name = Smith"
+
 
 def test_redcap_update_errors() -> None:
     update_obj = REDCapUpdate()

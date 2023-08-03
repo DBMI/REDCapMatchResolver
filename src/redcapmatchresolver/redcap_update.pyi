@@ -10,3 +10,4 @@ class REDCapUpdate:
         pass
     def set(self, property: str, value: str) -> None:
         pass
+    def to_query(self) -> str: ...
