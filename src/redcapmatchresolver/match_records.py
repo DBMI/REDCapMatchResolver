@@ -206,6 +206,16 @@ class MatchRecord:
 
         return MatchTuple(bool=good_match, summary=summary)
 
+    def mrns_match(self) -> bool:
+        """Allows external code to ask if the Epic & REDCap Medical Record Numbers match.
+
+        Returns
+        -------
+        match : bool
+        """
+        mrn_match: MatchVariable = self.__record["C_MRN"]
+        return mrn_match.good_enough()
+
     def names_match(self) -> bool:
         """Allows external code to ask if the Epic & REDCap names match.
 
