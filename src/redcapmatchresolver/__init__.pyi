@@ -12,3 +12,4 @@ import redcap_match_resolver
 import redcap_patient
 import redcap_report_reader
 import redcap_report_writer
+import redcap_update
