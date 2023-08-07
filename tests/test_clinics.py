@@ -8,7 +8,7 @@ from redcapmatchresolver.redcap_clinic import REDCapClinic
 def test_clinics():
     clinics = REDCapClinic()
 
-    assert clinics is not None and isinstance(clinics, REDCapClinic)
+    assert isinstance(clinics, REDCapClinic)
     assert clinics.priority("UPC DRAW STATION") == 1
     assert clinics.priority("NOT PRESENT") == 9999
 

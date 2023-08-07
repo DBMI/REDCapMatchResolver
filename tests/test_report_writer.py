@@ -12,13 +12,11 @@ def test_writer_init(tmp_path) -> None:
     """Tests initializing the Report Writer class."""
     # Default report name.
     obj = REDCapReportWriter()
-    assert obj is not None
     assert isinstance(obj, REDCapReportWriter)
 
     # Report name in UNsafe drive.
     tmp_filename = str(tmp_path / "test_filename.txt")
     obj = REDCapReportWriter(report_filename=tmp_filename)
-    assert obj is not None
     assert isinstance(obj, REDCapReportWriter)
     # Ensure report is sent to safe drive.
     assert patient_data_directory() in obj.report_filename()
@@ -26,7 +24,6 @@ def test_writer_init(tmp_path) -> None:
     # Report name in safe drive.
     safe_report_filename = os.path.join(patient_data_directory(), "test_filename.txt")
     obj = REDCapReportWriter(report_filename=safe_report_filename)
-    assert obj is not None
     assert isinstance(obj, REDCapReportWriter)
     assert obj.report_filename() == safe_report_filename
 
@@ -35,7 +32,6 @@ def test_writing(matching_patients, tmp_path) -> None:
     """End-to-end test of writing a report."""
     output_filename = str(tmp_path / "test_filename.txt")
     writer_obj = REDCapReportWriter(report_filename=output_filename)
-    assert writer_obj is not None
     assert isinstance(writer_obj, REDCapReportWriter)
 
     writer_obj.add_match(matching_patients)

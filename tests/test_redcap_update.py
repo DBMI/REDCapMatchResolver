@@ -29,7 +29,7 @@ def test_redcap_update_creation() -> None:
     update_obj.set(property="last_name", value="Smith")
     query = update_obj.to_query()
     assert isinstance(query, str)
-    assert query == "first_name = Alice\nlast_name = Smith"
+    assert query == "first_name = 'Alice',\nlast_name = 'Smith'"
 
 
 def test_redcap_update_errors() -> None:

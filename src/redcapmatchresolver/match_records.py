@@ -74,7 +74,7 @@ class MatchRecord:
         CommonField("C_ADDR_CALCULATED", "E_ADDR_CALCULATED", "R_ADDR_CALCULATED"),
         CommonField("C_HOME_PHONE", "HOME_PHONE", "phone_number"),
         CommonField("C_WORK_PHONE", "WORK_PHONE", "phone_number"),
-        CommonField("C_MOBILE_PHONE", "Mobil_Phone", "phone_number"),
+        CommonField("C_MOBILE_PHONE", "Mobile_Phone", "phone_number"),
     ]
 
     FORMAT: str = "%-20s %-40s %-40s"
@@ -89,13 +89,32 @@ class MatchRecord:
         "C_PHONE_CALCULATED",
     ]
 
-    def __init__(self, row: pandas.Series):
+    def __init__(
+        self, row: pandas.Series, facility_addresses: list, facility_phone_numbers: list
+    ):
+        """Create MatchRecord object.
+
+        Parameters
+        ----------
+        row : pandas.Series             One database row listing both Epic and REDCap values for (perhaps) the same patient.
+        facility_addresses : list       Addresses that don't score as a match even if they do match.
+        facility_phone_numbers : list   Phone numbers that don't score as a match even if they do match.
+        """
+        if not isinstance(row, pandas.Series):
+            raise TypeError("Argument 'row' is not the expected pandas.Series.")
+
+        if not isinstance(facility_addresses, list):
+            facility_addresses = []
+
+        if not isinstance(facility_phone_numbers, list):
+            facility_phone_numbers = []
+
         self.__record: dict = {}
         self.__redcap_update: REDCapUpdate = REDCapUpdate()
 
         self.__score: int
 
-        self.__build_dictionary(row)
+        self.__build_dictionary(row, facility_addresses, facility_phone_numbers)
         self.__score_record()
 
     # Helper...  strip everything but alphanumerics from a string
@@ -105,12 +124,16 @@ class MatchRecord:
         _string = "".join(_filter)
         return _string
 
-    def __build_dictionary(self, row: pandas.Series) -> None:
+    def __build_dictionary(
+        self, row: pandas.Series, facility_addresses: list, facility_phone_numbers: list
+    ) -> None:
         """Builds the self.__record dict of MatchVariables describing the match between the Epic and REDCap values.
 
         Parameters
         ----------
-        row : pandas.Series extracted from the database epic and redcap tables.
+        row : pandas.Series             Extracted from the database epic and redcap tables.
+        facility_addresses : list       Addresses that don't score as a match even if they do match.
+        facility_phone_numbers : list   Phone numbers that don't score as a match even if they do match.
         """
         if not isinstance(row, pandas.Series):
             raise TypeError("Argument 'row' is not the expected pandas.Series.")
@@ -142,12 +165,19 @@ class MatchRecord:
             if redcap_field in row:
                 redcap_value = str(row[redcap_field])
 
+            ignore_list = []
+
+            if common_name == "C_ADDR_CALCULATED":
+                ignore_list = facility_addresses
+
             self.__record[common_name] = MatchVariable(
-                epic_value=epic_value, redcap_value=redcap_value
+                epic_value=epic_value,
+                redcap_value=redcap_value,
+                ignore_list=ignore_list,
             )
 
         # Match phone numbers.
-        self.__select_best_phone(row)
+        self.__select_best_phone(row, facility_phone_numbers=facility_phone_numbers)
 
     def __epic_name(self) -> tuple:
         """Simplifies getting Epic first, last name.
@@ -162,7 +192,7 @@ class MatchRecord:
         epic_last_name: str = last_name_match.epic_value().strip()
         return epic_first_name, epic_last_name
 
-    def __init_summary(self, aliases: list = []) -> str:
+    def __init_summary(self, aliases=None) -> str:
         """Initializes the 'summary' block describing the match between Epic and REDCap records.
 
         Parameters
@@ -173,6 +203,9 @@ class MatchRecord:
         -------
         summary : str
         """
+        if aliases is None:
+            aliases = []
+
         format_spec: str = MatchRecord.FORMAT + "%s\n"
         summary: str = ""
         summary += "-------------\n"
@@ -191,7 +224,7 @@ class MatchRecord:
         return summary
 
     def is_match(
-        self, exact: bool = False, criteria: int = 4, aliases: list = []
+        self, exact: bool = False, criteria: int = 4, aliases=None
     ) -> MatchTuple:
         """See if a universal record is a match between its Epic fields and REDCap fields.
 
@@ -205,6 +238,8 @@ class MatchRecord:
         -------
         MatchTuple containing a bool (match/no match) & a str summary
         """
+        if aliases is None:
+            aliases = []
         summary: str = self.__init_summary(aliases=aliases)
 
         for key_fieldname in MatchRecord.SCORE_FIELDS:
@@ -300,13 +335,16 @@ class MatchRecord:
             if this_record.good_enough():
                 self.__score += 1
 
-    def __select_best_phone(self, row: pandas.Series) -> None:
+    def __select_best_phone(
+        self, row: pandas.Series, facility_phone_numbers: list
+    ) -> None:
         """Try each Epic phone number against the REDCap phone number
         and use whichever matches (if any).
 
         Parameters
         ----------
-        row : pandas.Series extracted from the database epic and redcap tables.
+        row : pandas.Series             Extracted from the database epic and redcap tables.
+        facility_phone_numbers : list   Phone numbers that don't score as a match even if they do match.
         """
         epic_home_phone: str = ""
         epic_work_phone: str = ""
@@ -325,19 +363,33 @@ class MatchRecord:
         if "phone_number" in row:
             redcap_phone = str(clean_up_phone(row["phone_number"]))
 
+        #   Use the same formatting for the facility phone numbers.
+        if facility_phone_numbers:
+            facility_phone_numbers = list(map(clean_up_phone, facility_phone_numbers))
+
         match_variable = MatchVariable(
-            epic_value=epic_home_phone, redcap_value=redcap_phone
+            epic_value=epic_home_phone,
+            redcap_value=redcap_phone,
+            ignore_list=facility_phone_numbers,
         )
 
-        if not match_variable.good_enough():
-            match_variable = MatchVariable(
-                epic_value=epic_work_phone, redcap_value=redcap_phone
-            )
+        #   If phone number is from a group facility, no need to search further.
+        if not match_variable.ignored():
+            if not match_variable.good_enough():
+                match_variable = MatchVariable(
+                    epic_value=epic_work_phone,
+                    redcap_value=redcap_phone,
+                    ignore_list=facility_phone_numbers,
+                )
 
-        if not match_variable.good_enough():
-            match_variable = MatchVariable(
-                epic_value=epic_mobile_phone, redcap_value=redcap_phone
-            )
+            #   If phone number is from a group facility, no need to search further.
+            if not match_variable.ignored():
+                if not match_variable.good_enough():
+                    match_variable = MatchVariable(
+                        epic_value=epic_mobile_phone,
+                        redcap_value=redcap_phone,
+                        ignore_list=facility_phone_numbers,
+                    )
 
         self.__record["C_PHONE_CALCULATED"] = match_variable
 
@@ -391,11 +443,16 @@ class MatchVariable:
     Holds the comparison between REDCap and Epic for one variable.
     """
 
-    def __init__(
-        self,
-        epic_value: str,
-        redcap_value: str,
-    ):
+    def __init__(self, epic_value: str, redcap_value: str, ignore_list=None):
+        """Creates the MatchVariable object.
+
+        Parameters
+        ----------
+        epic_value : str
+        redcap_value : str
+        ignore_list : list  What values (like address of a group facility)
+                            should be ignored even if they match?
+        """
         if not isinstance(epic_value, str):
             raise TypeError("Argument 'epic_value' is not a string.")
 
@@ -404,20 +461,25 @@ class MatchVariable:
         if not isinstance(redcap_value, str):
             raise TypeError("Argument 'redcap_value' is not a string.")
 
+        if not ignore_list:
+            ignore_list = []
+
         self.__redcap_value: str = redcap_value.strip()
 
         self.__match_quality: MatchQuality
-        self.__evaluate()
+        self.__evaluate(ignore_list)
 
     def epic_value(self) -> str:
         return self.__epic_value
 
     # see if two strings are similar
-    def __evaluate(self) -> None:
+    def __evaluate(self, ignore_list: list) -> None:
         self.__match_quality = MatchQuality.MATCHED_NOPE
 
         if self.__epic_value == "" and self.__redcap_value == "":
             self.__match_quality = MatchQuality.MATCHED_NULL
+        elif self.__epic_value in ignore_list or self.__redcap_value in ignore_list:
+            self.__match_quality = MatchQuality.IGNORED
         elif not self.__epic_value or not self.__redcap_value:
             self.__match_quality = MatchQuality.MATCHED_NOPE
         elif self.__epic_value == self.__redcap_value:
@@ -439,7 +501,22 @@ class MatchVariable:
             self.__match_quality = MatchQuality.MATCHED_SUBSTRING
 
     def good_enough(self) -> bool:
+        """Lets external code drill down to the MatchQuality object inside.
+
+        Returns
+        -------
+        good_enough : bool
+        """
         return self.__match_quality.good_enough()
+
+    def ignored(self) -> bool:
+        """Lets external code drill down to the MatchQuality object inside.
+
+        Returns
+        -------
+        ignored : bool
+        """
+        return self.__match_quality.ignored()
 
     def match_quality(self) -> MatchQuality:
         return self.__match_quality

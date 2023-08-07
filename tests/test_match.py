@@ -7,8 +7,6 @@ testing of the classes:
     MatchVariable
 """
 from redcapduplicatedetector.match_quality import MatchQuality
-
-import redcap_update
 import redcapmatchresolver.redcap_update
 from src.redcapmatchresolver.match_records import (
     CommonField,
@@ -16,7 +14,6 @@ from src.redcapmatchresolver.match_records import (
     MatchTuple,
     MatchVariable,
 )
-from src.redcapmatchresolver.redcap_update import REDCapUpdate
 import pytest
 
 
@@ -74,7 +71,9 @@ def test_common_field_error() -> None:
 
 
 def test_match_record(fake_records_dataframe) -> None:
-    match_record = MatchRecord(fake_records_dataframe.iloc[0])
+    match_record = MatchRecord(
+        fake_records_dataframe.iloc[0], facility_addresses=[], facility_phone_numbers=[]
+    )
     assert isinstance(match_record, MatchRecord)
     result = match_record.is_match()
     assert isinstance(result, MatchTuple)
@@ -94,7 +93,9 @@ def test_match_record(fake_records_dataframe) -> None:
 
 
 def test_match_record_alias(fake_records_dataframe) -> None:
-    match_record = MatchRecord(fake_records_dataframe.iloc[0])
+    match_record = MatchRecord(
+        fake_records_dataframe.iloc[0], facility_addresses=[], facility_phone_numbers=[]
+    )
     assert isinstance(match_record, MatchRecord)
     result = match_record.is_match(aliases=["Smith,Alice", "Smyth,Alan"])
     assert isinstance(result, MatchTuple)
@@ -108,7 +109,7 @@ def test_match_record_corner_cases(fake_records_dataframe) -> None:
     #   Delete the Epic HOME_PHONE field to force use of WORK_PHONE.
     row = fake_records_dataframe.iloc[0].copy()
     row["HOME_PHONE"] = ""
-    match_record = MatchRecord(row)
+    match_record = MatchRecord(row, facility_addresses=[], facility_phone_numbers=[])
     assert isinstance(match_record, MatchRecord)
 
     result = match_record.is_match()
@@ -119,7 +120,11 @@ def test_match_record_corner_cases(fake_records_dataframe) -> None:
     assert isinstance(result.summary, str)
 
     #   Using 'exact' parameter, with and without exact match.
-    match_record = MatchRecord(row=fake_records_dataframe.iloc[0])
+    match_record = MatchRecord(
+        row=fake_records_dataframe.iloc[0],
+        facility_addresses=[],
+        facility_phone_numbers=[],
+    )
     assert isinstance(match_record, MatchRecord)
 
     result = match_record.is_match(exact=True, criteria=7)
@@ -135,15 +140,64 @@ def test_match_record_corner_cases(fake_records_dataframe) -> None:
 
 def test_match_record_errors(fake_records_dataframe) -> None:
     with pytest.raises(TypeError):
-        MatchRecord(row=None)
+        MatchRecord(row=None, facility_addresses=[], facility_phone_numbers=[])
 
     with pytest.raises(TypeError):
-        MatchRecord(row=1979)
+        MatchRecord(row=1979, facility_addresses=[], facility_phone_numbers=[])
+
+
+def test_match_record_ignore_list(same_facility_dataframe) -> None:
+    row = same_facility_dataframe.iloc[0].copy()
+
+    #   Create two records with same address, phone number and first name, but everything else different.
+    match_record = MatchRecord(row, facility_addresses=[], facility_phone_numbers=[])
+    assert isinstance(match_record, MatchRecord)
+    result = match_record.is_match(criteria=3)
+    assert isinstance(result, MatchTuple)
+    assert hasattr(result, "bool")
+    assert result.bool
+    assert hasattr(result, "summary")
+    assert isinstance(result.summary, str)
+    score = match_record.score()
+    assert isinstance(score, int)
+    assert score == 3
+
+    #   Now add this address to ignore_list.
+    facility_addresses = [row["E_ADDR_CALCULATED"]]
+    match_record = MatchRecord(
+        row, facility_addresses=facility_addresses, facility_phone_numbers=[]
+    )
+    assert isinstance(match_record, MatchRecord)
+    result = match_record.is_match(criteria=3)
+    assert isinstance(result, MatchTuple)
+    assert hasattr(result, "bool")
+    assert not result.bool
+    assert hasattr(result, "summary")
+    assert isinstance(result.summary, str)
+    score = match_record.score()
+    assert isinstance(score, int)
+    assert score == 2
+
+    #   Now add this phone nmber to ignore_list.
+    facility_phone_numbers = [row["phone_number"]]
+    match_record = MatchRecord(
+        row, facility_addresses=[], facility_phone_numbers=facility_phone_numbers
+    )
+    assert isinstance(match_record, MatchRecord)
+    result = match_record.is_match(criteria=3)
+    assert isinstance(result, MatchTuple)
+    assert hasattr(result, "bool")
+    assert not result.bool
+    assert hasattr(result, "summary")
+    assert isinstance(result.summary, str)
+    score = match_record.score()
+    assert isinstance(score, int)
+    assert score == 2
 
 
 def test_match_record_mrn_match(fake_records_dataframe) -> None:
     row = fake_records_dataframe.iloc[0].copy()
-    match_record = MatchRecord(row)
+    match_record = MatchRecord(row, facility_addresses=[], facility_phone_numbers=[])
     assert isinstance(match_record, MatchRecord)
 
     mrns_match = match_record.mrns_match()
@@ -152,7 +206,7 @@ def test_match_record_mrn_match(fake_records_dataframe) -> None:
 
     # Force MRNs not to match.
     row["MRN"] = row["mrn"] + 1
-    match_record = MatchRecord(row)
+    match_record = MatchRecord(row, facility_addresses=[], facility_phone_numbers=[])
     assert isinstance(match_record, MatchRecord)
     mrns_match = match_record.mrns_match()
     assert isinstance(mrns_match, bool)
@@ -170,7 +224,7 @@ def test_match_record_revision(fake_records_dataframe) -> None:
     #   The name in REDCap:
     row["first_name"] = "Alan"
     row["last_name"] = "Smyth"
-    match_record = MatchRecord(row)
+    match_record = MatchRecord(row, facility_addresses=[], facility_phone_numbers=[])
     assert isinstance(match_record, MatchRecord)
 
     names_match = match_record.names_match()
@@ -219,6 +273,22 @@ def test_match_variable() -> None:
     match_variable_obj = MatchVariable(epic_value="", redcap_value="")
     assert isinstance(match_variable_obj, MatchVariable)
     assert match_variable_obj.match_quality() == MatchQuality.MATCHED_NULL
+
+    #   Exercise ignore list; first, values match WITHOUT ignore list.
+    match_variable_obj = MatchVariable(
+        epic_value="123 Maple St | 00000", redcap_value="123 Maple St | 00000"
+    )
+    assert isinstance(match_variable_obj, MatchVariable)
+    assert match_variable_obj.match_quality() == MatchQuality.MATCHED_EXACT
+
+    #   Now with ignore list provided.
+    match_variable_obj = MatchVariable(
+        epic_value="123 Maple St | 00000",
+        redcap_value="123 Maple St | 00000",
+        ignore_list=["234 Maple St | 00000", "123 Maple St | 00000"],
+    )
+    assert isinstance(match_variable_obj, MatchVariable)
+    assert match_variable_obj.match_quality() == MatchQuality.IGNORED
 
 
 def test_match_variable_error() -> None:
