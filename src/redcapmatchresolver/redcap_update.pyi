@@ -1,3 +1,5 @@
+from typing import Union
+
 class REDCapUpdate:
     def __init__(self) -> None:
         self.__update_needed: bool
@@ -8,6 +10,6 @@ class REDCapUpdate:
         pass
     def package(self) -> dict:
         pass
-    def set(self, property: str, value: str) -> None:
+    def set(self, property: str, value: Union[int, str]) -> None:
         pass
     def to_query(self) -> str: ...

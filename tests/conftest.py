@@ -8,6 +8,7 @@ import pandas
 import pytest
 from faker import Faker
 from redcaprecordsynthesizer.state_abbr_conversion import StateAbbreviationConverter
+from redcaputilities.string_cleanup import clean_up_phone
 
 
 @pytest.fixture(name="appointment_df")
@@ -507,6 +508,66 @@ def fixture_report_filename_same():
     return os.path.join(
         os.path.dirname(os.path.realpath(__file__)), "test_patient_report_same.txt"
     )
+
+
+@pytest.fixture(name="same_facility_dataframe")
+def fixture_same_facility_dataframe() -> pandas.DataFrame:
+    """
+    Two separate patients that live at same facility with same phone number
+    and same first names but everything else different.
+
+    Return
+    ------
+    pandas.DataFrame
+    """
+    fake: Faker = Faker()
+    dataframes = []
+
+    birthdate_1: datetime.datetime = fake.date_of_birth(minimum_age=18, maximum_age=115)
+    birthdate_2: datetime.datetime = fake.date_of_birth(minimum_age=18, maximum_age=115)
+
+    # Strip off the extension.
+    common_phone_number: str = clean_up_phone(fake.phone_number())
+    common_phone_number: str = re.sub(r"x\d+", "", common_phone_number)
+    common_first_name = fake.first_name()
+    common_address: str = fake.street_address()
+    common_state_abbr: str = fake.state_abbr(include_territories=False)
+    common_zip: str = fake.zipcode_in_state(common_state_abbr)
+
+    record = {
+        "MRN": fake.random_int(min=1000, max=100000),
+        "mrn": fake.random_int(min=1000, max=100000),
+        "study_id": fake.random_int(min=1000, max=50000),
+        "PAT_ID": fake.bothify(text="?#######", letters="ABCDEFGHJKLMNPQRSTUVWXYZ"),
+        "PAT_FIRST_NAME": common_first_name,
+        "first_name": common_first_name,
+        "PAT_LAST_NAME": fake.last_name(),
+        "last_name": fake.last_name(),
+        "BIRTH_DATE": birthdate_1.strftime("%Y-%m-%d"),
+        "dob": birthdate_2.strftime("%Y-%m-%d"),
+        "ADD_LINE_1": common_address,
+        "street_address_line_1": common_address,
+        "ADD_LINE_2": "",
+        "street_address_line_2": "",
+        "ZIP": common_zip,
+        "zip_code": common_zip,
+        "EMAIL_ADDRESS": fake.email(),
+        "email_address": fake.email(),
+        "HOME_PHONE": common_phone_number,
+        "WORK_PHONE": "",
+        "Mobile_Phone": "",
+        "phone_number": common_phone_number,
+        "E_ADDR_CALCULATED": "",
+        "R_ADDR_CALCULATED": "",
+    }
+
+    record["E_ADDR_CALCULATED"] = record["ADD_LINE_1"] + " | " + record["ZIP"]
+    record["R_ADDR_CALCULATED"] = (
+        record["street_address_line_1"] + " | " + record["zip_code"]
+    )
+
+    dataframes.append(pandas.DataFrame([record], index=[1]))
+    return pandas.concat(dataframes)
 
 
 if __name__ == "__main__":
