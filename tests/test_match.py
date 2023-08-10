@@ -105,6 +105,19 @@ def test_match_record_alias(fake_records_dataframe) -> None:
     assert isinstance(result.summary, str)
 
 
+def test_match_record_mrn_hx(fake_records_dataframe) -> None:
+    match_record = MatchRecord(
+        fake_records_dataframe.iloc[0], facility_addresses=[], facility_phone_numbers=[]
+    )
+    assert isinstance(match_record, MatchRecord)
+    result = match_record.is_match(mrn_hx=["A12345", "B23456"])
+    assert isinstance(result, MatchTuple)
+    assert hasattr(result, "bool")
+    assert result.bool
+    assert hasattr(result, "summary")
+    assert isinstance(result.summary, str)
+
+
 def test_match_record_corner_cases(fake_records_dataframe) -> None:
     #   Delete the Epic HOME_PHONE field to force use of WORK_PHONE.
     row = fake_records_dataframe.iloc[0].copy()
