@@ -2,6 +2,7 @@
 Module: contains the MatchRecord and MatchVariable classes.
 """
 from collections import namedtuple
+from typing import Union
 
 import pandas  # type: ignore[import]
 from redcapmatchresolver.redcap_update import REDCapUpdate
@@ -18,7 +19,7 @@ class CommonField:
     Hold cases where a field (like patient first name) is present in both Epic and REDCap.
     """
 
-    def __init__(self, common_name: str, epic_field: str, redcap_field: str):
+    def __init__(self, common_name: str, epic_field: str, redcap_field: str, weight: Union[int, None] = None):
         if not isinstance(common_name, str):
             raise TypeError("Argument 'common_name' is not a string.")
 
@@ -33,6 +34,11 @@ class CommonField:
             raise TypeError("Argument 'redcap_field' is not a string.")
 
         self.__redcap_field: str = redcap_field
+
+        if not isinstance(weight, int):
+            weight = 1
+
+        self.__weight: int = weight
 
     def common_name(self) -> str:
         return self.__common_name
@@ -55,6 +61,8 @@ class CommonField:
 
         return self.__redcap_field == field_name
 
+    def weight(self) -> int:
+        return self.__weight
 
 class MatchRecord:
     """
@@ -65,16 +73,19 @@ class MatchRecord:
     # A note on phone matching. Epic has THREE phone numbers (home, work and mobile) but REDCap has only one.
     # We'll try to match all but expect only one to match. By keeping the score threshold the same,
     # we'll still get the same score as when we pre-filtered the phone numbers to match.
+    #
+    # We're assigning double weight to date of birth.
+    # DOB not matching is much more significant than (say) email not matching.
     COMMON_FIELDS: list = [
-        CommonField("C_MRN", "MRN", "mrn"),
-        CommonField("C_FIRST", "PAT_FIRST_NAME", "first_name"),
-        CommonField("C_LAST", "PAT_LAST_NAME", "last_name"),
-        CommonField("C_DOB", "BIRTH_DATE", "dob"),
-        CommonField("C_EMAIL", "EMAIL_ADDRESS", "email_address"),
-        CommonField("C_ADDR_CALCULATED", "E_ADDR_CALCULATED", "R_ADDR_CALCULATED"),
-        CommonField("C_HOME_PHONE", "HOME_PHONE", "phone_number"),
-        CommonField("C_WORK_PHONE", "WORK_PHONE", "phone_number"),
-        CommonField("C_MOBILE_PHONE", "Mobile_Phone", "phone_number"),
+        CommonField("C_MRN", "MRN", "mrn", 1),
+        CommonField("C_FIRST", "PAT_FIRST_NAME", "first_name", 1),
+        CommonField("C_LAST", "PAT_LAST_NAME", "last_name", 1),
+        CommonField("C_DOB", "BIRTH_DATE", "dob", 2),
+        CommonField("C_EMAIL", "EMAIL_ADDRESS", "email_address", 1),
+        CommonField("C_ADDR_CALCULATED", "E_ADDR_CALCULATED", "R_ADDR_CALCULATED", 1),
+        CommonField("C_HOME_PHONE", "HOME_PHONE", "phone_number", 1),
+        CommonField("C_WORK_PHONE", "WORK_PHONE", "phone_number", 1),
+        CommonField("C_MOBILE_PHONE", "Mobile_Phone", "phone_number", 1),
     ]
 
     FORMAT: str = "%-20s %-40s %-40s"
@@ -173,6 +184,7 @@ class MatchRecord:
             self.__record[common_name] = MatchVariable(
                 epic_value=epic_value,
                 redcap_value=redcap_value,
+                weight=cf_obj.weight(),
                 ignore_list=ignore_list,
             )
 
@@ -242,7 +254,7 @@ class MatchRecord:
         return summary
 
     def is_match(
-        self, exact: bool = False, criteria: int = 4, aliases=None, mrn_hx=None
+        self, exact: bool = False, criteria: int = 5, aliases=None, mrn_hx=None
     ) -> MatchTuple:
         """See if a universal record is a match between its Epic fields and REDCap fields.
 
@@ -364,7 +376,7 @@ class MatchRecord:
             this_record = self.__record[common_name]
 
             if this_record.good_enough():
-                self.__score += 1
+                self.__score += this_record.weight()
 
     def __select_best_phone(
         self, row: pandas.Series, facility_phone_numbers: list
@@ -501,7 +513,7 @@ class MatchVariable:
     Holds the comparison between REDCap and Epic for one variable.
     """
 
-    def __init__(self, epic_value: str, redcap_value: str, ignore_list=None):
+    def __init__(self, epic_value: str, redcap_value: str, weight: Union[int, None]=None, ignore_list=None):
         """Creates the MatchVariable object.
 
         Parameters
@@ -519,10 +531,15 @@ class MatchVariable:
         if not isinstance(redcap_value, str):
             raise TypeError("Argument 'redcap_value' is not a string.")
 
+        self.__redcap_value: str = redcap_value.strip()
+
         if not ignore_list:
             ignore_list = []
 
-        self.__redcap_value: str = redcap_value.strip()
+        if not isinstance(weight, int):
+            weight = 1
+
+        self.__weight = weight
 
         self.__match_quality: MatchQuality
         self.__evaluate(ignore_list)
@@ -591,3 +608,12 @@ class MatchVariable:
             self.__redcap_value,
             str(self.__match_quality),
         )
+
+    def weight(self) -> int:
+        """Allows MatchRecord to ask a variable's weight when computing score.
+
+        Returns
+        -------
+        weight : int
+        """
+        return self.__weight
