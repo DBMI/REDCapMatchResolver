@@ -213,7 +213,7 @@ def test_match_record_mrn_match(fake_records_dataframe) -> None:
     assert not mrns_match
 
 
-def test_match_record_revision(fake_records_dataframe) -> None:
+def test_match_record_revision_alias(fake_records_dataframe) -> None:
     row = fake_records_dataframe.iloc[0].copy()
 
     # Manipulate so names DON'T match, but alias will.
@@ -236,7 +236,7 @@ def test_match_record_revision(fake_records_dataframe) -> None:
     assert score == 5
 
     #   Revise with alias.
-    match_record.use_aliases(["Smith,Alice", "Smyth,Alan"])
+    match_record.use_aliases(aliases=["Smith,Alice", "Smyth,Alan"])
 
     #   The names still won't match, because even though
     #   we recognize that the REDCap name is one of the Epic aliases,
@@ -254,6 +254,42 @@ def test_match_record_revision(fake_records_dataframe) -> None:
     update_obj = match_record.redcap_update()
     assert isinstance(update_obj, redcapmatchresolver.redcap_update.REDCapUpdate)
     assert update_obj.needed()
+
+
+def test_match_record_revision_mrn_history(fake_records_dataframe) -> None:
+    row = fake_records_dataframe.iloc[0].copy()
+
+    # Manipulate so MRNs DON'T match, but MRN history will.
+    #   The MRN in Epic:
+    row["MRN"] = "A12345"
+
+    #   The MRN in REDCap:
+    row["mrn"] = "B23456"
+    match_record = MatchRecord(row, facility_addresses=[], facility_phone_numbers=[])
+    assert isinstance(match_record, MatchRecord)
+
+    mrns_match = match_record.mrns_match()
+    assert isinstance(mrns_match, bool)
+    assert not mrns_match
+
+    score = match_record.score()
+    assert isinstance(score, int)
+    assert score == 6
+
+    #   Revise with MRN history.
+    match_record.use_mrn_hx(mrn_hx=["Z54321", "B23456"])
+
+    #   The MRNs still won't match, because even though
+    #   we recognize that the REDCap MRN is one of the Epic historical MRNs,
+    #   the MRNs haven't been changed....
+    mrns_match = match_record.mrns_match()
+    assert isinstance(mrns_match, bool)
+    assert not mrns_match
+
+    #   ...but the score improves.
+    score = match_record.score()
+    assert isinstance(score, int)
+    assert score == 7
 
 
 def test_match_variable() -> None:
