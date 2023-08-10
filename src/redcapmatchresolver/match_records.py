@@ -203,12 +203,13 @@ class MatchRecord:
         epic_last_name: str = last_name_match.epic_value().strip()
         return epic_first_name, epic_last_name
 
-    def __init_summary(self, aliases=None) -> str:
+    def __init_summary(self, aliases=None, mrn_hx=None) -> str:
         """Initializes the 'summary' block describing the match between Epic and REDCap records.
 
         Parameters
         ----------
         aliases : list Other names for this patient.
+        mrn_hx : list  Other MRNs used by this patient.
 
         Returns
         -------
@@ -216,6 +217,9 @@ class MatchRecord:
         """
         if aliases is None:
             aliases = []
+
+        if mrn_hx is None:
+            mrn_hx = []
 
         format_spec: str = MatchRecord.FORMAT + "%s\n"
         summary: str = ""
@@ -226,6 +230,9 @@ class MatchRecord:
         if aliases:
             summary += "Aliases: " + "; ".join(aliases) + "\n"
 
+        if mrn_hx:
+            summary += "Other MRNs: " + "; ".join(mrn_hx) + "\n"
+
         summary += format_spec % (
             "Common Name",
             "Epic Value",
@@ -235,15 +242,16 @@ class MatchRecord:
         return summary
 
     def is_match(
-        self, exact: bool = False, criteria: int = 4, aliases=None
+        self, exact: bool = False, criteria: int = 4, aliases=None, mrn_hx=None
     ) -> MatchTuple:
         """See if a universal record is a match between its Epic fields and REDCap fields.
 
         Parameters
         ----------
-        exact : bool  Do we only call a match if score EQUALS the criterion? Or >=?
-        criteria : int Threshold for deciding it's a match.
-        aliases : list Other names for this patient.
+        exact : bool    Do we only call a match if score EQUALS the criterion? Or >=?
+        criteria : int  Threshold for deciding it's a match.
+        aliases : list  Other names for this patient.
+        mrn_hx : list   Other MRNs used by this patient.
 
         Returns
         -------
@@ -251,7 +259,8 @@ class MatchRecord:
         """
         if aliases is None:
             aliases = []
-        summary: str = self.__init_summary(aliases=aliases)
+
+        summary: str = self.__init_summary(aliases=aliases, mrn_hx=mrn_hx)
 
         for key_fieldname in MatchRecord.SCORE_FIELDS:
             this_record = self.__record[key_fieldname]

@@ -4,12 +4,11 @@ testing of the MatchRecordGenerator class.
 """
 import redcapmatchresolver.match_records
 from src.redcapmatchresolver.match_record_generator import MatchRecordGenerator
-from src.redcapmatchresolver.match_records import MatchRecord
-
-import pytest
 
 
-def test_match_record_generator(fake_records_dataframe, same_facility_dataframe) -> None:
+def test_match_record_generator(
+    fake_records_dataframe, same_facility_dataframe
+) -> None:
     #   We should REJECT this row's addresses & phone numbers.
     row = same_facility_dataframe.iloc[0].copy()
     facility_addresses = [row["E_ADDR_CALCULATED"]]
