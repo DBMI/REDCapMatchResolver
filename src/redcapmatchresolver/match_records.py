@@ -179,6 +179,17 @@ class MatchRecord:
         # Match phone numbers.
         self.__select_best_phone(row, facility_phone_numbers=facility_phone_numbers)
 
+    def __epic_mrn(self) -> str:
+        """Simplifies getting Epic Medical Record Number.
+
+        Returns
+        -------
+        epic_mrn : str
+        """
+        mrn_match: MatchVariable = self.__record["C_MRN"]
+        epic_mrn: str = mrn_match.epic_value().strip()
+        return epic_mrn
+
     def __epic_name(self) -> tuple:
         """Simplifies getting Epic first, last name.
 
@@ -287,6 +298,17 @@ class MatchRecord:
             return pat_id_mv.epic_value()
 
         return ""
+
+    def __redcap_mrn(self) -> str:
+        """Simplifies getting REDCap Medical Record Number.
+
+        Returns
+        -------
+        redcap_mrn : str
+        """
+        mrn_match: MatchVariable = self.__record["C_MRN"]
+        redcap_mrn: str = mrn_match.redcap_value().strip()
+        return redcap_mrn
 
     def __redcap_name(self) -> tuple:
         """Simplifies getting REDCap first, last name.
@@ -403,7 +425,7 @@ class MatchRecord:
         return int(self.__record["study_id"].redcap_value())
 
     def use_aliases(self, aliases: list) -> None:
-        """Allows us to reconsider the match given patient aliases from Epic.
+        """Allows us to reconsider the match given patient's aliases from Epic.
 
         Parameters
         ----------
@@ -435,6 +457,31 @@ class MatchRecord:
                     self.__score += 1  # Last names now match.
 
                 #   No need to consider further aliases in list.
+                return
+
+    def use_mrn_hx(self, mrn_hx: list) -> None:
+        """Allows us to reconsider the match given patient's MRN history from Epic.
+
+        Parameters
+        ----------
+        mrn_hx : list  example: ['12345', '23456']
+        """
+        if not isinstance(mrn_hx, list):
+            raise TypeError('Argument "mrn_hx" is not the expected list.')
+
+        epic_mrn: str = self.__epic_mrn()
+        redcap_mrn: str = self.__redcap_mrn()
+
+        #   If they ALREADY agree, there's no point.
+        if epic_mrn.upper() == redcap_mrn.upper():
+            return
+
+        #   Try to match each historical MRN in list.
+        for historical_mrn in mrn_hx:
+            if historical_mrn.upper() == redcap_mrn.upper():
+                self.__score += 1  # Increase the score, becauses the MRNs now match.
+
+                #   No need to consider further historical MRNs in list.
                 return
 
 
