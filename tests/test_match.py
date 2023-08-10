@@ -249,7 +249,7 @@ def test_match_record_revision_alias(fake_records_dataframe) -> None:
     assert score == 5
 
     #   Revise with alias.
-    match_record.use_aliases(aliases=["Smith,Alice", "Smyth,Alan"])
+    match_record.use_aliases(aliases=["Smith,Alice", "Smyth,Alan Baker"])
 
     #   The names still won't match, because even though
     #   we recognize that the REDCap name is one of the Epic aliases,
