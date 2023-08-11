@@ -18,7 +18,7 @@ def fixture_clinics() -> REDCapClinic:
 
 
 def test_appointment_corner_cases(
-    appointment_df, appointment_df_malformed, appointment_df_slashes
+    appointment_df, appointment_df_malformed, appointment_df_slashes, appointment_df_time_missing
 ):
     #   Make it look up clinics by itself.
     appointment_obj = REDCapAppointment(df=appointment_df)
@@ -41,6 +41,14 @@ def test_appointment_corner_cases(
     assert appointment_obj.date() == datetime.strptime(
         full_datetime_string,
         "%Y-%m-%d %H:%M:%S",
+    )
+
+    #   Handle time missing.
+    appointment_obj = REDCapAppointment(df=appointment_df_time_missing)
+    assert isinstance(appointment_obj, REDCapAppointment)
+    assert appointment_obj.date() == datetime.strptime(
+        appointment_df.appointment_date[0],
+        "%Y-%m-%d",
     )
 
 

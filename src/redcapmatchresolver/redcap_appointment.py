@@ -15,9 +15,9 @@ class REDCapAppointment:
     Represents a single patient appointment.
     """
 
-    __appointment_date_keywords = ["appointment_date", "appt_date"]
-    __appointment_time_keywords = ["appointment_time", "appt_time"]
-    __department_keywords = ["clinic", "department", "dept"]
+    __appointment_date_keywords: list = ["appointment_date", "appt_date"]
+    __appointment_time_keywords: list = ["appointment_time", "appt_time"]
+    __department_keywords: list = ["clinic", "department", "dept"]
 
     def __init__(
         self,
@@ -124,8 +124,14 @@ class REDCapAppointment:
         datetime_obj = None
 
         try:
-            date_time_combined = self.__appointment_date + " " + self.__appointment_time
+            date_time_combined:str = self.__appointment_date + " " + self.__appointment_time
             datetime_obj = datetime.strptime(date_time_combined, "%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            #   Try a different format.
+            try:
+                datetime_obj = datetime.strptime(date_time_combined.strip(), "%Y-%m-%d")
+            except ValueError:
+                pass
         except TypeError:
             pass
 
