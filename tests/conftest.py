@@ -37,6 +37,16 @@ def fixture_appointment_record_slashes() -> pandas.DataFrame:
     return pandas.DataFrame(d, index=[0])
 
 
+@pytest.fixture(name="appointment_df_time_missing")
+def fixture_appointment_record_time_missing() -> pandas.DataFrame:
+    d = {
+        "appointment_clinic": "LWC CARDIOLOGY",
+        "appointment_date": "2022-12-01",
+        "appointment_time": "",
+    }
+    return pandas.DataFrame(d, index=[0])
+
+
 @pytest.fixture(name="appointment_fields")
 def fixture_appointment_fields() -> list:
     return [
