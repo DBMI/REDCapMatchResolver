@@ -80,7 +80,7 @@ class MatchRecord:
         CommonField("C_MRN", "MRN", "mrn", 1),
         CommonField("C_FIRST", "PAT_FIRST_NAME", "first_name", 1),
         CommonField("C_LAST", "PAT_LAST_NAME", "last_name", 1),
-        CommonField("C_DOB", "BIRTH_DATE", "dob", 2),
+        CommonField("C_DOB", "BIRTH_DATE", "dob", 1),
         CommonField("C_EMAIL", "EMAIL_ADDRESS", "email_address", 1),
         CommonField("C_ADDR_CALCULATED", "E_ADDR_CALCULATED", "R_ADDR_CALCULATED", 1),
         CommonField("C_HOME_PHONE", "HOME_PHONE", "phone_number", 1),

@@ -90,7 +90,7 @@ def test_match_record(fake_records_dataframe) -> None:
     assert isinstance(result.summary, str)
     score = match_record.score()
     assert isinstance(score, int)
-    assert score == 8
+    assert score == 7
     pat_id = match_record.pat_id()
     assert isinstance(pat_id, str)
     assert pat_id == fake_records_dataframe.iloc[0]["PAT_ID"]
@@ -147,7 +147,7 @@ def test_match_record_corner_cases(fake_records_dataframe) -> None:
     )
     assert isinstance(match_record, MatchRecord)
 
-    result = match_record.is_match(exact=True, criteria=8)
+    result = match_record.is_match(exact=True, criteria=7)
     assert isinstance(result, MatchTuple)
     assert hasattr(result, "bool")
     assert result.bool
@@ -253,7 +253,7 @@ def test_match_record_revision_alias(fake_records_dataframe) -> None:
 
     score = match_record.score()
     assert isinstance(score, int)
-    assert score == 6
+    assert score == 5
 
     #   Revise with alias.
     match_record.use_aliases(aliases=["Smith,Alice", "Smyth,Alan Baker"])
@@ -268,7 +268,7 @@ def test_match_record_revision_alias(fake_records_dataframe) -> None:
     #   ...but the score improves.
     score = match_record.score()
     assert isinstance(score, int)
-    assert score == 8
+    assert score == 7
 
     #   Retrieve the update package from MatchRecord object.
     update_obj = match_record.redcap_update()
@@ -294,7 +294,7 @@ def test_match_record_revision_mrn_history(fake_records_dataframe) -> None:
 
     score = match_record.score()
     assert isinstance(score, int)
-    assert score == 7
+    assert score == 6
 
     #   Revise with MRN history.
     match_record.use_mrn_hx(mrn_hx=["Z54321", "B23456"])
@@ -309,7 +309,7 @@ def test_match_record_revision_mrn_history(fake_records_dataframe) -> None:
     #   ...but the score improves.
     score = match_record.score()
     assert isinstance(score, int)
-    assert score == 8
+    assert score == 7
 
 
 def test_match_variable() -> None:
