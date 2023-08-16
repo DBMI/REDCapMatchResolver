@@ -5,9 +5,10 @@ from collections import namedtuple
 from typing import Union
 
 import pandas  # type: ignore[import]
-from redcapmatchresolver.redcap_update import REDCapUpdate
 from redcapduplicatedetector.match_quality import MatchQuality
 from redcaputilities.string_cleanup import clean_up_phone
+
+from redcapmatchresolver.redcap_update import REDCapUpdate
 
 MatchTuple = namedtuple(
     typename="MatchTuple", field_names=["bool", "summary"]  # type: ignore[misc]
@@ -19,7 +20,13 @@ class CommonField:
     Hold cases where a field (like patient first name) is present in both Epic and REDCap.
     """
 
-    def __init__(self, common_name: str, epic_field: str, redcap_field: str, weight: Union[int, None] = None):
+    def __init__(
+        self,
+        common_name: str,
+        epic_field: str,
+        redcap_field: str,
+        weight: Union[int, None] = None,
+    ):
         if not isinstance(common_name, str):
             raise TypeError("Argument 'common_name' is not a string.")
 
@@ -64,18 +71,14 @@ class CommonField:
     def weight(self) -> int:
         return self.__weight
 
+
 class MatchRecord:
     """
     Holds the comparisons between REDCap and Epic for an entire DataFrame.
     internal variable 'record' is a dictionary of MatchVariable objects.
     """
 
-    # A note on phone matching. Epic has THREE phone numbers (home, work and mobile) but REDCap has only one.
-    # We'll try to match all but expect only one to match. By keeping the score threshold the same,
-    # we'll still get the same score as when we pre-filtered the phone numbers to match.
-    #
-    # We're assigning double weight to date of birth.
-    # DOB not matching is much more significant than (say) email not matching.
+    # These fields are used in generating the match summary.
     COMMON_FIELDS: list = [
         CommonField("C_MRN", "MRN", "mrn", 1),
         CommonField("C_FIRST", "PAT_FIRST_NAME", "first_name", 1),
@@ -90,13 +93,13 @@ class MatchRecord:
 
     FORMAT: str = "%-20s %-40s %-40s"
 
+    #   These fields are used for computing the match score.
     SCORE_FIELDS: list = [
-        "C_MRN",
-        "C_FIRST",
-        "C_LAST",
+        "C_ADDR_CALCULATED",
         "C_DOB",
         "C_EMAIL",
-        "C_ADDR_CALCULATED",
+        "C_MRN_CALCULATED",
+        "C_NAME_CALCULATED",
         "C_PHONE_CALCULATED",
     ]
 
@@ -120,10 +123,13 @@ class MatchRecord:
         if not isinstance(facility_phone_numbers, list):
             facility_phone_numbers = []
 
+        self.__alias: str
+        self.__mrn_hx: str
+        self.__pat_id: str
         self.__record: dict = {}
         self.__redcap_update: REDCapUpdate = REDCapUpdate()
-
         self.__score: int
+        self.__study_id: str
 
         self.__build_dictionary(row, facility_addresses, facility_phone_numbers)
         self.__score_record()
@@ -152,16 +158,19 @@ class MatchRecord:
         #   Only expect these merge fields to appear in ONE system:
         #   First, REDCap study_id ...
         if "study_id" in row:
-            self.__record["study_id"] = MatchVariable(
-                epic_value="", redcap_value=str(row["study_id"])
-            )
+            self.__study_id = str(row["study_id"])
 
-        #   ...Second, Epic PAT_ID.
+        #   ...Second, Epic ALIAS, MRN_HX and PAT_ID
+        if "ALIAS" in row:
+            self.__alias = str(row["ALIAS"])
+
+        if "MRN_HX" in row:
+            self.__mrn_hx = str(row["MRN_HX"])
+
         if "PAT_ID" in row:
-            self.__record["PAT_ID"] = MatchVariable(
-                epic_value=str(row["PAT_ID"]), redcap_value=""
-            )
+            self.__pat_id = str(row["PAT_ID"])
 
+        #   Now all the fields present in both systems.
         for cf_obj in MatchRecord.COMMON_FIELDS:
             common_name: str = cf_obj.common_name()
             epic_value: str = ""
@@ -188,8 +197,10 @@ class MatchRecord:
                 ignore_list=ignore_list,
             )
 
-        # Match phone numbers.
+        # Match phone numbers (Epic has several), names (including aliases) and MRNs (including old ones).
         self.__select_best_phone(row, facility_phone_numbers=facility_phone_numbers)
+        self.__select_best_epic_name(row)
+        self.__select_best_epic_mrn(row)
 
     def __epic_mrn(self) -> str:
         """Simplifies getting Epic Medical Record Number.
@@ -202,48 +213,20 @@ class MatchRecord:
         epic_mrn: str = mrn_match.epic_value().strip()
         return epic_mrn
 
-    def __epic_name(self) -> tuple:
-        """Simplifies getting Epic first, last name.
-
-        Returns
-        -------
-        names : tuple (first, last)
-        """
-        first_name_match: MatchVariable = self.__record["C_FIRST"]
-        epic_first_name: str = first_name_match.epic_value().strip()
-        last_name_match: MatchVariable = self.__record["C_LAST"]
-        epic_last_name: str = last_name_match.epic_value().strip()
-        return epic_first_name, epic_last_name
-
-    def __init_summary(self, aliases=None, mrn_hx=None) -> str:
+    def __init_summary(self) -> str:
         """Initializes the 'summary' block describing the match between Epic and REDCap records.
-
-        Parameters
-        ----------
-        aliases : list Other names for this patient.
-        mrn_hx : list  Other MRNs used by this patient.
 
         Returns
         -------
         summary : str
         """
-        if aliases is None:
-            aliases = []
-
-        if mrn_hx is None:
-            mrn_hx = []
-
         format_spec: str = MatchRecord.FORMAT + "%s\n"
         summary: str = ""
         summary += "-------------\n"
         summary += "Study ID: " + str(self.study_id()) + "\n"
         summary += "PAT_ID: " + self.pat_id() + "\n"
-
-        if aliases:
-            summary += "Aliases: " + "; ".join(aliases) + "\n"
-
-        if mrn_hx:
-            summary += "Other MRNs: " + "; ".join(mrn_hx) + "\n"
+        summary += "Aliases: " + self.__alias + "\n"
+        summary += "Other MRNs: " + self.__mrn_hx + "\n"
 
         summary += format_spec % (
             "Common Name",
@@ -262,8 +245,6 @@ class MatchRecord:
         ----------
         exact : bool    Do we only call a match if score EQUALS the criterion? Or >=?
         criteria : int  Threshold for deciding it's a match.
-        aliases : list  Other names for this patient.
-        mrn_hx : list   Other MRNs used by this patient.
 
         Returns
         -------
@@ -272,10 +253,10 @@ class MatchRecord:
         if aliases is None:
             aliases = []
 
-        summary: str = self.__init_summary(aliases=aliases, mrn_hx=mrn_hx)
+        summary: str = self.__init_summary()
 
         for key_fieldname in MatchRecord.SCORE_FIELDS:
-            this_record = self.__record[key_fieldname]
+            this_record: MatchVariable = self.__record[key_fieldname]
             summary += this_record.summarize_match(common_name=key_fieldname) + "\n"
 
         summary += "-------------\n"
@@ -286,27 +267,6 @@ class MatchRecord:
 
         return MatchTuple(bool=good_match, summary=summary)
 
-    def mrns_match(self) -> bool:
-        """Allows external code to ask if the Epic & REDCap Medical Record Numbers match.
-
-        Returns
-        -------
-        match : bool
-        """
-        mrn_match: MatchVariable = self.__record["C_MRN"]
-        return mrn_match.good_enough()
-
-    def names_match(self) -> bool:
-        """Allows external code to ask if the Epic & REDCap names match.
-
-        Returns
-        -------
-        match : bool
-        """
-        first_name_match: MatchVariable = self.__record["C_FIRST"]
-        last_name_match: MatchVariable = self.__record["C_LAST"]
-        return first_name_match.good_enough() & last_name_match.good_enough()
-
     def pat_id(self) -> str:
         """Allows external code to ask for the Epic PAT_ID of this object.
 
@@ -314,11 +274,7 @@ class MatchRecord:
         -------
         pat_id : str
         """
-        if "PAT_ID" in self.__record:
-            pat_id_mv: MatchVariable = self.__record["PAT_ID"]
-            return pat_id_mv.epic_value()
-
-        return ""
+        return self.__pat_id
 
     def __redcap_mrn(self) -> str:
         """Simplifies getting REDCap Medical Record Number.
@@ -436,6 +392,66 @@ class MatchRecord:
 
         self.__record["C_PHONE_CALCULATED"] = match_variable
 
+    def __select_best_epic_name(self, row: pandas.Series) -> None:
+        """Try both Epic name & alias name against the REDCap name
+        and use whichever matches (if any).
+
+        Parameters
+        ----------
+        row : pandas.Series             Extracted from the database epic and redcap tables.
+        """
+        epic_name: str = ""
+        epic_alias: str = ""
+        redcap_name: str = ""
+
+        if "ALIAS" in row:
+            epic_alias = row["ALIAS"]
+
+        if "FIRST_NAME" in row and "LAST_NAME" in row:
+            epic_name = row["LAST_NAME"] + "," + row["FIRST_NAME"]
+
+        if "first_name" in row and "last_name" in row:
+            redcap_name = row["last_name"] + "," + row["first_name"]
+
+        match_variable = MatchVariable(epic_value=epic_name, redcap_value=redcap_name)
+
+        if not match_variable.good_enough():
+            match_variable = MatchVariable(
+                epic_value=epic_alias, redcap_value=redcap_name
+            )
+
+        self.__record["C_NAME_CALCULATED"] = match_variable
+
+    def __select_best_epic_mrn(self, row: pandas.Series) -> None:
+        """Try both Epic MRN & historical MRNs against the REDCap MRN
+        and use whichever matches (if any).
+
+        Parameters
+        ----------
+        row : pandas.Series             Extracted from the database epic and redcap tables.
+        """
+        epic_mrn: str = ""
+        epic_mrn_historical: str = ""
+        redcap_mrn: str = ""
+
+        if "MRN" in row:
+            epic_mrn = str(row["MRN"])
+
+        if "MRN_HX" in row:
+            epic_mrn_historical = str(row["MRN_HX"])
+
+        if "mrn" in row:
+            redcap_mrn = str(row["mrn"])
+
+        match_variable = MatchVariable(epic_value=epic_mrn, redcap_value=redcap_mrn)
+
+        if not match_variable.good_enough():
+            match_variable = MatchVariable(
+                epic_value=epic_mrn_historical, redcap_value=redcap_mrn
+            )
+
+        self.__record["C_MRN_CALCULATED"] = match_variable
+
     def study_id(self) -> int:
         """Retrieve the REDCap study id.
 
@@ -443,69 +459,7 @@ class MatchRecord:
         -------
         study_id : int
         """
-        return int(self.__record["study_id"].redcap_value())
-
-    def use_aliases(self, aliases: list) -> None:
-        """Allows us to reconsider the match given patient's aliases from Epic.
-
-        Parameters
-        ----------
-        aliases : list  example: ['Smyth,Alan', 'Smith,Alice']
-        """
-        if not isinstance(aliases, list):
-            raise TypeError('Argument "aliases" is not the expected list.')
-
-        redcap_first_name, redcap_last_name = self.__redcap_name()
-        assembled_name: str = redcap_last_name + "," + redcap_first_name
-
-        #   Try to match each alias in list.
-        for alias in aliases:
-            #   If Epic alias matches the REDCap name,
-            #   alert external code to update REDCap to use the Epic name
-            #   (since we assume the Epic name is most current)
-            #   and increment score-we're FORCING the names to match.
-            #   Using "in" instead of "==" so we can allow for use of middle names
-            #   in the alias. Ex. 'Smyth,Alan' is "in" 'Smyth,Alan Baker'.
-            if assembled_name.upper() in alias.upper():
-                epic_first_name, epic_last_name = self.__epic_name()
-                self.__redcap_update.set("first_name", epic_first_name)
-                self.__redcap_update.set("last_name", epic_last_name)
-                self.__redcap_update.set("study_id", self.study_id())
-
-                #   By how much should we increment the score?
-                if redcap_first_name != epic_first_name:
-                    self.__score += 1  # First names now match.
-
-                if redcap_last_name != epic_last_name:
-                    self.__score += 1  # Last names now match.
-
-                #   No need to consider further aliases in list.
-                return
-
-    def use_mrn_hx(self, mrn_hx: list) -> None:
-        """Allows us to reconsider the match given patient's MRN history from Epic.
-
-        Parameters
-        ----------
-        mrn_hx : list  example: ['12345', '23456']
-        """
-        if not isinstance(mrn_hx, list):
-            raise TypeError('Argument "mrn_hx" is not the expected list.')
-
-        epic_mrn: str = self.__epic_mrn()
-        redcap_mrn: str = self.__redcap_mrn()
-
-        #   If they ALREADY agree, there's no point.
-        if epic_mrn.upper() == redcap_mrn.upper():
-            return
-
-        #   Try to match each historical MRN in list.
-        for historical_mrn in mrn_hx:
-            if historical_mrn.upper() == redcap_mrn.upper():
-                self.__score += 1  # Increase the score, becauses the MRNs now match.
-
-                #   No need to consider further historical MRNs in list.
-                return
+        return int(self.__study_id)
 
 
 class MatchVariable:
@@ -513,7 +467,13 @@ class MatchVariable:
     Holds the comparison between REDCap and Epic for one variable.
     """
 
-    def __init__(self, epic_value: str, redcap_value: str, weight: Union[int, None]=None, ignore_list=None):
+    def __init__(
+        self,
+        epic_value: str,
+        redcap_value: str,
+        weight: Union[int, None] = None,
+        ignore_list=None,
+    ):
         """Creates the MatchVariable object.
 
         Parameters

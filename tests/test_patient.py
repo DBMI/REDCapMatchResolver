@@ -18,7 +18,10 @@ def fixture_clinics() -> REDCapClinic:
 
 
 def test_appointment_corner_cases(
-    appointment_df, appointment_df_malformed, appointment_df_slashes, appointment_df_time_missing
+    appointment_df,
+    appointment_df_malformed,
+    appointment_df_slashes,
+    appointment_df_time_missing,
 ):
     #   Make it look up clinics by itself.
     appointment_obj = REDCapAppointment(df=appointment_df)

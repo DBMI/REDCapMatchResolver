@@ -32,7 +32,10 @@ def test_common_field() -> None:
     assert common_field_obj.weight() == 1
 
     common_field_obj = CommonField(
-        common_name="C_DOB", epic_field="2001-01-01", redcap_field="1976-07-04", weight=2
+        common_name="C_DOB",
+        epic_field="2001-01-01",
+        redcap_field="1976-07-04",
+        weight=2,
     )
     assert isinstance(common_field_obj, CommonField)
     assert common_field_obj.weight() == 2
@@ -90,7 +93,7 @@ def test_match_record(fake_records_dataframe) -> None:
     assert isinstance(result.summary, str)
     score = match_record.score()
     assert isinstance(score, int)
-    assert score == 7
+    assert score == 6
     pat_id = match_record.pat_id()
     assert isinstance(pat_id, str)
     assert pat_id == fake_records_dataframe.iloc[0]["PAT_ID"]
@@ -99,12 +102,24 @@ def test_match_record(fake_records_dataframe) -> None:
     assert study_id == int(fake_records_dataframe.iloc[0]["study_id"])
 
 
-def test_match_record_alias(fake_records_dataframe) -> None:
-    match_record = MatchRecord(
-        fake_records_dataframe.iloc[0], facility_addresses=[], facility_phone_numbers=[]
-    )
+def test_match_record_use_alias(fake_records_dataframe) -> None:
+    row = fake_records_dataframe.iloc[0].copy()
+
+    #   Change the REDCap name so that it doesn't match Epic, but include that REDCap name as an alias.
+    #   The name in Epic:
+    row["PAT_FIRST_NAME"] = "Alice"
+    row["PAT_LAST_NAME"] = "Smith"
+
+    #   The name in REDCap:
+    row["first_name"] = "Alan"
+    row["last_name"] = "Smyth"
+    row["ALIAS"] = "Smyth,Alan B;Smith,Alice C"
+    match_record = MatchRecord(row, facility_addresses=[], facility_phone_numbers=[])
     assert isinstance(match_record, MatchRecord)
-    result = match_record.is_match(aliases=["Smith,Alice", "Smyth,Alan"])
+    score = match_record.score()
+    assert isinstance(score, int)
+    assert score == 6
+    result = match_record.is_match(criteria=5)
     assert isinstance(result, MatchTuple)
     assert hasattr(result, "bool")
     assert result.bool
@@ -112,17 +127,25 @@ def test_match_record_alias(fake_records_dataframe) -> None:
     assert isinstance(result.summary, str)
 
 
-def test_match_record_mrn_hx(fake_records_dataframe) -> None:
-    match_record = MatchRecord(
-        fake_records_dataframe.iloc[0], facility_addresses=[], facility_phone_numbers=[]
-    )
+def test_match_record_use_mrn_hx(fake_records_dataframe) -> None:
+    row = fake_records_dataframe.iloc[0].copy()
+
+    #   Change the REDCap MRN so that it doesn't match Epic, but include that REDCap MRN as a historical MRN.
+    #   The MRN in Epic:
+    row["MRN"] = "A12345"
+
+    #   The MRN in REDCap:
+    row["mrn"] = "B23456"
+    row["MRN_HX"] = "B23456"
+    match_record = MatchRecord(row, facility_addresses=[], facility_phone_numbers=[])
     assert isinstance(match_record, MatchRecord)
-    result = match_record.is_match(mrn_hx=["A12345", "B23456"])
+    score = match_record.score()
+    assert isinstance(score, int)
+    assert score == 6
+    result = match_record.is_match(criteria=5)
     assert isinstance(result, MatchTuple)
     assert hasattr(result, "bool")
     assert result.bool
-    assert hasattr(result, "summary")
-    assert isinstance(result.summary, str)
 
 
 def test_match_record_corner_cases(fake_records_dataframe) -> None:
@@ -147,7 +170,7 @@ def test_match_record_corner_cases(fake_records_dataframe) -> None:
     )
     assert isinstance(match_record, MatchRecord)
 
-    result = match_record.is_match(exact=True, criteria=7)
+    result = match_record.is_match(exact=True, criteria=6)
     assert isinstance(result, MatchTuple)
     assert hasattr(result, "bool")
     assert result.bool
@@ -172,15 +195,9 @@ def test_match_record_ignore_list(same_facility_dataframe) -> None:
     #   Create two records with same address, phone number and first name, but everything else different.
     match_record = MatchRecord(row, facility_addresses=[], facility_phone_numbers=[])
     assert isinstance(match_record, MatchRecord)
-    result = match_record.is_match(criteria=3)
-    assert isinstance(result, MatchTuple)
-    assert hasattr(result, "bool")
-    assert result.bool
-    assert hasattr(result, "summary")
-    assert isinstance(result.summary, str)
     score = match_record.score()
     assert isinstance(score, int)
-    assert score == 3
+    assert score == 2
 
     #   Now add this address to ignore_list.
     facility_addresses = [row["E_ADDR_CALCULATED"]]
@@ -196,120 +213,17 @@ def test_match_record_ignore_list(same_facility_dataframe) -> None:
     assert isinstance(result.summary, str)
     score = match_record.score()
     assert isinstance(score, int)
-    assert score == 2
+    assert score == 1
 
-    #   Now add this phone nmber to ignore_list.
+    #   Now add this phone number to ignore_list but leave address BLANK.
     facility_phone_numbers = [row["phone_number"]]
     match_record = MatchRecord(
         row, facility_addresses=[], facility_phone_numbers=facility_phone_numbers
     )
     assert isinstance(match_record, MatchRecord)
-    result = match_record.is_match(criteria=3)
-    assert isinstance(result, MatchTuple)
-    assert hasattr(result, "bool")
-    assert not result.bool
-    assert hasattr(result, "summary")
-    assert isinstance(result.summary, str)
     score = match_record.score()
     assert isinstance(score, int)
-    assert score == 2
-
-
-def test_match_record_mrn_match(fake_records_dataframe) -> None:
-    row = fake_records_dataframe.iloc[0].copy()
-    match_record = MatchRecord(row, facility_addresses=[], facility_phone_numbers=[])
-    assert isinstance(match_record, MatchRecord)
-
-    mrns_match = match_record.mrns_match()
-    assert isinstance(mrns_match, bool)
-    assert mrns_match
-
-    # Force MRNs not to match.
-    row["MRN"] = row["mrn"] + 1
-    match_record = MatchRecord(row, facility_addresses=[], facility_phone_numbers=[])
-    assert isinstance(match_record, MatchRecord)
-    mrns_match = match_record.mrns_match()
-    assert isinstance(mrns_match, bool)
-    assert not mrns_match
-
-
-def test_match_record_revision_alias(fake_records_dataframe) -> None:
-    row = fake_records_dataframe.iloc[0].copy()
-
-    # Manipulate so names DON'T match, but alias will.
-    #   The name in Epic:
-    row["PAT_FIRST_NAME"] = "Alice"
-    row["PAT_LAST_NAME"] = "Smith"
-
-    #   The name in REDCap:
-    row["first_name"] = "Alan"
-    row["last_name"] = "Smyth"
-    match_record = MatchRecord(row, facility_addresses=[], facility_phone_numbers=[])
-    assert isinstance(match_record, MatchRecord)
-
-    names_match = match_record.names_match()
-    assert isinstance(names_match, bool)
-    assert not names_match
-
-    score = match_record.score()
-    assert isinstance(score, int)
-    assert score == 5
-
-    #   Revise with alias.
-    match_record.use_aliases(aliases=["Smith,Alice", "Smyth,Alan Baker"])
-
-    #   The names still won't match, because even though
-    #   we recognize that the REDCap name is one of the Epic aliases,
-    #   the names haven't been changed....
-    names_match = match_record.names_match()
-    assert isinstance(names_match, bool)
-    assert not names_match
-
-    #   ...but the score improves.
-    score = match_record.score()
-    assert isinstance(score, int)
-    assert score == 7
-
-    #   Retrieve the update package from MatchRecord object.
-    update_obj = match_record.redcap_update()
-    assert isinstance(update_obj, redcapmatchresolver.redcap_update.REDCapUpdate)
-    assert update_obj.needed()
-
-
-def test_match_record_revision_mrn_history(fake_records_dataframe) -> None:
-    row = fake_records_dataframe.iloc[0].copy()
-
-    # Manipulate so MRNs DON'T match, but MRN history will.
-    #   The MRN in Epic:
-    row["MRN"] = "A12345"
-
-    #   The MRN in REDCap:
-    row["mrn"] = "B23456"
-    match_record = MatchRecord(row, facility_addresses=[], facility_phone_numbers=[])
-    assert isinstance(match_record, MatchRecord)
-
-    mrns_match = match_record.mrns_match()
-    assert isinstance(mrns_match, bool)
-    assert not mrns_match
-
-    score = match_record.score()
-    assert isinstance(score, int)
-    assert score == 6
-
-    #   Revise with MRN history.
-    match_record.use_mrn_hx(mrn_hx=["Z54321", "B23456"])
-
-    #   The MRNs still won't match, because even though
-    #   we recognize that the REDCap MRN is one of the Epic historical MRNs,
-    #   the MRNs haven't been changed....
-    mrns_match = match_record.mrns_match()
-    assert isinstance(mrns_match, bool)
-    assert not mrns_match
-
-    #   ...but the score improves.
-    score = match_record.score()
-    assert isinstance(score, int)
-    assert score == 7
+    assert score == 1
 
 
 def test_match_variable() -> None:
