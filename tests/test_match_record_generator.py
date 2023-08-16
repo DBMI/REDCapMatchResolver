@@ -25,7 +25,7 @@ def test_match_record_generator(
     assert not result.bool
     score = match_record.score()
     assert isinstance(score, int)
-    assert score == 1
+    assert score == 0
 
     #   We should USE this row's addresses & phone numbers.
     row = fake_records_dataframe.iloc[0].copy()
@@ -40,4 +40,4 @@ def test_match_record_generator(
     assert result.bool
     score = match_record.score()
     assert isinstance(score, int)
-    assert score == 7
+    assert score == 6

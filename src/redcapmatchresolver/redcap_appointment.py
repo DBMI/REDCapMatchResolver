@@ -124,7 +124,9 @@ class REDCapAppointment:
         datetime_obj = None
 
         try:
-            date_time_combined:str = self.__appointment_date + " " + self.__appointment_time
+            date_time_combined: str = (
+                self.__appointment_date + " " + self.__appointment_time
+            )
             datetime_obj = datetime.strptime(date_time_combined, "%Y-%m-%d %H:%M:%S")
         except ValueError:
             #   Try a different format.

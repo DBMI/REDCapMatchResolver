@@ -113,11 +113,13 @@ def fixture_fake_records_dataframe() -> pandas.DataFrame:
             "study_id": fake.random_int(min=1000, max=50000),
             "PAT_ID": fake.bothify(text="?#######", letters="ABCDEFGHJKLMNPQRSTUVWXYZ"),
             "MRN": "",
+            "MRN_HX": "",
             "mrn": fake.random_int(min=1000, max=100000),
             "PAT_FIRST_NAME": "",
             "first_name": fake.first_name(),
             "PAT_LAST_NAME": "",
             "last_name": fake.last_name(),
+            "ALIAS": "",
             "BIRTH_DATE": "",
             "dob": birthdate.strftime("%Y-%m-%d"),
             "ADD_LINE_1": "",
@@ -138,6 +140,7 @@ def fixture_fake_records_dataframe() -> pandas.DataFrame:
 
         # We'll start out with mostly identical REDCap and Epic fields.
         record["MRN"] = record["mrn"]
+        record["MRN_HX"] = record["mrn"]
         record["ADD_LINE_1"] = record["street_address_line_1"]
         record["ADD_LINE_2"] = record["street_address_line_2"]
         record["ZIP"] = record["zip_code"]
@@ -156,6 +159,9 @@ def fixture_fake_records_dataframe() -> pandas.DataFrame:
 
         # Set PAT_LAST_NAME to all lowercase to exercise MATCH_QUALITY..MATCHED_CASE_INSENSITIVE.
         record["PAT_LAST_NAME"] = record["last_name"].lower()
+
+        # Assume no other names used.
+        record["ALIAS"] = record["last_name"] + "," + record["first_name"]
 
         # Use a different date format to exercise clean_up_date() method.
         record["BIRTH_DATE"] = birthdate.strftime("%Y-%m-%d %H:%M:%S")
@@ -547,12 +553,14 @@ def fixture_same_facility_dataframe() -> pandas.DataFrame:
     record = {
         "MRN": fake.random_int(min=1000, max=100000),
         "mrn": fake.random_int(min=1000, max=100000),
+        "MRN_HX": "",
         "study_id": fake.random_int(min=1000, max=50000),
         "PAT_ID": fake.bothify(text="?#######", letters="ABCDEFGHJKLMNPQRSTUVWXYZ"),
         "PAT_FIRST_NAME": common_first_name,
         "first_name": common_first_name,
         "PAT_LAST_NAME": fake.last_name(),
         "last_name": fake.last_name(),
+        "ALIAS": "",
         "BIRTH_DATE": birthdate_1.strftime("%Y-%m-%d"),
         "dob": birthdate_2.strftime("%Y-%m-%d"),
         "ADD_LINE_1": common_address,
@@ -575,6 +583,10 @@ def fixture_same_facility_dataframe() -> pandas.DataFrame:
     record["R_ADDR_CALCULATED"] = (
         record["street_address_line_1"] + " | " + record["zip_code"]
     )
+
+    # Assume no other names, MRNs used.
+    record["ALIAS"] = record["PAT_LAST_NAME"] + "," + record["PAT_FIRST_NAME"]
+    record["MRN_HX"] = record["MRN"]
 
     dataframes.append(pandas.DataFrame([record], index=[1]))
     return pandas.concat(dataframes)

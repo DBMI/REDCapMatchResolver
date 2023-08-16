@@ -4,8 +4,6 @@ Module: contains the REDCapUpdate class.
 
 from typing import Union
 
-import pandas  # type: ignore[import]
-
 
 class REDCapUpdate:
     """
