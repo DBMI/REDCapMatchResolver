@@ -2,7 +2,6 @@
 Module: contains the MatchRecord and MatchVariable classes.
 """
 from collections import namedtuple
-from typing import Union
 
 import pandas  # type: ignore[import]
 from redcapduplicatedetector.match_quality import MatchQuality
@@ -25,7 +24,6 @@ class CommonField:
         common_name: str,
         epic_field: str,
         redcap_field: str,
-        weight: Union[int, None] = None,
     ):
         if not isinstance(common_name, str):
             raise TypeError("Argument 'common_name' is not a string.")
@@ -41,11 +39,6 @@ class CommonField:
             raise TypeError("Argument 'redcap_field' is not a string.")
 
         self.__redcap_field: str = redcap_field
-
-        if not isinstance(weight, int):
-            weight = 1
-
-        self.__weight: int = weight
 
     def common_name(self) -> str:
         return self.__common_name
@@ -68,9 +61,6 @@ class CommonField:
 
         return self.__redcap_field == field_name
 
-    def weight(self) -> int:
-        return self.__weight
-
 
 class MatchRecord:
     """
@@ -80,15 +70,15 @@ class MatchRecord:
 
     # These fields are used in generating the match summary.
     COMMON_FIELDS: list = [
-        CommonField("C_MRN", "MRN", "mrn", 1),
-        CommonField("C_FIRST", "PAT_FIRST_NAME", "first_name", 1),
-        CommonField("C_LAST", "PAT_LAST_NAME", "last_name", 1),
-        CommonField("C_DOB", "BIRTH_DATE", "dob", 1),
-        CommonField("C_EMAIL", "EMAIL_ADDRESS", "email_address", 1),
-        CommonField("C_ADDR_CALCULATED", "E_ADDR_CALCULATED", "R_ADDR_CALCULATED", 1),
-        CommonField("C_HOME_PHONE", "HOME_PHONE", "phone_number", 1),
-        CommonField("C_WORK_PHONE", "WORK_PHONE", "phone_number", 1),
-        CommonField("C_MOBILE_PHONE", "Mobile_Phone", "phone_number", 1),
+        CommonField("C_MRN", "MRN", "mrn"),
+        CommonField("C_FIRST", "PAT_FIRST_NAME", "first_name"),
+        CommonField("C_LAST", "PAT_LAST_NAME", "last_name"),
+        CommonField("C_DOB", "BIRTH_DATE", "dob"),
+        CommonField("C_EMAIL", "EMAIL_ADDRESS", "email_address"),
+        CommonField("C_ADDR_CALCULATED", "E_ADDR_CALCULATED", "R_ADDR_CALCULATED"),
+        CommonField("C_HOME_PHONE", "HOME_PHONE", "phone_number"),
+        CommonField("C_WORK_PHONE", "WORK_PHONE", "phone_number"),
+        CommonField("C_MOBILE_PHONE", "Mobile_Phone", "phone_number"),
     ]
 
     FORMAT: str = "%-20s %-40s %-40s"
@@ -193,7 +183,6 @@ class MatchRecord:
             self.__record[common_name] = MatchVariable(
                 epic_value=epic_value,
                 redcap_value=redcap_value,
-                weight=cf_obj.weight(),
                 ignore_list=ignore_list,
             )
 
@@ -332,7 +321,7 @@ class MatchRecord:
             this_record = self.__record[common_name]
 
             if this_record.good_enough():
-                self.__score += this_record.weight()
+                self.__score += 1
 
     def __select_best_phone(
         self, row: pandas.Series, facility_phone_numbers: list
@@ -471,7 +460,6 @@ class MatchVariable:
         self,
         epic_value: str,
         redcap_value: str,
-        weight: Union[int, None] = None,
         ignore_list=None,
     ):
         """Creates the MatchVariable object.
@@ -495,11 +483,6 @@ class MatchVariable:
 
         if not ignore_list:
             ignore_list = []
-
-        if not isinstance(weight, int):
-            weight = 1
-
-        self.__weight = weight
 
         self.__match_quality: MatchQuality
         self.__evaluate(ignore_list)
@@ -568,12 +551,3 @@ class MatchVariable:
             self.__redcap_value,
             str(self.__match_quality),
         )
-
-    def weight(self) -> int:
-        """Allows MatchRecord to ask a variable's weight when computing score.
-
-        Returns
-        -------
-        weight : int
-        """
-        return self.__weight

@@ -29,16 +29,6 @@ def test_common_field() -> None:
     assert common_field_obj.redcap_field() == "first_name"
     assert common_field_obj.redcap_field_present(field_name="first_name")
     assert not common_field_obj.redcap_field_present(field_name="Not here")
-    assert common_field_obj.weight() == 1
-
-    common_field_obj = CommonField(
-        common_name="C_DOB",
-        epic_field="2001-01-01",
-        redcap_field="1976-07-04",
-        weight=2,
-    )
-    assert isinstance(common_field_obj, CommonField)
-    assert common_field_obj.weight() == 2
 
 
 def test_common_field_error() -> None:
