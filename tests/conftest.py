@@ -178,6 +178,7 @@ def fixture_matching_patients() -> str:
     ---------------
     Study ID: 1234
     PAT_ID: A56789
+    Aliases: SMYTH,JOHN;SMITH,JON;SMYTH,JOHN
     Common Name         Epic Value             RedCap Value          Match Quality
     C_MRN               123                    123                   [exact]
     C_FIRST             John                   Jon                   [-]
@@ -221,7 +222,8 @@ def fixture_non_matching_patients() -> str:
     ---------------
     Study ID: 1234
     PAT_ID: A00000
-    Record: 1 of 1000
+    Aliases: SCHMIDT,JONFEN; SCHMIDT,JOHNNIE
+    Other MRNs: A1234; 1234
     Common Name         Epic Value             RedCap Value          Match Quality
     C_MRN               1234                   1235                  [-]
     C_FIRST             Johnnie                Jonfen                [-]

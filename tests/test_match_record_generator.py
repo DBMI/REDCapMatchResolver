@@ -3,7 +3,7 @@ Module test_match_generator.py, which performs automated
 testing of the MatchRecordGenerator class.
 """
 import redcapmatchresolver.match_records
-from src.redcapmatchresolver.match_record_generator import MatchRecordGenerator
+from redcapmatchresolver.match_record_generator import MatchRecordGenerator
 
 
 def test_match_record_generator(

@@ -63,6 +63,15 @@ class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
 
         return target_path
 
+    def num_reports(self) -> int:
+        """Allows external code to ask if there's anything to report.
+
+        Returns
+        -------
+        count : int
+        """
+        return len(self.__reports)
+
     def report_filename(self) -> str:
         """Allows external code to ask where the file went.
 
@@ -79,31 +88,34 @@ class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
         -------
         success : bool
         """
-        match_index = 1
-        total_number_of_match_reports = len(self.__reports)
+        total_number_of_match_reports = self.num_reports()
 
-        with open(self.__report_filename, mode="a", encoding="utf-8") as file_obj:
-            for match in self.__reports:
-                record_numbering_line = (
-                    f"Record {match_index} of {total_number_of_match_reports}\n"
-                )
-                this_record = (
-                    match + record_numbering_line + REDCapReportWriter.addendum
-                )
+        #   Don't generate an empty report.
+        if total_number_of_match_reports > 0:
+            match_index = 1
 
-                try:
-                    num_char_written = file_obj.write(this_record)
-
-                    if num_char_written != len(this_record):
-                        return False  # pragma: no cover
-
-                except Exception as file_write_error:  # pragma: no cover
-                    self.__log.exception(
-                        "Unable to write match to log because {file_write_error}."
+            with open(self.__report_filename, mode="a", encoding="utf-8") as file_obj:
+                for match in self.__reports:
+                    record_numbering_line = (
+                        f"Record {match_index} of {total_number_of_match_reports}\n"
                     )
-                    raise file_write_error
+                    this_record = (
+                        match + record_numbering_line + REDCapReportWriter.addendum
+                    )
 
-                match_index += 1
+                    try:
+                        num_char_written = file_obj.write(this_record)
+
+                        if num_char_written != len(this_record):
+                            return False  # pragma: no cover
+
+                    except Exception as file_write_error:  # pragma: no cover
+                        self.__log.exception(
+                            "Unable to write match to log because {file_write_error}."
+                        )
+                        raise file_write_error
+
+                    match_index += 1
 
         return True
 

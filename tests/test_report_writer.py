@@ -35,6 +35,7 @@ def test_writing(matching_patients, tmp_path) -> None:
     assert isinstance(writer_obj, REDCapReportWriter)
 
     writer_obj.add_match(matching_patients)
+    assert writer_obj.num_reports() == 1
 
     assert writer_obj.write()
 
