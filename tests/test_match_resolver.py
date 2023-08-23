@@ -9,6 +9,7 @@ import pytest
 from redcapmatchresolver.redcap_match_resolver import REDCapMatchResolver
 from redcapmatchresolver.redcap_report_reader import DecisionReview
 from redcaputilities.directories import ensure_output_path_exists
+from redcaputilities.logging import setup_logging
 
 
 @pytest.fixture(name="bad_reports_directory")
@@ -21,6 +22,11 @@ def fixture_bad_reports_directory():
 def fixture_empty_reports_directory():
     """Defines temporary empty reports directory."""
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), "empty_folder")
+
+
+@pytest.fixture(name="logging")
+def fixture_logging():
+    return setup_logging(log_filename="test_match_resolver.log")
 
 
 @pytest.fixture(name="reports_directory")
@@ -41,13 +47,14 @@ def fixture_temp_database_connection() -> sqlite3.Connection:
 
 
 def test_match_resolver_corner_cases(
+    logging,
     temp_database_connection,
     bad_reports_directory,
     empty_reports_directory,
     matching_patients,
 ) -> None:
     """Tests lookup_potential_match() method of REDCapMatchResolver object."""
-    mr_obj = REDCapMatchResolver(connection=temp_database_connection)
+    mr_obj = REDCapMatchResolver(log=logging, connection=temp_database_connection)
 
     #   Exercise section in _insert_reports that fills in missing fields.
     assert mr_obj.read_reports(import_folder=bad_reports_directory)
@@ -64,24 +71,25 @@ def test_match_resolver_corner_cases(
     assert past_decision == DecisionReview.NOT_SURE
 
 
-def test_match_resolver_creation(temp_database_connection) -> None:
+def test_match_resolver_creation(logging, temp_database_connection) -> None:
     """Tests instantiation and setup of a REDCapMatchResolver object."""
-    mr_obj = REDCapMatchResolver(connection=temp_database_connection)
+    mr_obj = REDCapMatchResolver(log=logging, connection=temp_database_connection)
     assert isinstance(mr_obj, REDCapMatchResolver)
 
     #   Test instantiation with default filename.
-    mr_obj = REDCapMatchResolver()
+    mr_obj = REDCapMatchResolver(log=logging)
     assert isinstance(mr_obj, REDCapMatchResolver)
 
 
 def test_match_resolver_db_operation(
+    logging,
     temp_database_connection,
     reports_directory,
     matching_patients,
     non_matching_patients,
 ) -> None:
     """Tests lookup_potential_match() method of REDCapMatchResolver object."""
-    mr_obj = REDCapMatchResolver(connection=temp_database_connection)
+    mr_obj = REDCapMatchResolver(log=logging, connection=temp_database_connection)
 
     #   Can we read the already-reviewed report files & populate the temp database?
     assert mr_obj.read_reports(import_folder=reports_directory)
@@ -98,10 +106,14 @@ def test_match_resolver_db_operation(
 
 
 def test_match_resolver_errors(
-    temp_database_connection, reports_directory, malformed_match_block, my_location
+    logging,
+    temp_database_connection,
+    reports_directory,
+    malformed_match_block,
+    my_location,
 ):
     """Exercises error cases."""
-    mr_obj = REDCapMatchResolver(connection=temp_database_connection)
+    mr_obj = REDCapMatchResolver(log=logging, connection=temp_database_connection)
 
     #   Read the already-reviewed report files & populate the temp database.
     assert mr_obj.read_reports(import_folder=reports_directory)
@@ -115,6 +127,21 @@ def test_match_resolver_errors(
 
     with pytest.raises(RuntimeError):
         mr_obj.lookup_potential_match(match_block=malformed_match_block)
+
+
+def test_match_resolver_wobblers(
+    logging, temp_database_connection, matching_patients, reports_directory
+):
+    mr_obj = REDCapMatchResolver(log=logging, connection=temp_database_connection)
+    assert isinstance(mr_obj, REDCapMatchResolver)
+
+    assert mr_obj.add_possible_wobbler(match_summary=matching_patients)
+    package = mr_obj.report_wobblers(new_reports_directory=reports_directory)
+    assert isinstance(package, tuple)
+    assert len(package) == 2
+    assert isinstance(package[0], int)
+    assert package[0] == 1
+    assert isinstance(package[1], str)
 
 
 if __name__ == "__main__":

@@ -4,17 +4,19 @@ used to create/use a SQLite database from
 human-reviewed match reports.
 """
 import glob
-import logging
 import os
 import sqlite3
+from datetime import datetime
 from itertools import repeat
+from logging import Logger
 from sqlite3 import Connection
 
 import pandas  # type: ignore[import]
 from redcaputilities.directories import ensure_output_path_exists
-from redcaputilities.logging import patient_data_directory, setup_logging
+from redcaputilities.logging import patient_data_directory
 
 from redcapmatchresolver.redcap_report_reader import DecisionReview, REDCapReportReader
+from redcapmatchresolver.redcap_report_writer import REDCapReportWriter
 
 
 class REDCapMatchResolver:
@@ -24,13 +26,13 @@ class REDCapMatchResolver:
     we're not asking reviewers about the same patients over and over.
     """
 
-    def __init__(self, connection: sqlite3.Connection = None):
-        self.__log: logging.Logger = setup_logging(
-            log_filename="redcap_match_resolver.log"
-        )
+    def __init__(self, log: Logger, connection: sqlite3.Connection = None):
+        self.__log: Logger = log
+
         self.__database_fields_list: list = []  # type: ignore[var-annotated]
         self.__dataframe_fields_list: list = []  # type: ignore[var-annotated]
         self.__redcap_reader: REDCapReportReader = REDCapReportReader()
+        self.__redcap_writer: REDCapReportWriter = REDCapReportWriter()
 
         self.__build_required_fields()
         self.__connection: sqlite3.Connection
@@ -53,6 +55,25 @@ class REDCapMatchResolver:
         ):  # pragma: no cover
             self.__log.error("Unable to build required database tables.")
             raise RuntimeError("Unable to build required database tables.")
+
+    def add_possible_wobbler(self, match_summary: str) -> bool:
+        """Allows external code to tell us to add this object as a wobbler--if it qualifies.
+
+        Parameters
+        ----------
+        match_summary : str
+
+        Returns
+        -------
+        success : bool
+        """
+        previous_decision: DecisionReview = self.lookup_potential_match(match_summary)
+
+        if previous_decision == DecisionReview.NOT_SURE:
+            #  Then it's NOT already in our database, so request a review.
+            self.__redcap_writer.add_match(match_summary)
+
+        return True
 
     def __build_required_fields(self) -> None:
         #   Ensure all expected fields are present.
@@ -569,9 +590,52 @@ class REDCapMatchResolver:
         -------
         ready : bool
         """
-        return self.__redcap_reader is not None and isinstance(
-            self.__redcap_reader, REDCapReportReader
-        )
+        return isinstance(self.__redcap_reader, REDCapReportReader)
+
+    def report_wobblers(self, new_reports_directory: str) -> tuple:
+        """Allows external code to request we write a report on whatever wobblers we've identified.
+
+        Parameters
+        ----------
+        new_reports_directory : str
+
+        Returns
+        -------
+        package : tuple containing (num_wobblers: int, filename_created: str)
+        """
+
+        if not isinstance(new_reports_directory, str):
+            raise TypeError("Argument 'new_reports_directory' is not the expected str.")
+
+        num_wobblers: int = self.__redcap_writer.num_reports()
+        self.__log.info(f"Number of wobbler cases: {num_wobblers}.")
+
+        now: str = datetime.today().strftime("%Y%m%d_%H%M%S")
+        filename: str = os.path.join(new_reports_directory, now + "_patient_report.txt")
+        ensure_output_path_exists(filename)
+
+        if num_wobblers > 0:
+            #   Returns tuple of (success: bool, filename_actually_created: str)
+            package: tuple = self.__redcap_writer.write(filename)
+
+            if (
+                isinstance(package, tuple)
+                and len(package) > 1
+                and isinstance(package[0], bool)
+                and package[0]
+                and isinstance(package[1], str)
+            ):
+                filename_created: str = package[1]
+                self.__log.debug(f"Successfully created file '{filename_created}'.")
+                return num_wobblers, filename_created
+            else:
+                self.__log.exception(
+                    "***Unable to create file {file_name}. ***",
+                    extra=dict(file_name=filename),
+                )
+                return num_wobblers, ""
+
+        return num_wobblers, ""
 
     def __translate_decision(self, decision_enum: str) -> int:
         """Converts DecisionReview string into integer, using 'decisions' table.

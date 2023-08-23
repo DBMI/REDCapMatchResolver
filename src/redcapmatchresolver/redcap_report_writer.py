@@ -25,21 +25,8 @@ class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
         "Notes:...................................................\n\n"
     )
 
-    def __init__(self, report_filename: Union[str, None] = None):
-        """
-        Parameters
-        ----------
-        report_filename : str Full path to location of desired report.
-        """
+    def __init__(self):
         self.__log = setup_logging(log_filename="redcap_report_writer.log")
-
-        if not isinstance(report_filename, str) or len(report_filename) == 0:
-            report_filename = os.path.join(
-                patient_data_directory(), "patient_reports", "patient_report.txt"
-            )
-
-        self.__report_filename = REDCapReportWriter.__ensure_safe_path(report_filename)
-        ensure_output_path_exists(self.__report_filename)
         self.__reports: List[str] = []
 
     def add_match(self, match: str) -> None:
@@ -72,29 +59,34 @@ class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
         """
         return len(self.__reports)
 
-    def report_filename(self) -> str:
-        """Allows external code to ask where the file went.
-
-        Returns
-        -------
-        filename : str
-        """
-        return self.__report_filename
-
-    def write(self) -> bool:
+    def write(self, report_filename: Union[str, None] = None) -> tuple:
         """Writes out the accumulated match reports, assigning a sequential number to each one.
 
+        Parameters
+        ----------
+        report_filename : str Full path to location of desired report.
+
         Returns
         -------
-        success : bool
+        package : tuple of (bool, str) representing success/filename
         """
+
+        success: bool = False
         total_number_of_match_reports = self.num_reports()
 
         #   Don't generate an empty report.
         if total_number_of_match_reports > 0:
+            if not isinstance(report_filename, str) or len(report_filename) == 0:
+                report_filename = os.path.join(
+                    patient_data_directory(), "patient_reports", "patient_report.txt"
+                )
+
+            report_filename = REDCapReportWriter.__ensure_safe_path(report_filename)
+            ensure_output_path_exists(report_filename)
+
             match_index = 1
 
-            with open(self.__report_filename, mode="a", encoding="utf-8") as file_obj:
+            with open(report_filename, mode="a", encoding="utf-8") as file_obj:
                 for match in self.__reports:
                     record_numbering_line = (
                         f"Record {match_index} of {total_number_of_match_reports}\n"
@@ -107,7 +99,7 @@ class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
                         num_char_written = file_obj.write(this_record)
 
                         if num_char_written != len(this_record):
-                            return False  # pragma: no cover
+                            return success, report_filename  # pragma: no cover
 
                     except Exception as file_write_error:  # pragma: no cover
                         self.__log.exception(
@@ -117,7 +109,8 @@ class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
 
                     match_index += 1
 
-        return True
+        success = True
+        return success, report_filename
 
 
 if __name__ == "__main__":
