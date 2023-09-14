@@ -436,10 +436,12 @@ class MatchRecord:
 
         match_variable = MatchVariable(epic_value=epic_mrn, redcap_value=redcap_mrn)
 
-        if not match_variable.good_enough():
-            match_variable = MatchVariable(
-                epic_value=epic_mrn_historical, redcap_value=redcap_mrn
-            )
+        #   Don't bother if historical MRN is None.
+        if isinstance(epic_mrn_historical, str) and len(epic_mrn_historical) > 0:
+            if not match_variable.good_enough():
+                match_variable = MatchVariable(
+                    epic_value=epic_mrn_historical, redcap_value=redcap_mrn
+                )
 
         self.__record["C_MRN_CALCULATED"] = match_variable
 
