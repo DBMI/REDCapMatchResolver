@@ -404,10 +404,12 @@ class MatchRecord:
 
         match_variable = MatchVariable(epic_value=epic_name, redcap_value=redcap_name)
 
-        if not match_variable.good_enough():
-            match_variable = MatchVariable(
-                epic_value=epic_alias, redcap_value=redcap_name
-            )
+        # Don't bother making this comparison if there IS no alias.
+        if isinstance(epic_alias, str) and len(epic_alias) > 0:
+            if not match_variable.good_enough():
+                match_variable = MatchVariable(
+                    epic_value=epic_alias, redcap_value=redcap_name
+                )
 
         self.__record["C_NAME_CALCULATED"] = match_variable
 
