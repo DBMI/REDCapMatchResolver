@@ -4,7 +4,7 @@ Module: contains the MatchRecord and MatchVariable classes.
 from collections import namedtuple
 
 import pandas  # type: ignore[import]
-from redcapduplicatedetector.match_quality import MatchQuality
+from .match_quality import MatchQuality
 from redcaputilities.string_cleanup import clean_up_phone
 
 from redcapmatchresolver.redcap_update import REDCapUpdate
