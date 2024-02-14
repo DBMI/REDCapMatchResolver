@@ -127,10 +127,10 @@ class REDCapPatient:
                 c for c in columns if c in df_including_best_appt.columns
             ]
             return df_including_best_appt.to_csv(
-                columns=columns_present, header=include_headers, line_terminator=""
+                columns=columns_present, header=include_headers, lineterminator=""
             )
 
-        return df_including_best_appt.to_csv(header=include_headers, line_terminator="")
+        return df_including_best_appt.to_csv(header=include_headers, lineterminator="")
 
     def __find_appointments(self, clinics: REDCapClinic) -> None:
         if not isinstance(clinics, REDCapClinic):
