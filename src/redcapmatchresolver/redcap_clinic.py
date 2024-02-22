@@ -37,7 +37,14 @@ class REDCapClinic:  # pylint: disable=too-few-public-methods
                 this_clinic = clinic_specs.loc[
                     clinic_specs["department_name"] == dept_name
                 ]
-                this_clinic_priority = int(this_clinic["Priority #"])
+
+                this_clinic_priority: int
+
+                try:
+                    this_clinic_priority = int(this_clinic["Priority #"][0])
+                except KeyError:
+                    this_clinic_priority = 9999
+
                 self.__members[dept_name.upper()] = this_clinic_priority
 
     def priority(self, dept_name: str) -> int:
