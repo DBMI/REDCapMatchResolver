@@ -3,6 +3,7 @@ Module: contains class REDCapMatchResolver
 used to create/use a SQLite database from
 human-reviewed match reports.
 """
+
 import glob
 import os
 import sqlite3

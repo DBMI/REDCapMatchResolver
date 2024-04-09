@@ -2,6 +2,7 @@
 Module: contains class REDCapReportWriter
 used to produce list of patient matches to be reviewed.
 """
+
 import os
 from pathlib import Path
 from typing import List, Union

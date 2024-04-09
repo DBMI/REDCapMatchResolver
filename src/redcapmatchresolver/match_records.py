@@ -1,6 +1,7 @@
 """
 Module: contains the MatchRecord and MatchVariable classes.
 """
+
 from collections import namedtuple
 
 import pandas  # type: ignore[import]
@@ -396,8 +397,8 @@ class MatchRecord:
         if "ALIAS" in row:
             epic_alias = row["ALIAS"]
 
-        if "FIRST_NAME" in row and "LAST_NAME" in row:
-            epic_name = row["LAST_NAME"] + "," + row["FIRST_NAME"]
+        if "PAT_FIRST_NAME" in row and "PAT_LAST_NAME" in row:
+            epic_name = row["PAT_LAST_NAME"] + "," + row["PAT_FIRST_NAME"]
 
         if "first_name" in row and "last_name" in row:
             redcap_name = row["last_name"] + "," + row["first_name"]

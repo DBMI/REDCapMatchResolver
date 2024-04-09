@@ -2,6 +2,7 @@
 Module: contains class REDCapReportReader
 used to parse a reviewed list of patient matches.
 """
+
 from __future__ import annotations
 
 import collections

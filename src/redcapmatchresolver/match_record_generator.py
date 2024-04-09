@@ -1,6 +1,7 @@
 """
 Module: contains the MatchRecordGenerator class.
 """
+
 import pandas  # type: ignore[import]
 
 from redcapmatchresolver.match_records import MatchRecord

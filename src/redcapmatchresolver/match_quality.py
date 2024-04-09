@@ -1,6 +1,7 @@
 """
 Module: contains MatchQuality class.
 """
+
 from enum import Enum
 
 
