@@ -23,6 +23,7 @@ class REDCapAppointment:
         self.__priority = None
         self.__time = None
         ...
+
     @staticmethod
     def applicable_header_fields(headers: list) -> list: ...
     @staticmethod

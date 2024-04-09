@@ -1,6 +1,7 @@
 """
 Module: contains class REDCapAppointment.
 """
+
 from datetime import datetime
 from typing import Union
 

@@ -20,6 +20,7 @@ Classes:
     REDCap Report Reader
     REDCap Report Writer
 """
+
 from .match_records import CommonField, MatchRecord, MatchTuple, MatchVariable
 from .redcap_appointment import REDCapAppointment
 from .redcap_clinic import REDCapClinic

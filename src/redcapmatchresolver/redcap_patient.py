@@ -1,6 +1,7 @@
 """
 Module: contains class REDCapPatient.
 """
+
 from __future__ import annotations
 
 import pandas
