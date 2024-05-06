@@ -91,6 +91,24 @@ def test_match_record(fake_records_dataframe) -> None:
     assert study_id == int(fake_records_dataframe.iloc[0]["study_id"])
 
 
+def test_match_record_bonus(fake_records_using_bonus_dataframe) -> None:
+    match_record = MatchRecord(
+        fake_records_using_bonus_dataframe.iloc[0],
+        facility_addresses=[],
+        facility_phone_numbers=[],
+    )
+    assert isinstance(match_record, MatchRecord)
+    result = match_record.is_match(criteria=4)
+    assert isinstance(result, MatchTuple)
+    assert hasattr(result, "bool")
+    assert result.bool
+    assert hasattr(result, "summary")
+    assert isinstance(result.summary, str)
+    score = match_record.score()
+    assert isinstance(score, int)
+    assert score == 4
+
+
 def test_match_record_use_alias(fake_records_dataframe) -> None:
     row = fake_records_dataframe.iloc[0].copy()
 

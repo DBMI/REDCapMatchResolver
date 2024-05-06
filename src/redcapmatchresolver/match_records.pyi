@@ -14,7 +14,6 @@ class CommonField:
         self.__epic_field: str
         self.__redcap_field: str
         ...
-
     def common_name(self) -> str: ...
     def epic_field(self) -> str: ...
     def epic_field_present(self, field_name: str) -> bool: ...
@@ -22,6 +21,7 @@ class CommonField:
     def redcap_field_present(self, field_name: str) -> bool: ...
 
 class MatchRecord:
+    BONUS_SCORE_FIELDS: List[str]
     COMMON_FIELDS: List[CommonField]
     FORMAT: str
     SCORE_FIELDS: List[str]
@@ -37,18 +37,15 @@ class MatchRecord:
         self.__redcap_update: REDCapUpdate = None
         self.__score: int = None
         ...
-
     @staticmethod
     def as_alphanum(string: str) -> str: ...
     def __build_dictionary(
         self, row: pandas.Series, facility_addresses: list, facility_phone_numbers: list
     ) -> None:
         pass
-
     def __epic_mrn(self) -> str: ...
     def __epic_name(self):
         pass
-
     @staticmethod
     def evaluate_single_variable(
         epic_value: str, redcap_value: str
@@ -81,7 +78,6 @@ class MatchVariable:
         self.__match_quality = None
         self.__redcap_value = None
         ...
-
     def assign_match_quality(self, match_quality: Union[MatchQuality, int]) -> None: ...
     def epic_value(self) -> str: ...
     def __evaluate(self, ignore_list: list) -> None: ...
