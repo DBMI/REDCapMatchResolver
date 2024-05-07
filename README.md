@@ -14,18 +14,20 @@
 ---
 ## Purpose
 ### Score Patient Matches
+The REDCapMatchResolver library is used to match data from Epic and REDCap to see if they come from the same patient.
+
 #### Creating the `MatchRecord` object for a pair of patients
 The [`REDCapRefresh` code](https://github.com/DBMI/REDCapRefresh) queries both Epic and REDCap databases for matching patient information and creates a `MatchRecord` object for each dataframe row. The `MatchRecord` class uses a list of `CommonField` objects to keep track of the different names Epic and REDCap use for the same fields:
 
 | Common name | Epic name | REDCap name |
 | :---------- | :-------- | :---------- |
+| C_ADDR_CALCULATED | E_ADDR_CALCULATED | R_ADDR_CALCULATED |
 | C_DOB | BIRTH_DATE | dob |
 | C_EMAIL | EMAIL_ADDRESS | email_address |
-| C_ADDR_CALCULATED | E_ADDR_CALCULATED | R_ADDR_CALCULATED |
 || <p align="center"><b>Linking Epic, REDCap column names using `CommonField` objects</b></p> ||
 
 #### Creating a `MatchVariable` for each common field
-For each common field name, the `MatchRecord` object extracts the corresponding Epic value and REDCap value from the provided dataframe row and creates a `MatchVariable` object from the pair of strings, storing them in an internal dictionary `__record`. Each `MatchVariable` compares the two values and assigns a `MatchQuality` enumerated variable to describe the quality of the match
+For each common field name, the `MatchRecord` object extracts the corresponding Epic value and REDCap value from the provided dataframe row and creates a `MatchVariable` object from the pair of strings, storing them in an internal dictionary `__record`. Each `MatchVariable` compares the two strings and assigns a `MatchQuality` enumerated variable to describe the quality of the match
 
 | Name | Value | Example |
 | :--- | ----: | :------ |
