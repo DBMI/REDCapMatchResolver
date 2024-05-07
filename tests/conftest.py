@@ -225,8 +225,8 @@ def fixture_fake_records_using_bonus_dataframe() -> pandas.DataFrame:
         # We'll only match name, address and birthdate fields.
         record["ADD_LINE_1"] = record["street_address_line_1"]
         record["ADD_LINE_2"] = record["street_address_line_2"]
-        record["MRN"] = record["mrn"]
-        record["MRN_HX"] = record["mrn"]
+        record["MRN"] = record["mrn"] + 1
+        record["MRN_HX"] = record["mrn"] + 1
         record["PAT_FIRST_NAME"] = record["first_name"]
         record["PAT_LAST_NAME"] = record["last_name"]
         record["ZIP"] = record["zip_code"]

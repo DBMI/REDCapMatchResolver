@@ -326,17 +326,14 @@ class MatchRecord:
         self.__score = 0
 
         # Count up the fields that match.
-        # Common fields are defined at the beginning of this class.  This chunk of code
-        # also scores things that are handled explicitly elsewhere, such as phone, date of birth, etc.
+        # Common fields are defined at the beginning of this class.
+        # This chunk of code also scores things that are handled explicitly elsewhere,
+        # such as phone, date of birth, etc.
         for common_name in MatchRecord.SCORE_FIELDS:
             this_record = self.__record[common_name]
 
             if this_record.good_enough():
                 self.__score += 1
-
-        # If score > 3, no need to also test for bonus fields.
-        if self.__score > 3:
-            return
 
         all_bonus_fields_match: bool = True
 
@@ -349,7 +346,8 @@ class MatchRecord:
                 break
 
         if all_bonus_fields_match:
-            self.__score = 4
+            # Apply a bonus to the score.
+            self.__score += 1
 
     def __select_best_phone(
         self, row: pandas.Series, facility_phone_numbers: list

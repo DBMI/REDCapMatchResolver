@@ -82,7 +82,7 @@ def test_match_record(fake_records_dataframe) -> None:
     assert isinstance(result.summary, str)
     score = match_record.score()
     assert isinstance(score, int)
-    assert score == 6
+    assert score == 7
     pat_id = match_record.pat_id()
     assert isinstance(pat_id, str)
     assert pat_id == fake_records_dataframe.iloc[0]["PAT_ID"]
