@@ -71,15 +71,9 @@ class MatchRecord:
 
     # These fields are used in generating the match summary.
     COMMON_FIELDS: list = [
-        CommonField("C_MRN", "MRN", "mrn"),
-        CommonField("C_FIRST", "PAT_FIRST_NAME", "first_name"),
-        CommonField("C_LAST", "PAT_LAST_NAME", "last_name"),
+        CommonField("C_ADDR_CALCULATED", "E_ADDR_CALCULATED", "R_ADDR_CALCULATED"),
         CommonField("C_DOB", "BIRTH_DATE", "dob"),
         CommonField("C_EMAIL", "EMAIL_ADDRESS", "email_address"),
-        CommonField("C_ADDR_CALCULATED", "E_ADDR_CALCULATED", "R_ADDR_CALCULATED"),
-        CommonField("C_HOME_PHONE", "HOME_PHONE", "phone_number"),
-        CommonField("C_WORK_PHONE", "WORK_PHONE", "phone_number"),
-        CommonField("C_MOBILE_PHONE", "Mobile_Phone", "phone_number"),
     ]
 
     FORMAT: str = "%-20s %-40s %-40s"
@@ -96,8 +90,8 @@ class MatchRecord:
 
     #   If ALL these fields match, we'll assign a bonus score.
     #   (Even though three matches would ordinarily receive a score of three,
-    #    these fields are so valuable that we'll assign a bonus so
-    #    the records will automatically be matched.
+    #    these fields are so valuable that we'll assign a bonus point so
+    #    the score will be four & the records will automatically be matched.)
     BONUS_SCORE_FIELDS: list = [
         "C_ADDR_CALCULATED",
         "C_DOB",

@@ -125,7 +125,7 @@ def test_match_record_use_alias(fake_records_dataframe) -> None:
     assert isinstance(match_record, MatchRecord)
     score = match_record.score()
     assert isinstance(score, int)
-    assert score == 6
+    assert score == 7
     result = match_record.is_match(criteria=5)
     assert isinstance(result, MatchTuple)
     assert hasattr(result, "bool")
@@ -148,7 +148,7 @@ def test_match_record_use_mrn_hx(fake_records_dataframe) -> None:
     assert isinstance(match_record, MatchRecord)
     score = match_record.score()
     assert isinstance(score, int)
-    assert score == 6
+    assert score == 7
     result = match_record.is_match(criteria=5)
     assert isinstance(result, MatchTuple)
     assert hasattr(result, "bool")
@@ -177,7 +177,7 @@ def test_match_record_corner_cases(fake_records_dataframe) -> None:
     )
     assert isinstance(match_record, MatchRecord)
 
-    result = match_record.is_match(exact=True, criteria=6)
+    result = match_record.is_match(exact=True, criteria=7)
     assert isinstance(result, MatchTuple)
     assert hasattr(result, "bool")
     assert result.bool
