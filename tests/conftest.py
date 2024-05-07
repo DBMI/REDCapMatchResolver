@@ -7,7 +7,6 @@ import re
 import pandas
 import pytest
 from faker import Faker
-from redcaprecordsynthesizer.state_abbr_conversion import StateAbbreviationConverter
 from redcaputilities.string_cleanup import clean_up_phone
 
 

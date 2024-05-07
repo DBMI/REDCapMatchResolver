@@ -42,7 +42,7 @@ class REDCapClinic:  # pylint: disable=too-few-public-methods
                 this_clinic_priority: int
 
                 try:
-                    this_clinic_priority = int(this_clinic["Priority #"][0])
+                    this_clinic_priority = int(this_clinic["Priority #"])
                 except KeyError:
                     this_clinic_priority = 9999
 

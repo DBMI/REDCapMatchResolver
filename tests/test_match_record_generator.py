@@ -40,4 +40,4 @@ def test_match_record_generator(
     assert result.bool
     score = match_record.score()
     assert isinstance(score, int)
-    assert score == 6
+    assert score == 7
