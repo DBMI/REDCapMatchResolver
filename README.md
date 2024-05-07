@@ -27,7 +27,7 @@ The [`REDCapRefresh` code](https://github.com/DBMI/REDCapRefresh) queries both E
 || <p align="center"><b>Linking Epic, REDCap column names using `CommonField` objects</b></p> ||
 
 #### Creating a `MatchVariable` for each common field
-For each common field name, the `MatchRecord` object extracts the corresponding Epic value and REDCap value from the provided dataframe row and creates a `MatchVariable` object from the pair of strings, storing them in an internal dictionary `__record`. Each `MatchVariable` compares the two strings and assigns a `MatchQuality` enumerated variable to describe the quality of the match
+For each common field name, the `MatchRecord` object extracts the corresponding Epic value and REDCap value from the provided dataframe row and creates a `MatchVariable` object from the pair of strings, storing these objects in the `__record` dictionary. Each `MatchVariable` compares its two strings and assigns a `MatchQuality` enumerated variable to describe the quality of the match
 
 | Name | Value | Example |
 | :--- | ----: | :------ |
@@ -40,27 +40,34 @@ For each common field name, the `MatchRecord` object extracts the corresponding 
 | MATCHED_SUBSTRING | 4 | "apple", "appletree" |
 || <p align="center"><b>`MatchQuality` enumeration</b></p> ||
 
-Any `MatchQuality` > 0 is considered "good enough". The `MatchRecord.__score` property is computed by summing the number of common fields where the `MatchQuality` is "good enough".
+Any `MatchQuality` > 0 is considered "good enough". The `MatchRecord.__score` property is computed by summing the number of score fields where the `MatchQuality` is "good enough". The score fields are:
+
+- "C_ADDR_CALCULATED"
+- "C_DOB" 
+- "C_EMAIL"
+- "C_MRN_CALCULATED"
+- "C_NAME_CALCULATED"
+- "C_PHONE_CALCULATED"
 
 #### Calculated values
-When the [`REDCapRefresh` code](https://github.com/DBMI/REDCapRefresh) reads Epic data, it creates a new _calculated_ column called "E_ADDR_CALCULATED" from the first line of the address and the zip code. A similar column "R_ADDR_CALCULATED" is added to the retrieved REDCap data.
+When the [`REDCapRefresh` code](https://github.com/DBMI/REDCapRefresh) reads Epic data, it creates a new _calculated_ column called "E_ADDR_CALCULATED" from the first line of the address and the zip code. A similar column "R_ADDR_CALCULATED" is added to the retrieved REDCap data. These calculated fields look like "123 Apple St | 12345".
 
 Within the `MatchRecord` class, further calculated columns are created for patient MRN, name and phone number and added to the `__record` dictionary.
 
 ##### Best MRN
-The patient's Epic record might contain more than one Medical Record Number (MRN), under columns "MRN" and "MRN_HX". Each MRN is compared to the REDCap "mrn" column and the `MatchVariable` representing the best match entered into the `MatchRecord`'s dictionary under the key "C_MRN_CALCULATED".
+The patient's Epic record might contain more than one Medical Record Number (MRN), under columns "MRN" and "MRN_HX". Both the "MRN" and "MRN_HX" values are compared to the REDCap "mrn" column and the `MatchVariable` representing the best match is entered into the `MatchRecord`'s `__record` dictionary under the key "C_MRN_CALCULATED".
 
 ##### Best name match
-First the patient's Epic name (as concatenated last, first name) is compared to their REDCap name (again as last, first). If that match is judged "good enough", the resulting  `MatchVariable` is appended to the dictionary of `MatchVariable` objects (under the key "C_NAME_CALCULATED") contained in the `MatchRecord` object. However, if the Epic and REDCap names don't match, we compare the Epic "ALIAS" column with the REDCap name and put that `MatchVariable` in the dictionary.
+First the patient's Epic name (as concatenated last, first name) is compared to their REDCap name (also as last, first). If that match is judged "good enough", the resulting  `MatchVariable` is appended to the dictionary of `MatchVariable` objects (under the key "C_NAME_CALCULATED") contained in the `MatchRecord` object's `__record` property. However, if the Epic and REDCap names don't match, we compare the Epic "ALIAS" column (which is automatically in last, first format) with the REDCap name and put that `MatchVariable` in the dictionary.
 
 ##### Best phone match
 Since the patient's Epic record contains home, work and mobile phone numbers but the REDCap record just has one phone number, we compare each Epic number to the single REDCap number and stop when there is a match. The resulting `MatchVariable` is then appended to the dictionary under the key "C_PHONE_CALCULATED". 
 
 #### Ignored values
-There are some cases where we don't want to count string matches toward the `MatchRecord` score. For example, two patients in a group home will have the same address and phone number, but that doesn't mean they're the same person. Accordingly, the [`REDCapRefresh` code](https://github.com/DBMI/REDCapRefresh) first reads a list of known facility addresses and phone numbers, then provides these lists when instantiating a `MatchRecordGenerator` object. It is this object's `.generate_match_record` method which actually creates the `MatchRecord` object for each dataframe row. When a `MatchVariable` object compares the Epic and REDCap values, it assigns a `MatchQuality` of `IGNORED` if either value is present in the provided facility list. `IGNORED` value pairs are not "good enough" and don't count toward the match score.
+There are some cases where we don't want to count string matches toward the `MatchRecord` score. For example, two patients in a group home will have the same address and phone number, but that doesn't mean they're the same person. Accordingly, the [`REDCapRefresh` code](https://github.com/DBMI/REDCapRefresh) first reads a list of known facility addresses and phone numbers, then provides these lists when instantiating a `MatchRecordGenerator` object. It is this object's `.generate_match_record` method which actually creates the `MatchRecord` object for each dataframe row. When a `MatchVariable` object compares the Epic and REDCap values, it assigns a `MatchQuality` of `IGNORED` if either value is present in the provided facility list. `IGNORED` value pairs (with a value of -10) are not "good enough" and don't count toward the match score.
 
 #### Bonus score
-Some patient values are more significant and deserve more weight in assessing a match. The `MatchRecord` class assigns the fields "C_ADDR_CALCULATED", "C_DOB" and "C_+_NAME_CALCULATED" as _bonus_ fields. If all three match, the `score` is incremented by one. In this way, two patients with matching name, date of birth and address receive a score of 4 (meaning reliable match) instead of 3 (needs review).
+Some patient values deserve more weight in assessing a match. The `MatchRecord` class assigns the fields "C_ADDR_CALCULATED", "C_DOB" and "C_NAME_CALCULATED" as _bonus_ fields. If all three match, the `score` is incremented by one. In this way, two patients with matching name, date of birth and address receive a score of 4 (meaning reliable match) instead of 3 (signifying it needs human review).
 
 ### Select Best Appointment
 We may have patients with multiple upcoming appointments.
@@ -72,6 +79,11 @@ the patient's `REDCapAppointment` objects contain not only clinic location, date
 Then, when `refresh_redcap_upcoming_appointments` creates the REDCap update, it calls
 the `REDCapPatient` method `csv`, which in turn calls the `best_appointment` method to select the `REDCapAppointment` with the highest clinic priority.
 In case there are more than one appointment at the best clinic, `best_appointment` selects the earliest appointment at that clinic.
+
+| ![image info](./pictures/clinic_priorities.png)      |
+|------------------------------------------------------|
+| <p align="center"><b>Clinic Priorities</b></p> |
+
 
 ### Resolve Ambiguous Patient Matches
 When software identifies a pair of patient records (one REDCap and one Epic) that *might* refer to the same patient, the `REDCapReportWriter` class writes a human-readable, machine-parseable report showing potential patient matches that need review by
