@@ -10,9 +10,9 @@ class MatchTuple(NamedTuple):
 
 class CommonField:
     def __init__(self, common_name: str, epic_field: str, redcap_field: str) -> None:
-        self.__common_name: str
-        self.__epic_field: str
-        self.__redcap_field: str
+        self.__common_name: str = None
+        self.__epic_field: str = None
+        self.__redcap_field: str = None
         ...
     def common_name(self) -> str: ...
     def epic_field(self) -> str: ...
