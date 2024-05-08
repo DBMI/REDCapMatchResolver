@@ -2,6 +2,7 @@
 Module test_patient.py, which performs automated
 testing of the REDCapPatient class.
 """
+
 from datetime import datetime
 
 import pandas

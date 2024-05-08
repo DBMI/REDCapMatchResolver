@@ -92,10 +92,16 @@ class MatchRecord:
     #   (Even though three matches would ordinarily receive a score of three,
     #    these fields are so valuable that we'll assign a bonus point so
     #    the score will be four & the records will automatically be matched.)
-    BONUS_SCORE_FIELDS: list = [
+    BONUS_SCORE_FIELDS_ADDRESS: list = [
         "C_ADDR_CALCULATED",
         "C_DOB",
         "C_NAME_CALCULATED",
+    ]
+
+    BONUS_SCORE_FIELDS_PHONE: list = [
+        "C_DOB",
+        "C_NAME_CALCULATED",
+        "C_PHONE_CALCULATED",
     ]
 
     def __init__(
@@ -331,8 +337,22 @@ class MatchRecord:
 
         all_bonus_fields_match: bool = True
 
-        # Do all the BONUS fields match?
-        for common_name in MatchRecord.BONUS_SCORE_FIELDS:
+        # Do all the ADDRESS BONUS fields match?
+        for common_name in MatchRecord.BONUS_SCORE_FIELDS_ADDRESS:
+            this_record = self.__record[common_name]
+
+            if not this_record.good_enough():
+                all_bonus_fields_match = False
+                break
+
+        if all_bonus_fields_match:
+            # Apply a bonus to the score.
+            self.__score += 1
+
+        all_bonus_fields_match = True
+
+        # Do all the PHONE BONUS fields match?
+        for common_name in MatchRecord.BONUS_SCORE_FIELDS_PHONE:
             this_record = self.__record[common_name]
 
             if not this_record.good_enough():

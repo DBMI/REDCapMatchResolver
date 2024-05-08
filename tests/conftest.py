@@ -1,6 +1,7 @@
 """
 Contains test fixtures available across all test_*.py files.
 """
+
 import os
 import datetime
 import re
@@ -169,10 +170,10 @@ def fixture_fake_records_dataframe() -> pandas.DataFrame:
 
 
 # https://stackoverflow.com/a/33879151/20241849
-@pytest.fixture(name="fake_records_using_bonus_dataframe")
-def fixture_fake_records_using_bonus_dataframe() -> pandas.DataFrame:
+@pytest.fixture(name="fake_records_using_address_bonus_dataframe")
+def fixture_fake_records_using_address_bonus_dataframe() -> pandas.DataFrame:
     """
-    Synthesize record for testing of bonus fields scoring.
+    Synthesize record for testing of address bonus fields scoring.
 
     Return
     ------
@@ -233,7 +234,79 @@ def fixture_fake_records_using_bonus_dataframe() -> pandas.DataFrame:
         record["R_ADDR_CALCULATED"] = (
             record["street_address_line_1"] + " | " + record["zip_code"]
         )
+        record["BIRTH_DATE"] = birthdate.strftime("%Y-%m-%d")
 
+        dataframes.append(pandas.DataFrame([record], index=[index]))
+
+    return pandas.concat(dataframes)
+
+
+# https://stackoverflow.com/a/33879151/20241849
+@pytest.fixture(name="fake_records_using_phone_bonus_dataframe")
+def fixture_fake_records_using_phone_bonus_dataframe() -> pandas.DataFrame:
+    """
+    Synthesize record for testing of phone bonus fields scoring.
+
+    Return
+    ------
+    pandas.DataFrame
+    """
+    num_records_to_synthesize: int = 1
+    fake: Faker = Faker()
+    dataframes = []
+
+    for index in range(num_records_to_synthesize):
+        birthdate: datetime.datetime = fake.date_of_birth(
+            minimum_age=18, maximum_age=115
+        )
+
+        # Strip off the extension.
+        phone_number: str = fake.phone_number()
+        phone_number: str = re.sub(r"x\d+", "", phone_number)
+        state_abbr: str = fake.state_abbr(include_territories=False)
+
+        record = {
+            "study_id": fake.random_int(min=1000, max=50000),
+            "PAT_ID": fake.bothify(text="?#######", letters="ABCDEFGHJKLMNPQRSTUVWXYZ"),
+            "MRN": "",
+            "MRN_HX": "",
+            "mrn": fake.random_int(min=1000, max=100000),
+            "PAT_FIRST_NAME": "",
+            "first_name": fake.first_name(),
+            "PAT_LAST_NAME": "",
+            "last_name": fake.last_name(),
+            "ALIAS": "",
+            "BIRTH_DATE": "",
+            "dob": birthdate.strftime("%Y-%m-%d"),
+            "ADD_LINE_1": "",
+            "street_address_line_1": fake.street_address(),
+            "ADD_LINE_2": "",
+            "street_address_line_2": "",
+            "ZIP": "",
+            "zip_code": fake.zipcode_in_state(state_abbr),
+            "email_address": fake.email(),  # The order here is REVERSED (first REDCap, then Epic)
+            "EMAIL_ADDRESS": "",  # to exercise a different part of the code.
+            "HOME_PHONE": "",
+            "WORK_PHONE": "",
+            "Mobile_Phone": "",
+            "phone_number": phone_number,
+            "E_ADDR_CALCULATED": "",
+            "R_ADDR_CALCULATED": "",
+        }
+
+        # We'll only match name, phone and birthdate fields.
+        record["ADD_LINE_1"] = ""
+        record["ADD_LINE_2"] = ""
+        record["MRN"] = record["mrn"] + 1
+        record["MRN_HX"] = record["mrn"] + 1
+        record["PAT_FIRST_NAME"] = record["first_name"]
+        record["PAT_LAST_NAME"] = record["last_name"]
+        record["HOME_PHONE"] = record["phone_number"]
+        record["WORK_PHONE"] = record["phone_number"]
+        record["Mobile_Phone"] = record["phone_number"]
+        record["ZIP"] = ""
+        record["E_ADDR_CALCULATED"] = ""
+        record["R_ADDR_CALCULATED"] = ""
         record["BIRTH_DATE"] = birthdate.strftime("%Y-%m-%d")
 
         dataframes.append(pandas.DataFrame([record], index=[index]))

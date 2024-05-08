@@ -2,6 +2,7 @@
 Module test_match_generator.py, which performs automated
 testing of the MatchRecordGenerator class.
 """
+
 import redcapmatchresolver.match_records
 from redcapmatchresolver.match_record_generator import MatchRecordGenerator
 
@@ -40,4 +41,4 @@ def test_match_record_generator(
     assert result.bool
     score = match_record.score()
     assert isinstance(score, int)
-    assert score == 7
+    assert score == 8

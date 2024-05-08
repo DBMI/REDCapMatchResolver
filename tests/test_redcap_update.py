@@ -2,6 +2,7 @@
 Module test_redcap_update.py, which performs automated
 testing of the REDCapUpdate class.
 """
+
 import pytest
 from redcapmatchresolver.redcap_update import REDCapUpdate
 
