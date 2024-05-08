@@ -2,6 +2,7 @@
 Module test_match_quality.py, which performs automated
 testing of the MatchQuality class.
 """
+
 import pytest
 
 from src.redcapmatchresolver.match_quality import MatchQuality

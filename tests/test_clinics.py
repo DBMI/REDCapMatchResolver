@@ -2,6 +2,7 @@
 Module test_clinics.py, which performs automated
 testing of the REDCapClinic class.
 """
+
 from redcapmatchresolver.redcap_clinic import REDCapClinic
 
 

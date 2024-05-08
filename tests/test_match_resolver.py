@@ -2,6 +2,7 @@
 Module test_match_resolver.py, which performs automated
 testing of the REDCapMatchResolver class.
 """
+
 import os
 import sqlite3
 import pytest
