@@ -17,7 +17,7 @@ html_logo = "../../pictures/report_logo.png"  # adds logo to documents pages.
 project = 'REDCapMatchResolver'
 copyright = '2022, University of California San Diego'
 author = 'Kevin J. Delaney'
-release = '0.3.8'
+release = '1.5.5'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
