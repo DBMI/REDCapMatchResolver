@@ -21,10 +21,10 @@ Classes:
     REDCap Report Writer
 """
 
-from .match_records import CommonField, MatchRecord, MatchTuple, MatchVariable
-from .redcap_appointment import REDCapAppointment
-from .redcap_clinic import REDCapClinic
-from .redcap_match_resolver import REDCapMatchResolver
-from .redcap_patient import REDCapPatient
-from .redcap_report_reader import REDCapReportReader
-from .redcap_report_writer import REDCapReportWriter
+from src.redcapmatchresolver import match_records
+from src.redcapmatchresolver import redcap_appointment
+from src.redcapmatchresolver import redcap_clinic
+from src.redcapmatchresolver import redcap_match_resolver
+from src.redcapmatchresolver import redcap_patient
+from src.redcapmatchresolver import redcap_report_reader
+from src.redcapmatchresolver import redcap_report_writer
