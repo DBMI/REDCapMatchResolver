@@ -21,7 +21,7 @@ Classes:
     REDCap Report Writer
 """
 
-from src.redcapmatchresolver import (
+from . import (
     match_records,
     redcap_appointment,
     redcap_clinic,
