@@ -7,6 +7,8 @@ testing of the classes:
     MatchVariable
 """
 
+import pytest
+
 from src.redcapmatchresolver.match_quality import MatchQuality
 from src.redcapmatchresolver.match_records import (
     CommonField,
@@ -14,7 +16,6 @@ from src.redcapmatchresolver.match_records import (
     MatchTuple,
     MatchVariable,
 )
-import pytest
 
 
 def test_common_field() -> None:

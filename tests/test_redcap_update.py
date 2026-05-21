@@ -4,6 +4,7 @@ testing of the REDCapUpdate class.
 """
 
 import pytest
+
 from redcapmatchresolver.redcap_update import REDCapUpdate
 
 

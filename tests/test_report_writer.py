@@ -4,8 +4,10 @@ testing of the REDCapReportWriter class.
 """
 
 import os
-from redcapmatchresolver.redcap_report_writer import REDCapReportWriter
+
 from redcaputilities.logging import patient_data_directory
+
+from redcapmatchresolver.redcap_report_writer import REDCapReportWriter
 
 
 def test_writing(matching_patients) -> None:

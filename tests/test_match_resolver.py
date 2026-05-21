@@ -5,12 +5,13 @@ testing of the REDCapMatchResolver class.
 
 import os
 import sqlite3
+
 import pytest
+from redcaputilities.directories import ensure_output_path_exists
+from redcaputilities.logging import setup_logging
 
 from redcapmatchresolver.redcap_match_resolver import REDCapMatchResolver
 from redcapmatchresolver.redcap_report_reader import DecisionReview
-from redcaputilities.directories import ensure_output_path_exists
-from redcaputilities.logging import setup_logging
 
 
 @pytest.fixture(name="bad_reports_directory")

@@ -5,13 +5,13 @@ from setuptools import find_packages, setup
 
 setup(
     name="redcapmatchresolver",
-    version="1.5.5",
+    version="1.5.6",
     packages=find_packages(),
     package_dir={"src": "src"},
     include_package_data=True,
     package_data={"": ["data/*.xlsx"]},
     url="https://github.com/DBMI/REDCapMatchResolver",
-    license="",
+    license_files=["LICENSE"],
     author="Kevin J. Delaney",
     author_email="kjdelaney@ucsd.edu",
     description="Assists with human expert review of possible patient matches.",

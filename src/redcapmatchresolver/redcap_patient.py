@@ -120,7 +120,7 @@ class REDCapPatient:
         -------
         csv_summary : str
         """
-        csv_summary: str = ''
+        csv_summary: str = ""
         df_including_best_appt = self.to_df()
 
         if isinstance(columns, list):
@@ -129,11 +129,13 @@ class REDCapPatient:
                 c for c in columns if c in df_including_best_appt.columns
             ]
             csv_summary = df_including_best_appt.to_csv(
-                columns=columns_present, header=include_headers, line_terminator=""
+                columns=columns_present, header=include_headers, lineterminator=""
             )
             return csv_summary
 
-        csv_summary = df_including_best_appt.to_csv(header=include_headers, line_terminator="")
+        csv_summary = df_including_best_appt.to_csv(
+            header=include_headers, lineterminator=""
+        )
         return csv_summary
 
     def __find_appointments(self, clinics: REDCapClinic) -> None:
