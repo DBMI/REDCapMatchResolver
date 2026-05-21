@@ -5,10 +5,11 @@ Module: contains the MatchRecord and MatchVariable classes.
 from collections import namedtuple
 
 import pandas  # type: ignore[import]
-from .match_quality import MatchQuality
 from redcaputilities.string_cleanup import clean_up_phone
 
 from redcapmatchresolver.redcap_update import REDCapUpdate
+
+from .match_quality import MatchQuality
 
 MatchTuple = namedtuple(
     typename="MatchTuple", field_names=["bool", "summary"]  # type: ignore[misc]

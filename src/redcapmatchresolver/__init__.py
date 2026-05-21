@@ -21,10 +21,12 @@ Classes:
     REDCap Report Writer
 """
 
-from src.redcapmatchresolver import match_records
-from src.redcapmatchresolver import redcap_appointment
-from src.redcapmatchresolver import redcap_clinic
-from src.redcapmatchresolver import redcap_match_resolver
-from src.redcapmatchresolver import redcap_patient
-from src.redcapmatchresolver import redcap_report_reader
-from src.redcapmatchresolver import redcap_report_writer
+from src.redcapmatchresolver import (
+    match_records,
+    redcap_appointment,
+    redcap_clinic,
+    redcap_match_resolver,
+    redcap_patient,
+    redcap_report_reader,
+    redcap_report_writer,
+)

@@ -2,9 +2,10 @@
 Contains test fixtures available across all test_*.py files.
 """
 
-import os
 import datetime
+import os
 import re
+
 import pandas
 import pytest
 from faker import Faker
