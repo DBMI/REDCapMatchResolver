@@ -57,7 +57,7 @@ pandas-stubs = "*"
 pep8-naming = "*"
 pre-commit = "*"
 pymdown-extensions = "*"
-pytest = "*"
+pytest = "^7.2.0"
 pytest-github-actions-annotate-failures = "*"
 pytest-cov = "*"
 python-kacl = "*"
@@ -68,9 +68,6 @@ sphinx_markdown_builder = "*"
 tryceratops = "*"
 typing = "*"
 wheel = "*"
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^7.2.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
