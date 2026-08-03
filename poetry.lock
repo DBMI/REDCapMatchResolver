@@ -480,19 +480,19 @@ eradicate = ">=2.0,<3.0"
 flake8 = ">=3.5,<6"
 
 [[package]]
-name = "flake8-logging-format"
-version = "0.9.0"
-description = ""
+name = "flake8-logging"
+version = "1.8.0"
+description = "A Flake8 plugin that checks for issues using the standard library logging module."
 optional = false
-python-versions = "*"
+python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "flake8-logging-format-0.9.0.tar.gz", hash = "sha256:e830cc49091e4b8ab9ea3da69a3da074bd631ce9a7db300e5c89fb48ba4a6986"},
+    {file = "flake8_logging-1.8.0-py3-none-any.whl", hash = "sha256:bb3fcf0fb2b4f35d7ebb0c1dc02af16db00c7c858c5a018370172e939dd6f225"},
+    {file = "flake8_logging-1.8.0.tar.gz", hash = "sha256:765046763d44d1dc051071c047fe0fa056d71a524505207c3fbdc47532e7d8af"},
 ]
 
-[package.extras]
-lint = ["flake8"]
-test = ["PyHamcrest", "pytest", "pytest-cov"]
+[package.dependencies]
+flake8 = ">=3,<3.2 || >3.2"
 
 [[package]]
 name = "ghp-import"
@@ -511,36 +511,6 @@ python-dateutil = ">=2.8.1"
 
 [package.extras]
 dev = ["flake8", "markdown", "twine", "wheel"]
-
-[[package]]
-name = "gitdb"
-version = "4.0.10"
-description = "Git Object Database"
-optional = false
-python-versions = ">=3.7"
-groups = ["dev"]
-files = [
-    {file = "gitdb-4.0.10-py3-none-any.whl", hash = "sha256:c286cf298426064079ed96a9e4a9d39e7f3e9bf15ba60701e95f5492f28415c7"},
-    {file = "gitdb-4.0.10.tar.gz", hash = "sha256:6eb990b69df4e15bad899ea868dc46572c3f75339735663b81de79b06f17eb9a"},
-]
-
-[package.dependencies]
-smmap = ">=3.0.1,<6"
-
-[[package]]
-name = "gitpython"
-version = "3.1.31"
-description = "GitPython is a Python library used to interact with Git repositories"
-optional = false
-python-versions = ">=3.7"
-groups = ["dev"]
-files = [
-    {file = "GitPython-3.1.31-py3-none-any.whl", hash = "sha256:f04893614f6aa713a60cbbe1e6a97403ef633103cdd0ef5eb6efe0deb98dbe8d"},
-    {file = "GitPython-3.1.31.tar.gz", hash = "sha256:8ce3bcf69adfdf7c7d503e78fd3b1c492af782d58893b650adb2ac8912ddd573"},
-]
-
-[package.dependencies]
-gitdb = ">=4.0.1,<5"
 
 [[package]]
 name = "identify"
@@ -1324,23 +1294,6 @@ files = [
 six = ">=1.5"
 
 [[package]]
-name = "python-kacl"
-version = "0.3.4"
-description = "Python module and CLI tool for validating and modifying Changelogs in \"keep-a-changelog\" format\""
-optional = false
-python-versions = ">=3.6"
-groups = ["dev"]
-files = [
-    {file = "python-kacl-0.3.4.tar.gz", hash = "sha256:863677fe599801f83f7ad5f10585bd17a181260e8fa3dbc7f97d1607b9036328"},
-]
-
-[package.dependencies]
-click = "*"
-gitpython = "*"
-pyyaml = "*"
-semver = "*"
-
-[[package]]
 name = "pyupgrade"
 version = "3.3.1"
 description = "A tool to automatically upgrade syntax for newer versions."
@@ -1464,18 +1417,6 @@ socks = ["PySocks (>=1.5.6,!=1.5.7)"]
 use-chardet-on-py3 = ["chardet (>=3.0.2,<8)"]
 
 [[package]]
-name = "semver"
-version = "2.13.0"
-description = "Python helper for Semantic Versioning (http://semver.org/)"
-optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-groups = ["dev"]
-files = [
-    {file = "semver-2.13.0-py2.py3-none-any.whl", hash = "sha256:ced8b23dceb22134307c1b8abfa523da14198793d9787ac838e70e29e77458d4"},
-    {file = "semver-2.13.0.tar.gz", hash = "sha256:fa0fe2722ee1c3f57eac478820c3a5ae2f624af8264cbdf9000c980ff7f75e3f"},
-]
-
-[[package]]
 name = "setuptools"
 version = "67.6.1"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
@@ -1502,18 +1443,6 @@ groups = ["main", "dev"]
 files = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
     {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
-]
-
-[[package]]
-name = "smmap"
-version = "5.0.0"
-description = "A pure Python implementation of a sliding window memory map manager"
-optional = false
-python-versions = ">=3.6"
-groups = ["dev"]
-files = [
-    {file = "smmap-5.0.0-py3-none-any.whl", hash = "sha256:2aba19d6a040e78d8b09de5c57e96207b09ed71d8e55ce0959eeee6c8e190d94"},
-    {file = "smmap-5.0.0.tar.gz", hash = "sha256:c840e62059cd3be204b0c9c9f74be2c09d5648eddd4580d9314c3ecde0b30936"},
 ]
 
 [[package]]
@@ -1705,4 +1634,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12, <4.0"
-content-hash = "89bedd42c69c35856f4208526a2ab835517146714bcb2d87fe4b2b43c0850249"
+content-hash = "90715ad8be66f4a2f502f66dc2d9444756c6d1f029307efb879b9214c438fe71"

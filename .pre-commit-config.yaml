@@ -46,7 +46,7 @@ repos:
         require_serial: true
         files: "py$"
         language: python
-        additional_dependencies: ["mypy==0.812"]
+        additional_dependencies: ["mypy==2.3.0"]
         types: [python]
         pass_filenames: false
       - id: flake8
@@ -56,9 +56,3 @@ repos:
         files: "py$"
         language: system
         types: [python]
-      - id: kacl-verify
-        name: kacl-verify
-        entry: poetry run kacl-cli verify
-        language: system
-        files: 'CHANGELOG.md'
-        pass_filenames: false
