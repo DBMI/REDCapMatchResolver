@@ -1,4 +1,4 @@
-name: 'Setup Python + Poetry environment'
+name: 'Setup Python + Poetry environment action'
 description: 'Setup Python + Poetry environment'
 
 inputs:
