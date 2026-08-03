@@ -786,7 +786,7 @@ Jinja2 = ">=2.10.1"
 Markdown = ">=3.2.1"
 mergedeep = ">=1.3.4"
 packaging = ">=20.5"
-PyYAML = ">=6.0"
+PyYAML = ">=3.10"
 pyyaml-env-tag = ">=0.1"
 watchdog = ">=2.0"
 
@@ -1556,18 +1556,6 @@ files = [
 ]
 
 [[package]]
-name = "tryceratops"
-version = "0.1"
-description = "A linter to manage your exception like a PRO!"
-optional = false
-python-versions = "*"
-groups = ["dev"]
-files = [
-    {file = "tryceratops-0.1-py2.py3-none-any.whl", hash = "sha256:99355d322b59ba09aa885a495730b258a04fb046af7f99da895898f060a9f938"},
-    {file = "tryceratops-0.1.tar.gz", hash = "sha256:59c37bfc4ec1dfb697ff249567a6b4496d602c11478f46c238948fd976e6ed6a"},
-]
-
-[[package]]
 name = "typing"
 version = "3.7.4.3"
 description = "Type Hints for Python"
@@ -1717,4 +1705,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12, <4.0"
-content-hash = "c8f2e10f1a7999c25a07917a28df83741fe5a4b8d796466537716c7513718162"
+content-hash = "89bedd42c69c35856f4208526a2ab835517146714bcb2d87fe4b2b43c0850249"
