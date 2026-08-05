@@ -1,6 +1,6 @@
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.6.1
     hooks:
       - id: check-ast
       - id: check-added-large-files
@@ -51,8 +51,11 @@ repos:
         pass_filenames: false
       - id: flake8
         name: flake8
+        additional_dependencies:
+          - tryceratops
         entry: poetry run flake8 src/redcapmatchresolver
+        args: ["--config=.flake8"]
         exclude: "tests"
         files: "py$"
-        language: system
+        language: python
         types: [python]

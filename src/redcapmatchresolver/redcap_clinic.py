@@ -49,7 +49,8 @@ class REDCapClinic:  # pylint: disable=too-few-public-methods
                 self.__members[dept_name.upper()] = this_clinic_priority
 
     def priority(self, dept_name: str) -> int:
-        """Lets external code ask what priority value has been assigned to this clinic/department.
+        """Lets external code ask what priority value
+           has been assigned to this clinic/department.
 
         Parameters
         ----------
