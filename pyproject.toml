@@ -5,7 +5,7 @@ description = "Assists with human expert review of possible patient matches."
 license = {file = 'LICENSE'}
 readme = "README.md"
 authors = [
-    {name = "Kevin J. Delaney", email = "<kjdelaney@ucsd.edu>"},
+    {name = "Kevin J. Delaney", email = "<kjdelaney@health.ucsd.edu>"},
 ]
 
 [tool.poetry]
