@@ -31,7 +31,8 @@ class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
         self.__reports: List[str] = []
 
     def add_match(self, match: str) -> None:
-        """Allows external code to add a pre-formatted text block comparing two patient records.
+        """Allows external code to add a pre-formatted
+           text block comparing two patient records.
 
         Parameters
         ----------
@@ -61,7 +62,8 @@ class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
         return len(self.__reports)
 
     def write(self, report_filename: Union[str, None] = None) -> tuple:
-        """Writes out the accumulated match reports, assigning a sequential number to each one.
+        """Writes out the accumulated match reports,
+           assigning a sequential number to each one.
 
         Parameters
         ----------
@@ -102,11 +104,13 @@ class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
                         if num_char_written != len(this_record):
                             return success, report_filename  # pragma: no cover
 
-                    except Exception as file_write_error:  # pragma: no cover
+                    except (
+                        Exception
+                    ) as file_write_error:  # pragma: no cover #noqa: F841
                         self.__log.exception(
                             "Unable to write match to log because {file_write_error}."
                         )
-                        raise file_write_error
+                        raise
 
                     match_index += 1
 

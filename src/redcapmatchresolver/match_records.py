@@ -18,7 +18,8 @@ MatchTuple = namedtuple(
 
 class CommonField:
     """
-    Hold cases where a field (like patient first name) is present in both Epic and REDCap.
+    Hold cases where a field (like patient first name)
+    is present in both Epic and REDCap.
     """
 
     def __init__(
@@ -112,9 +113,12 @@ class MatchRecord:
 
         Parameters
         ----------
-        row : pandas.Series             One database row listing both Epic and REDCap values for (perhaps) the same patient.
-        facility_addresses : list       Addresses that don't score as a match even if they do match.
-        facility_phone_numbers : list   Phone numbers that don't score as a match even if they do match.
+        row : pandas.Series             One database row listing both Epic and
+                                        REDCap values for (perhaps) the same patient.
+        facility_addresses : list       Addresses that don't score as a match
+                                        even if they do match.
+        facility_phone_numbers : list   Phone numbers that don't score as a match
+                                        even if they do match.
         """
         if not isinstance(row, pandas.Series):
             raise TypeError("Argument 'row' is not the expected pandas.Series.")
@@ -146,13 +150,17 @@ class MatchRecord:
     def __build_dictionary(
         self, row: pandas.Series, facility_addresses: list, facility_phone_numbers: list
     ) -> None:
-        """Builds the self.__record dict of MatchVariables describing the match between the Epic and REDCap values.
+        """Builds the self.__record dict of MatchVariables
+           describing the match between the Epic and REDCap values.
 
         Parameters
         ----------
-        row : pandas.Series             Extracted from the database epic and redcap tables.
-        facility_addresses : list       Addresses that don't score as a match even if they do match.
-        facility_phone_numbers : list   Phone numbers that don't score as a match even if they do match.
+        row : pandas.Series             Extracted from the database
+                                        epic and redcap tables.
+        facility_addresses : list       Addresses that don't score as a match
+                                        even if they do match.
+        facility_phone_numbers : list   Phone numbers that don't score as a match
+                                        even if they do match.
         """
         if not isinstance(row, pandas.Series):
             raise TypeError("Argument 'row' is not the expected pandas.Series.")
@@ -198,7 +206,8 @@ class MatchRecord:
                 ignore_list=ignore_list,
             )
 
-        # Match phone numbers (Epic has several), names (including aliases) and MRNs (including old ones).
+        # Match phone numbers (Epic has several), names
+        # (including aliases) and MRNs (including old ones).
         self.__select_best_phone(row, facility_phone_numbers=facility_phone_numbers)
         self.__select_best_epic_name(row)
         self.__select_best_epic_mrn(row)
@@ -215,7 +224,8 @@ class MatchRecord:
         return epic_mrn
 
     def __init_summary(self) -> str:
-        """Initializes the 'summary' block describing the match between Epic and REDCap records.
+        """Initializes the 'summary' block describing
+           the match between Epic and REDCap records.
 
         Returns
         -------
@@ -240,7 +250,8 @@ class MatchRecord:
     def is_match(
         self, exact: bool = False, criteria: int = 5, aliases=None, mrn_hx=None
     ) -> MatchTuple:
-        """See if a universal record is a match between its Epic fields and REDCap fields.
+        """See if a universal record is a match
+            between its Epic fields and REDCap fields.
 
         Parameters
         ----------
@@ -372,8 +383,10 @@ class MatchRecord:
 
         Parameters
         ----------
-        row : pandas.Series             Extracted from the database epic and redcap tables.
-        facility_phone_numbers : list   Phone numbers that don't score as a match even if they do match.
+        row : pandas.Series             Extracted from the database
+                                        epic and redcap tables.
+        facility_phone_numbers : list   Phone numbers that don't score
+                                        as a match even if they do match.
         """
         epic_home_phone: str = ""
         epic_work_phone: str = ""
@@ -428,7 +441,8 @@ class MatchRecord:
 
         Parameters
         ----------
-        row : pandas.Series             Extracted from the database epic and redcap tables.
+        row : pandas.Series     Extracted from the database
+                                epic and redcap tables.
         """
         epic_name: str = ""
         epic_alias: str = ""
@@ -460,7 +474,8 @@ class MatchRecord:
 
         Parameters
         ----------
-        row : pandas.Series             Extracted from the database epic and redcap tables.
+        row : pandas.Series     Extracted from the database
+                                epic and redcap tables.
         """
         epic_mrn: str = ""
         epic_mrn_historical: str = ""

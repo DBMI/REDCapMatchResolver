@@ -53,7 +53,8 @@ class REDCapPatient:
         ]
 
     def best_appointment(self) -> REDCapAppointment | None:
-        """Selects the 'best' contact opportunity according to clinic priority & schedule.
+        """Selects the 'best' contact opportunity
+           according to clinic priority & schedule.
         Returns
         -------
         best_appointment : REDCapAppointment
@@ -190,7 +191,8 @@ class REDCapPatient:
         return self.__df.to_markdown()
 
     def same_as(self, other_patient: REDCapPatient) -> bool:
-        """Tests to see if two REDCapPatient objects match in every field EXCEPT appointments.
+        """Tests to see if two REDCapPatient objects
+           match in every field EXCEPT appointments.
 
         Parameters
         ----------
@@ -210,7 +212,8 @@ class REDCapPatient:
         return True
 
     def set_study_id(self, study_id: int | str) -> None:
-        """Allows external code to set the patient's study_id after the object is instantiated.
+        """Allows external code to set the patient's
+           study_id after the object is instantiated.
 
         Parameters
         ----------
@@ -227,7 +230,8 @@ class REDCapPatient:
         return self.__df.to_markdown()
 
     def to_df(self) -> pandas.DataFrame:
-        """Converts Patient object to a pandas DataFrame, including the best appointment.
+        """Converts Patient object to a pandas DataFrame,
+           including the best appointment.
 
         Returns
         -------

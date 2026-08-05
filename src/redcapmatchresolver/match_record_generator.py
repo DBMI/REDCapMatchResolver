@@ -9,7 +9,8 @@ from redcapmatchresolver.match_records import MatchRecord
 
 class MatchRecordGenerator:
     """
-    Allows one-time provision of group facility info so that MatchRecords can be more easily generated.
+    Allows one-time provision of group facility info
+    so that MatchRecords can be more easily generated.
     """
 
     def __init__(self, facility_addresses: list, facility_phone_numbers: list) -> None:

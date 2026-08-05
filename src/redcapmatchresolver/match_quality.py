@@ -30,10 +30,7 @@ class MatchQuality(Enum):
         -------
         match : MatchQuality object
         """
-        if match_str is None:
-            raise TypeError("Input 'match_str' is not the expected string.")
-
-        if not isinstance(match_str, str):
+        if match_str is None or not isinstance(match_str, str):
             raise TypeError("Input 'match_str' is not the expected string.")
 
         match = MatchQuality.MATCHED_NULL

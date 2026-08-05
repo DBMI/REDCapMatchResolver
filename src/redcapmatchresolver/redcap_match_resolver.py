@@ -58,7 +58,8 @@ class REDCapMatchResolver:
             raise RuntimeError("Unable to build required database tables.")
 
     def add_possible_wobbler(self, match_summary: str) -> bool:
-        """Allows external code to tell us to add this object as a wobbler--if it qualifies.
+        """Allows external code to tell us to add
+           this object as a wobbler--if it qualifies.
 
         Parameters
         ----------
@@ -111,15 +112,6 @@ class REDCapMatchResolver:
         # pylint: disable=logging-fstring-interpolation
         try:
             connection = sqlite3.connect(db_filename)
-
-            if not isinstance(connection, sqlite3.Connection):  # pragma: no cover
-                self.__log.error(
-                    "Unable to establish connection to {db_filename}.",
-                    extra={"db_filename": db_filename},
-                )
-                raise RuntimeError(
-                    f"Unable to establish connection to '{db_filename}'."
-                )
         except (
             sqlite3.IntegrityError,
             sqlite3.InternalError,
@@ -128,12 +120,20 @@ class REDCapMatchResolver:
                 "Unable to open file {db_filename} because {database_error}.",
                 extra={"db_filename": db_filename, "database_error": database_error},
             )
-            raise database_error
+            raise
+
+        if not isinstance(connection, sqlite3.Connection):  # pragma: no cover
+            self.__log.exception(
+                "Unable to establish connection to {db_filename}.",
+                extra={"db_filename": db_filename},
+            )
+            raise TypeError(f"Unable to establish connection to '{db_filename}'.")
 
         return connection
 
     def __create_decisions_table(self) -> bool:
-        """Creates the table that translates integer codes to text like 'Same' or 'Not Same'.
+        """Creates the table that translates integer codes
+           to text like 'Same' or 'Not Same'.
 
         Returns
         -------
@@ -142,10 +142,12 @@ class REDCapMatchResolver:
 
         if not self.__is_connected():  # pragma: no cover
             self.__log.error(
-                "Called '__create_decisions_table' method but database is not connected."
+                "Called '__create_decisions_table' method "
+                "but database is not connected."
             )
             raise RuntimeError(
-                "Called '__create_decisions_table' method but database is not connected."
+                "Called '__create_decisions_table' method "
+                "but database is not connected."
             )
 
         if not self.__drop_decisions_table():  # pragma: no cover
@@ -171,7 +173,7 @@ class REDCapMatchResolver:
                 "Unable to run 'create_table_sql' because {database_error}.",
                 extra={"database_error": database_error},
             )
-            raise database_error
+            raise
 
         return success
 
@@ -206,7 +208,7 @@ class REDCapMatchResolver:
                 "Unable to run 'drop_decisions_table' because {database_error}.",
                 extra={"database_error": database_error},
             )
-            raise database_error
+            raise
 
         return success
 
@@ -241,12 +243,13 @@ class REDCapMatchResolver:
                 "Unable to run 'drop_matches_table' because {database_error}.",
                 extra={"database_error": database_error},
             )
-            raise database_error
+            raise
 
         return success
 
     def __init_decisions_table(self) -> bool:
-        """Creates & populates table that translates integer codes to text like 'Same' or 'Not Same'.
+        """Creates & populates table that translates integer codes
+           to text like 'Same' or 'Not Same'.
 
         Returns
         -------
@@ -256,7 +259,8 @@ class REDCapMatchResolver:
             self.__log.error("Unable to create 'decisions' table.")
             raise RuntimeError("Unable to create 'decisions' table.")
 
-        #   We want these values to exactly equal those in the DecisionReview enum class.
+        #   We want these values to exactly equal
+        #   those in the DecisionReview enum class.
         cursor: sqlite3.Cursor = self.__connection.cursor()
         insert_sql = """INSERT INTO decisions(decision, score)
                         VALUES
@@ -308,7 +312,7 @@ class REDCapMatchResolver:
                 "Unable to run 'create_table_sql' because {database_error}.",
                 extra={"database_error": database_error},
             )
-            raise database_error
+            raise
 
         return success
 
@@ -386,8 +390,9 @@ class REDCapMatchResolver:
                 )
 
     def insert_reviewed_reports(self) -> bool:
-        """Insert the human-reviewed matches (from text files read by REDCapMatchResolver)
-        into the SQLite3 database's `resolved` table.
+        """Insert the human-reviewed matches
+           (from text files read by REDCapMatchResolver)
+           into the SQLite3 database's `resolved` table.
 
         Returns
         -------
@@ -478,11 +483,13 @@ class REDCapMatchResolver:
 
         Parameters
         ----------
-        match_block : str   Multi-line block of text giving both REDCap and Epic patient info.
+        match_block : str   Multi-line block of text
+                            giving both REDCap and Epic patient info.
 
         Returns
         -------
-        decision : DecisionReview Reports whether CRCs said match, no match (or not sure).
+        decision : DecisionReview Reports whether
+                   reviewer said match, no match (or not sure).
         """
         if not self.__is_connected():  # pragma: no cover
             self.__log.error(
@@ -503,8 +510,8 @@ class REDCapMatchResolver:
         match_df = self.__redcap_reader.read_text(block_txt=match_block)
 
         if not isinstance(match_df, pandas.DataFrame):  # pragma: no cover
-            self.__log.error("Unable to read text block.")
-            raise RuntimeError("Unable to read text block.")
+            self.__log.exception("Unable to read text block.")
+            raise TypeError("Unable to read text block.")
 
         if not all(item in match_df.columns for item in self.__dataframe_fields_list):
             self.__log.error("Text block does not contain required fields.")
@@ -538,8 +545,8 @@ class REDCapMatchResolver:
                         DecisionReview.convert(r) for r in rows if r is not None
                     )
                     return DecisionReview(max(crc_review_objects))
-
-                return DecisionReview(DecisionReview.NOT_SURE)
+                else:
+                    return DecisionReview(DecisionReview.NOT_SURE)
             except (
                 sqlite3.IntegrityError,
                 sqlite3.InternalError,
@@ -548,7 +555,7 @@ class REDCapMatchResolver:
                     "Error in running table query method because {database_error}.",
                     extra={"database_error": database_error},
                 )
-                raise database_error
+                raise
 
     def read_reports(self, import_folder: str) -> bool:
         """Read all the report files & imports into db.
@@ -594,7 +601,8 @@ class REDCapMatchResolver:
         return isinstance(self.__redcap_reader, REDCapReportReader)
 
     def report_wobblers(self, new_reports_directory: str) -> tuple:
-        """Allows external code to request we write a report on whatever wobblers we've identified.
+        """Allows external code to request we write a
+           report on whatever wobblers we've identified.
 
         Parameters
         ----------
@@ -657,7 +665,7 @@ class REDCapMatchResolver:
         if (
             not isinstance(decision_enum, str) or len(decision_enum) == 0
         ):  # pragma: no cover
-            self.__log.error('Input "crc_review" is not a string')
+            self.__log.exception('Input "crc_review" is not a string.')
             raise TypeError('Input "crc_review" is not a string.')
 
         #   Strip off the 'DecisionReview.' part.
@@ -669,7 +677,7 @@ class REDCapMatchResolver:
         try:
             cur.execute(query_sql, [decision_enum_payload])
             rows = cur.fetchall()
-            return int(rows[0][0])
+            return int(rows[0][0])  # noqa: TRY300
         except (
             sqlite3.IntegrityError,
             sqlite3.InternalError,
@@ -678,4 +686,4 @@ class REDCapMatchResolver:
                 "Error in running 'decisions' table query because {database_error}.",
                 extra={"database_error": database_error},
             )
-            raise database_error
+            raise
