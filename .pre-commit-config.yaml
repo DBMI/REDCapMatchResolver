@@ -1,6 +1,8 @@
 pre-commit.ci:
   autofix_commit_msg: '[pre-commit.ci] auto fixes from pre-commit hooks'
   autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  # Force a stable Python version matching your project requirements
+  python: python3.11
   # This installs poetry and all your dev dependencies in the CI runner
   pre_install:
     - pip install poetry
