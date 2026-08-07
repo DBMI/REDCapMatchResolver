@@ -22,6 +22,7 @@ repos:
       - id: trailing-whitespace
         files: "py$"
       - id: mixed-line-ending
+# Full section written by Gemini.
 - repo: local
   hooks:
     - id: autoflake
