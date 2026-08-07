@@ -45,7 +45,7 @@ repos:
         entry: poetry run mypy src/redcapmatchresolver
         require_serial: true
         files: "py$"
-        language: python
+        language: system
         additional_dependencies: ["mypy==2.3.0"]
         types: [python]
         pass_filenames: false
@@ -57,5 +57,5 @@ repos:
         args: ["--config=.flake8"]
         exclude: "tests"
         files: "py$"
-        language: python
+        language: system
         types: [python]
