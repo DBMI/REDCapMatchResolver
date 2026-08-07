@@ -13,7 +13,7 @@ sys.path.append(os.path.abspath("../../"))
 html_logo = "../../pictures/report_logo.png"  # adds logo to documents pages.
 
 project = "REDCapMatchResolver"
-copyright = "2022, University of California San Diego"
+copyright = "2022, University of California San Diego" # noqa A001
 author = "Kevin J. Delaney"
 release = "1.5.5"
 

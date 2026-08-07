@@ -1,8 +1,7 @@
 from typing import List, NamedTuple, Union
 
 import pandas
-from redcap_update import REDCapUpdate
-from redcapduplicatedetector.match_quality import MatchQuality
+from redcapmatchresolver.match_quality import MatchQuality
 
 class MatchTuple(NamedTuple):
     bool: bool
@@ -21,7 +20,8 @@ class CommonField:
     def redcap_field_present(self, field_name: str) -> bool: ...
 
 class MatchRecord:
-    BONUS_SCORE_FIELDS: List[str]
+    BONUS_SCORE_FIELDS_ADDRESS: List[str]
+    BONUS_SCORE_FIELDS_PHONE: List[str]
     COMMON_FIELDS: List[CommonField]
     FORMAT: str
     SCORE_FIELDS: List[str]
@@ -57,7 +57,6 @@ class MatchRecord:
     def pat_id(self) -> str: ...
     def __redcap_mrn(self) -> str: ...
     def __redcap_name(self) -> tuple: ...
-    def redcap_update(self) -> REDCapUpdate: ...
     def score(self) -> int: ...
     def __score_record(self) -> None: ...
     def __select_best_phone(
