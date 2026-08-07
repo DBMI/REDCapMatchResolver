@@ -24,6 +24,14 @@ repos:
       - id: trailing-whitespace
         files: "py$"
       - id: mixed-line-ending
+# Advised by Gemini to use GitHub's own mypy version.
+- repo: https://github.com
+  rev: v1.11.1  # A modern version built for Python 3.12+
+  hooks:
+    - id: mypy
+      files: ^src/redcapmatchresolver/
+      # If your code relies on numpy or other stubs, tell pre-commit here:
+      additional_dependencies: [numpy]
 # Full section written by Gemini.
 - repo: local
   hooks:
@@ -50,14 +58,6 @@ repos:
       entry: poetry run pyupgrade --py37-plus
       language: system
       types: [ python ]
-    - id: mypy
-      name: mypy
-      entry: poetry run mypy src/redcapmatchresolver
-      require_serial: true
-      files: "py$"
-      language: system  # Changed from python
-      types: [ python ]
-      pass_filenames: false
     - id: flake8
       name: flake8
       entry: poetry run flake8 src/redcapmatchresolver

@@ -638,10 +638,7 @@ class REDCapMatchResolver:
                 self.__log.debug(f"Successfully created file '{filename_created}'.")
                 return num_wobblers, filename_created
             else:
-                self.__log.exception(
-                    "***Unable to create file {file_name}. ***",
-                    extra=dict(file_name=filename),
-                )
+                self.__log.exception(f"***Unable to create file {filename}. ***")
                 return num_wobblers, ""
 
         return num_wobblers, ""

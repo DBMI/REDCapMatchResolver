@@ -1,6 +1,7 @@
 from typing import List, NamedTuple, Union
 
 import pandas
+
 from redcapmatchresolver.match_quality import MatchQuality
 
 class MatchTuple(NamedTuple):
