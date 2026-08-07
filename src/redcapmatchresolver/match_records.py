@@ -7,8 +7,6 @@ from collections import namedtuple
 import pandas  # type: ignore[import]
 from redcaputilities.string_cleanup import clean_up_phone
 
-from redcapmatchresolver.redcap_update import REDCapUpdate
-
 from .match_quality import MatchQuality
 
 MatchTuple = namedtuple(
@@ -133,7 +131,6 @@ class MatchRecord:
         self.__mrn_hx: str
         self.__pat_id: str
         self.__record: dict = {}
-        self.__redcap_update: REDCapUpdate = REDCapUpdate()
         self.__score: int
         self.__study_id: str
 
@@ -311,16 +308,6 @@ class MatchRecord:
         last_name_match: MatchVariable = self.__record["C_LAST"]
         redcap_last_name: str = last_name_match.redcap_value().strip()
         return redcap_first_name, redcap_last_name
-
-    def redcap_update(self) -> REDCapUpdate:
-        """Allows external code to get the REDCapUpdate object,
-        describing if--and how--REDCap record should be updated.
-
-        Returns
-        -------
-        update : REDCapUpdate
-        """
-        return self.__redcap_update
 
     def score(self) -> int:
         """Returns the match score.
@@ -604,8 +591,8 @@ class MatchVariable:
 
     # simple enum to string conversion.  Useful for output.
     def summarize_match(self, common_name: str) -> str:
-        format: str = MatchRecord.FORMAT + "[%s]"
-        return format % (
+        format_str: str = MatchRecord.FORMAT + "[%s]"
+        return format_str % (
             common_name,
             self.__epic_value,
             self.__redcap_value,

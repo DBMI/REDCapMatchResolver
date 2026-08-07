@@ -54,6 +54,7 @@ repos:
       require_serial: true
       files: "py$"
       language: system  # Changed from python
+      additional_dependencies: [typing-extensions>=4.6.0]
       types: [ python ]
       pass_filenames: false
     - id: flake8

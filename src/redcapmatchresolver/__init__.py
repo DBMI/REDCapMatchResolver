@@ -20,8 +20,9 @@ Classes:
     REDCap Report Reader
     REDCap Report Writer
 """
-
+# flake8: noqa
 from . import (
+    match_quality,
     match_records,
     redcap_appointment,
     redcap_clinic,
