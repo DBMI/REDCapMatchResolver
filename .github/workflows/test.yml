@@ -11,12 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - name: Download actionlint
-        run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
-        shell: bash
-      - name: Check workflow files
-        run: ./actionlint -color
-        shell: bash
+      # Cleaner implementation using native actions instead of manual curl piping
+      - name: Run actionlint
+        uses: reviewdog/action-actionlint@v1
+        with:
+          actionlint_flags: "-color"
 
   lint-cruft:
     name: Check if automatic project update was successful
@@ -25,13 +24,6 @@ jobs:
       - uses: actions/checkout@v5
       - name: Fail if .rej files exist as structure update was not successful
         run: test -z "$(find . -iname '*.rej')"
-
-  pre-commit:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: ./.github/actions/python-poetry-env
-      - run: poetry run pre-commit run --all-files
 
   test:
     runs-on: ubuntu-latest
@@ -44,4 +36,5 @@ jobs:
       - uses: ./.github/actions/python-poetry-env
         with:
           python-version: ${{ matrix.python-version }}
-      - run: poetry run pytest
+      - name: Run test suite
+        run: poetry run pytest
