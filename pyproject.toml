@@ -9,6 +9,12 @@ authors = [
 ]
 
 [tool.poetry]
+name = "redcapmatchresolver"
+version = "1.6.0"
+description = "Assists with human expert review of possible patient matches."
+authors = [
+    {name = "Kevin J. Delaney", email = "<kjdelaney@health.ucsd.edu>"},
+]
 documentation = "https://github.com/DBMI/REDCapMatchResolver"
 homepage = "https://github.com/DBMI/REDCapMatchResolver"
 repository = "https://github.com/DBMI/REDCapMatchResolver"
