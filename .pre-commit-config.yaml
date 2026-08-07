@@ -9,7 +9,7 @@ pre-commit.ci:
 
 # 2. Main repositories section
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
       - id: check-ast
@@ -27,7 +27,7 @@ repos:
       - id: mixed-line-ending
 
 # 3. Clean native mypy implementation (No more poetry run internal crashes!)
--   repo: https://github.com
+  - repo: https://github.com
     rev: v1.11.1
     hooks:
       - id: mypy
@@ -35,7 +35,7 @@ repos:
         additional_dependencies: [numpy, types-requests] # Add any stub libraries here
 
 # 4. Local hooks managed via poetry env
--   repo: local
+  - repo: local
     hooks:
       - id: autoflake
         name: autoflake
