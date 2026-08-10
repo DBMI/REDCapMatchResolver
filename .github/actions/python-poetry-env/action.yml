@@ -17,7 +17,7 @@ runs:
       run: pip install setuptools
       shell: bash
     - name: Install poetry
-      run: python -m pip install poetry
+      run: python -m pip install poetry "poetry==2.4.1"
       shell: bash
     - name: Create virtual environment
       run: poetry install
