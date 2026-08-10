@@ -71,6 +71,7 @@ wheel = "*"
 
 [tool.poetry.group.test.dependencies]
 faker = "^15.3.4"
+openpyxl = "^3.1.5"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
