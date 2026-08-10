@@ -7,19 +7,6 @@ readme = "README.md"
 authors = [
     {name = "Kevin J. Delaney", email = "<kjdelaney@health.ucsd.edu>"},
 ]
-
-[tool.poetry]
-package-mode = false
-name = "redcapmatchresolver"
-version = "1.6.0"
-description = "Assists with human expert review of possible patient matches."
-authors = [
-    {name = "Kevin J. Delaney", email = "<kjdelaney@health.ucsd.edu>"},
-]
-documentation = "https://github.com/DBMI/REDCapMatchResolver"
-homepage = "https://github.com/DBMI/REDCapMatchResolver"
-repository = "https://github.com/DBMI/REDCapMatchResolver"
-
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
@@ -31,6 +18,13 @@ classifiers = [
   "Typing :: Typed",
 ]
 
+[project.urls]
+documentation = "https://github.com/DBMI/REDCapMatchResolver"
+homepage = "https://github.com/DBMI/REDCapMatchResolver"
+repository = "https://github.com/DBMI/REDCapMatchResolver"
+
+[tool.poetry]
+package-mode = false
 packages = [
     { include = "redcapmatchresolver", from = "src" }
 ]
