@@ -23,6 +23,7 @@ Classes:
 # flake8: noqa
 from . import (
     match_quality,
+    match_record_generator,
     match_records,
     redcap_appointment,
     redcap_clinic,
