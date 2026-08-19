@@ -1,6 +1,6 @@
 [project]
 name = "redcapmatchresolver"
-version = "1.6.0"
+version = "1.6.1"
 description = "Assists with human expert review of possible patient matches."
 license = {file = 'LICENSE'}
 readme = "README.md"
@@ -24,7 +24,7 @@ homepage = "https://github.com/DBMI/REDCapMatchResolver"
 repository = "https://github.com/DBMI/REDCapMatchResolver"
 
 [tool.poetry]
-package-mode = false
+package-mode = true
 packages = [
     { include = "redcapmatchresolver", from = "src" }
 ]
