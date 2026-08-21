@@ -1,6 +1,6 @@
 [project]
 name = "redcapmatchresolver"
-version = "1.6.3"
+version = "1.6.5"
 description = "Assists with human expert review of possible patient matches."
 license = {file = 'LICENSE'}
 readme = "README.md"
@@ -28,6 +28,7 @@ package-mode = true
 packages = [
     { include = "redcapmatchresolver", from = "src" }
 ]
+include = ["redcapmatchresolver/py.typed"]
 
 [tool.poetry.dependencies]
 python = ">=3.11, <4.0"
