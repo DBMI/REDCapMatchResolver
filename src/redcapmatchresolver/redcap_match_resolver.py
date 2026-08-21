@@ -14,7 +14,7 @@ from sqlite3 import Connection
 
 import pandas  # type: ignore[import]
 from redcaputilities.directories import ensure_output_path_exists
-from redcaputilities.logging import patient_data_directory
+from redcaputilities.my_logging import patient_data_directory
 
 from redcapmatchresolver.redcap_report_reader import DecisionReview, REDCapReportReader
 from redcapmatchresolver.redcap_report_writer import REDCapReportWriter
