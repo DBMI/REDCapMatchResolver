@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import List, Union
 
 from redcaputilities.directories import ensure_output_path_exists
-from redcaputilities.logging import patient_data_directory, setup_logging
+from redcaputilities.my_logging import patient_data_directory, setup_logging
 
 
 class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation

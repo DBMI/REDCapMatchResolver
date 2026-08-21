@@ -12,7 +12,7 @@ import re
 from enum import Enum
 
 import pandas  # type: ignore[import]
-from redcaputilities.logging import setup_logging
+from redcaputilities.my_logging import setup_logging
 
 ReportLine = collections.namedtuple(
     "ReportLine", ["name", "epic_value", "redcap_value"]
