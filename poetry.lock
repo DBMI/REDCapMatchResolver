@@ -1772,7 +1772,7 @@ pyyaml = "*"
 
 [[package]]
 name = "redcaputilities"
-version = "1.4.1"
+version = "1.4.4"
 description = "Collection of functions used across more than one project."
 optional = false
 python-versions = ">=3.7.1, <4.0"
