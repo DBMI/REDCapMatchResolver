@@ -1532,6 +1532,18 @@ pyyaml = ">=5.1"
 virtualenv = ">=20.10.0"
 
 [[package]]
+name = "probableparsing"
+version = "0.0.1"
+description = "Common methods for propbable parsers"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "probableparsing-0.0.1-py2.py3-none-any.whl", hash = "sha256:509df25fdda4fd7c0b2a100f58cc971bd23daf26f3b3320aebf2616d2e10c69e"},
+    {file = "probableparsing-0.0.1.tar.gz", hash = "sha256:8114bbf889e1f9456fe35946454c96e42a6ee2673a90d4f1f9c46a406f543767"},
+]
+
+[[package]]
 name = "pycodestyle"
 version = "2.9.1"
 description = "Python style guide checker"
@@ -1641,6 +1653,62 @@ files = [
 
 [package.dependencies]
 pytest = ">=4.0.0"
+
+[[package]]
+name = "python-crfsuite"
+version = "0.9.12"
+description = "Python binding for CRFsuite"
+optional = false
+python-versions = ">=3.10"
+groups = ["main"]
+files = [
+    {file = "python_crfsuite-0.9.12-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:7be83f5a68ae5a5835e92f0b134e2aded55d1ca36bed434259f36a32aa545b1a"},
+    {file = "python_crfsuite-0.9.12-cp310-cp310-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:6aaa14dceb9512cb70e37f88f6b6c7e630a251c7fa2a1eb94782419f935d4a8a"},
+    {file = "python_crfsuite-0.9.12-cp310-cp310-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:3a027fb19b7e065b0b08ac3638ebc1f0a2a55e5db1f1bb85f97923eb6ac29710"},
+    {file = "python_crfsuite-0.9.12-cp310-cp310-musllinux_1_2_aarch64.whl", hash = "sha256:c44a0c7f2b975e128a5ff2d41c1c2030de1957a2735a6a6f6657b8f25953e9d1"},
+    {file = "python_crfsuite-0.9.12-cp310-cp310-musllinux_1_2_x86_64.whl", hash = "sha256:dc0388182a0c7fbc402d503a49435288a4cb6ab258c2bc9fa02b3c0e1643393f"},
+    {file = "python_crfsuite-0.9.12-cp310-cp310-win32.whl", hash = "sha256:0d32e41c407208e539fb33f2611e73455529f2ba1112a34eff161dafaaafe48b"},
+    {file = "python_crfsuite-0.9.12-cp310-cp310-win_amd64.whl", hash = "sha256:2a49237c319ed7c0979d91659fcd3ec7629be36981e1263f2c21a23a2c8dffd1"},
+    {file = "python_crfsuite-0.9.12-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:9b7cd1f10ae5b6f13dac6e0a20456c28c3450bc86f5cf4b41a11250b2b4fc269"},
+    {file = "python_crfsuite-0.9.12-cp311-cp311-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:41cc55053799d6eac13d496f1bd9c28a73d39c99eb194f37e356bd557bcca3fe"},
+    {file = "python_crfsuite-0.9.12-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:5cd2b153bed935e4d6bd37d35f8cba9fcb73c01b539bbb63153589a10ac9fc6f"},
+    {file = "python_crfsuite-0.9.12-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:bb114a6c22c0df7c6a78921d1f0ef913116fc5486adca9a96e76f47ce2755311"},
+    {file = "python_crfsuite-0.9.12-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:aec187fb28550b5a1611152011bf9d36797b26b5fca88278d9dbd40d9ac941c1"},
+    {file = "python_crfsuite-0.9.12-cp311-cp311-win32.whl", hash = "sha256:0bc929cbfe88b775361feba36f9632170d411a3a3a1e31d53e3a07452bb54588"},
+    {file = "python_crfsuite-0.9.12-cp311-cp311-win_amd64.whl", hash = "sha256:3b646fe2ea2c172c1823272107039ac4d00aeea81acaf0253f5c16beb64926b0"},
+    {file = "python_crfsuite-0.9.12-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:e68009911b28ff899da5a6be3ec1efc3c24886c92318d02d39ec29d329b08b90"},
+    {file = "python_crfsuite-0.9.12-cp312-cp312-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:7118a3b267c437a9701362f5eacd6d1ff2360305a9c872cc20a716cd005c13eb"},
+    {file = "python_crfsuite-0.9.12-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:891bf2a5f410f17c5f9d76ab7330178a10142d48ed12f5c15b84f4c23fee80c7"},
+    {file = "python_crfsuite-0.9.12-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:812f963fb61cfa5bfbc91b92e058cee41808a9ce813c84ecab6691848cc3b51c"},
+    {file = "python_crfsuite-0.9.12-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:a696ef90c77344ba88e5d241ace35fd21ad31e43f878fc734668741db18ed186"},
+    {file = "python_crfsuite-0.9.12-cp312-cp312-win32.whl", hash = "sha256:e32c826e43fe8ac5c3b436bbddd8483f735a5638ea5dc07778d505cde78dc875"},
+    {file = "python_crfsuite-0.9.12-cp312-cp312-win_amd64.whl", hash = "sha256:fa6258bf10d8185262dee8fe2ca8d3de3c7aecb990846329043fc895344cc939"},
+    {file = "python_crfsuite-0.9.12-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:2048d8768a0b4c6a6d9390e879a2b7a760bb57a7f2ba491316f5dc36f9cfd836"},
+    {file = "python_crfsuite-0.9.12-cp313-cp313-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:5294008716b65606c4d416c3b2597ca14422359a4a84734ead239b29b95f2780"},
+    {file = "python_crfsuite-0.9.12-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:9f1641b9263c3cd1190711d0383d871b002ad325aa800fcf3c8583ef36f0bb07"},
+    {file = "python_crfsuite-0.9.12-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:f0e73d0a8859db0c3d1a7a3595a83810efc535d95cb79f2f675eb44ad7a7954a"},
+    {file = "python_crfsuite-0.9.12-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:96f27f343ff7e7cb1e29a785d8ed4626a3470f8d42c41cda734dcbaede566722"},
+    {file = "python_crfsuite-0.9.12-cp313-cp313-win32.whl", hash = "sha256:385fda7f407be778f6a9440dffdeed3cdafc6f6923065a856e45997626283589"},
+    {file = "python_crfsuite-0.9.12-cp313-cp313-win_amd64.whl", hash = "sha256:21334c298318d4de057eacaad2ed179b7f63640e9cbd0c8141d656f58e7bd3f1"},
+    {file = "python_crfsuite-0.9.12-cp314-cp314-macosx_11_0_arm64.whl", hash = "sha256:2e18bb1d7b4913bc321a5768284c8e86b5eefcd583462bfed5875671223451a8"},
+    {file = "python_crfsuite-0.9.12-cp314-cp314-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:30028c9b6cd06cafb43861f2577d4ef5c57f90a59908efb3df38be9e6e7c1c98"},
+    {file = "python_crfsuite-0.9.12-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:a2fe0e6760365d7288e63661c4ab3c1110ae0cb1c36fbbbed23e5e889c138eb1"},
+    {file = "python_crfsuite-0.9.12-cp314-cp314-musllinux_1_2_aarch64.whl", hash = "sha256:d8d0e416ae999f9ff8a183383d9b917d4818f677dd3e370d19b6d1f9786af4bf"},
+    {file = "python_crfsuite-0.9.12-cp314-cp314-musllinux_1_2_x86_64.whl", hash = "sha256:1b7204fdadf596a968d115b94c419899f3299fbd9c753abfced933b831e1ace3"},
+    {file = "python_crfsuite-0.9.12-cp314-cp314-win32.whl", hash = "sha256:be282686a90134851aa636d38ea520ab73aabb8103e79de458fffd49ff016bd2"},
+    {file = "python_crfsuite-0.9.12-cp314-cp314-win_amd64.whl", hash = "sha256:94ab3f1666ec4244d8190b7e624505bc6e845d54b4faa0dacd9ea8fd1ac7eef8"},
+    {file = "python_crfsuite-0.9.12-cp314-cp314t-macosx_11_0_arm64.whl", hash = "sha256:1fac24a04ebe58fcfd8e6a3c48e1e03021427852b7495573d7fc41d0d9ee297d"},
+    {file = "python_crfsuite-0.9.12-cp314-cp314t-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:532cfbeffe8c8b0a0bf360a31f6486e655b29703a02ecefaf86d519f12fd470b"},
+    {file = "python_crfsuite-0.9.12-cp314-cp314t-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:fa2a20a74a094bb80b76af7937f68b710d60539a2905d942ba655d90d5c90677"},
+    {file = "python_crfsuite-0.9.12-cp314-cp314t-musllinux_1_2_aarch64.whl", hash = "sha256:ff3b8e8c524b952e0dd85aa3bc34f24b502507411e776739d9e4ad4b46e61f51"},
+    {file = "python_crfsuite-0.9.12-cp314-cp314t-musllinux_1_2_x86_64.whl", hash = "sha256:b15bd6bbc4bf893e84084e9be010f350e8dfcc716b40bd6e5243d34cbc7dfb61"},
+    {file = "python_crfsuite-0.9.12-cp314-cp314t-win32.whl", hash = "sha256:e6f8d0b71329b015a6d167305c2c00097e39a947644f0cbdc7fb4f9ffc1dc28e"},
+    {file = "python_crfsuite-0.9.12-cp314-cp314t-win_amd64.whl", hash = "sha256:9a74ea7c043e0b12a68175502b948bb58153dafd3e90f69d63de3c4a37ce4f4b"},
+    {file = "python_crfsuite-0.9.12.tar.gz", hash = "sha256:db37fccc3bd8f0c49c28a7697ca79c89d67b3fd5bf119122866169240ac4c480"},
+]
+
+[package.extras]
+dev = ["black", "flake8", "isort", "tox"]
 
 [[package]]
 name = "python-dateutil"
@@ -1963,6 +2031,25 @@ secure = ["certifi", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "ipaddress ; py
 socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
+name = "usaddress"
+version = "0.5.16"
+description = "Parse US addresses using conditional random fields"
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "usaddress-0.5.16-py3-none-any.whl", hash = "sha256:ce2bd73e3a41176fa29f093e9ad153327a87862430f1b0b121f0cb230c182a6a"},
+    {file = "usaddress-0.5.16.tar.gz", hash = "sha256:f7e614e2489c159cf85be1b6f86edbfaf329dbeedef4d002a025757afd1ec6c6"},
+]
+
+[package.dependencies]
+probableparsing = "*"
+python-crfsuite = ">=0.7"
+
+[package.extras]
+dev = ["black", "flake8", "isort", "mypy", "parserator", "pytest"]
+
+[[package]]
 name = "virtualenv"
 version = "20.23.0"
 description = "Virtual Python Environment builder"
@@ -2057,4 +2144,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11, <4.0"
-content-hash = "c48535d1cea7e5ad1ba9a9a560702c94191f043f997aba53f643cc6f1d4b26ad"
+content-hash = "4a9ff9a598015112f39d1c00af3c8cb2181f3e4a7880841502057f438e4bce0f"
