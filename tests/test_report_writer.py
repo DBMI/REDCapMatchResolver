@@ -5,7 +5,7 @@ testing of the REDCapReportWriter class.
 
 import os
 
-from redcaputilities.logging import patient_data_directory
+from redcaputilities.my_logging import patient_data_directory
 
 from redcapmatchresolver.redcap_report_writer import REDCapReportWriter
 

@@ -3,7 +3,6 @@ Module: contains class REDCapAppointment.
 """
 
 from datetime import datetime
-from typing import Union
 
 import pandas
 from redcaputilities.string_cleanup import clean_up_date, clean_up_time
@@ -23,7 +22,7 @@ class REDCapAppointment:
     def __init__(
         self,
         df: pandas.DataFrame,
-        clinics: Union[REDCapClinic, None] = None,
+        clinics: REDCapClinic | None = None,
     ):
         if not isinstance(df, pandas.DataFrame) or len(df) == 0:
             raise TypeError("Appointment info was not the expected DataFrame.")
@@ -31,9 +30,9 @@ class REDCapAppointment:
         appointment_headers = list(df.columns)
         #   It's OK for 'clinics' to be None--
         #   this forces the '__assign_priority' method to look them up.
-        self.__appointment_date: Union[str, None] = None
-        self.__appointment_clinic: Union[str, None] = None
-        self.__appointment_time: Union[str, None] = None
+        self.__appointment_date: str | None = None
+        self.__appointment_clinic: str | None = None
+        self.__appointment_time: str | None = None
 
         for this_header in appointment_headers:
             this_value = df[this_header].values[0]
@@ -97,7 +96,7 @@ class REDCapAppointment:
 
         return applicable_headers
 
-    def __assign_priority(self, clinics: Union[REDCapClinic, None]) -> int:
+    def __assign_priority(self, clinics: REDCapClinic | None) -> int:
         if not isinstance(clinics, REDCapClinic):
             clinics = REDCapClinic()
 
@@ -115,7 +114,7 @@ class REDCapAppointment:
         """
         return f"{self.__appointment_clinic}, {self.date()}"
 
-    def date(self) -> Union[datetime, None]:
+    def date(self) -> datetime | None:
         """Convert stored date and time strings into one datetime object.
 
         Returns
