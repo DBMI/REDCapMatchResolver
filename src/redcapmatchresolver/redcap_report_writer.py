@@ -5,7 +5,6 @@ used to produce list of patient matches to be reviewed.
 
 import os
 from pathlib import Path
-from typing import List, Union
 
 from redcaputilities.directories import ensure_output_path_exists
 from redcaputilities.my_logging import patient_data_directory, setup_logging
@@ -28,7 +27,7 @@ class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
 
     def __init__(self):
         self.__log = setup_logging(log_filename="redcap_report_writer.log")
-        self.__reports: List[str] = []
+        self.__reports: list[str] = []
 
     def add_match(self, match: str) -> None:
         """Allows external code to add a pre-formatted
@@ -61,7 +60,7 @@ class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
         """
         return len(self.__reports)
 
-    def write(self, report_filename: Union[str, None] = None) -> tuple:
+    def write(self, report_filename: str | None = None) -> tuple:
         """Writes out the accumulated match reports,
            assigning a sequential number to each one.
 

@@ -4,7 +4,7 @@ Module: contains the MatchRecord and MatchVariable classes.
 
 from collections import namedtuple
 
-import pandas  # type: ignore[import]
+import pandas
 from redcaputilities.string_cleanup import clean_up_phone
 
 from .match_quality import MatchQuality
@@ -244,9 +244,7 @@ class MatchRecord:
         )
         return summary
 
-    def is_match(
-        self, exact: bool = False, criteria: int = 5, aliases=None, mrn_hx=None
-    ) -> MatchTuple:
+    def is_match(self, exact: bool = False, criteria: int = 5) -> MatchTuple:
         """See if a universal record is a match
             between its Epic fields and REDCap fields.
 
@@ -259,9 +257,6 @@ class MatchRecord:
         -------
         MatchTuple containing a bool (match/no match) & a str summary
         """
-        if aliases is None:
-            aliases = []
-
         summary: str = self.__init_summary()
 
         for key_fieldname in MatchRecord.SCORE_FIELDS:
@@ -507,7 +502,7 @@ class MatchVariable:
         self,
         epic_value: str,
         redcap_value: str,
-        ignore_list=None,
+        ignore_list: list | None = None,
     ):
         """Creates the MatchVariable object.
 
