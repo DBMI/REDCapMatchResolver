@@ -8,10 +8,10 @@ from redcapmatchresolver.match_record_generator import MatchRecordGenerator
 
 
 def test_match_record_generator(
-    fake_records_dataframe, same_facility_dataframe
+    fake_records_dataframe, same_facility_dataframe_fixed
 ) -> None:
     #   We should REJECT this row's addresses & phone numbers.
-    row = same_facility_dataframe.iloc[0].copy()
+    row = same_facility_dataframe_fixed.iloc[0].copy()
     facility_addresses = [row["E_ADDR_CALCULATED"]]
     facility_phone_numbers = [row["phone_number"]]
 
