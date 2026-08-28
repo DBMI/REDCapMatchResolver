@@ -295,7 +295,7 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
                 break
 
             #   Read "Same/Not Same" lines.
-            decision = self.__read_decision()
+            decision, _ = self.__read_decision()
 
             match_dict["DECISION"] = str(decision)
             this_row_df = pandas.DataFrame(match_dict, index=[match_index])
