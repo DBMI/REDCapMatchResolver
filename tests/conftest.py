@@ -63,25 +63,25 @@ def fixture_appointment_fields() -> list:
 
 @pytest.fixture(name="export_fields")
 def fixture_export_fields() -> list:
-    return """
-        study_id
-        mrn
-        first_name
-        last_name
-        dob
-        street_address_line_1
-        street_address_line_2
-        city
-        state
-        zip_code
-        email_address
-        phone_number
-        appointment_clinic
-        appointment_date
-        appointment_time
-        primary_consent_date
-        paired_status
-    """.split()
+    return [
+        "study_id",
+        "mrn",
+        "first_name",
+        "last_name",
+        "dob",
+        "street_address_line_1",
+        "street_address_line_2",
+        "city",
+        "state",
+        "zip_code",
+        "email_address",
+        "phone_number",
+        "appointment_clinic",
+        "appointment_date",
+        "appointment_time",
+        "primary_consent_date",
+        "paired_status",
+    ]
 
 
 # https://stackoverflow.com/a/33879151/20241849
@@ -383,15 +383,15 @@ def fixture_non_matching_patients() -> str:
 #   For use with .csv() method. Can we rearrange and downselect the .csv output?
 @pytest.fixture(name="patient_headers_scrambled")
 def fixture_patient_headers_scrambled() -> list:
-    headers = """
-        study_id
-        mrn
-        last_name
-        first_name
-        appointment_clinic
-        appointment_date
-        appointment_time
-        """.split()
+    headers = [
+        "study_id",
+        "mrn",
+        "last_name",
+        "first_name",
+        "appointment_clinic",
+        "appointment_date",
+        "appointment_time",
+    ]
     return headers
 
 

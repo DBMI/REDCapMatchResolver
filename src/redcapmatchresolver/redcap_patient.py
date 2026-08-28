@@ -17,8 +17,8 @@ class REDCapPatient:
     """
 
     #   Mark these for special handling.
-    __dob_keywords = ["birth_date", "dob"]
-    __phone_keywords = [
+    __dob_keywords: tuple[str] = ["birth_date", "dob"]
+    __phone_keywords: tuple[str] = [
         "home_phone",
         "phone",
         "phone_number",
@@ -27,18 +27,18 @@ class REDCapPatient:
     ]
 
     #   These fields --describe-- the patient but don't --indentify-- them.
-    __info_fields = ["hpi_percentile", "hpi_score"]
+    __info_fields: tuple[str] = ["hpi_percentile", "hpi_score"]
 
     def __init__(self, df: pandas.DataFrame, clinics: REDCapClinic) -> None:
         if not isinstance(df, pandas.DataFrame):
             raise TypeError("Argument 'df' is not the expected DataFrame.")
 
         #   Make all column names lowercase, to be REDCap compatible.
-        self.__df = df.copy()
+        self.__df: pandas.DataFrame = df.copy()
         self.__df.columns = map(str.lower, self.__df.columns)
         self.__cleanup()
 
-        self.__appointments = []
+        self.__appointments: list = []
         self.__find_appointments(clinics)
 
     def appointments(self) -> list:

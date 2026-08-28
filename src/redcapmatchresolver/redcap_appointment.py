@@ -15,9 +15,9 @@ class REDCapAppointment:
     Represents a single patient appointment.
     """
 
-    __appointment_date_keywords: list = ["appointment_date", "appt_date"]
-    __appointment_time_keywords: list = ["appointment_time", "appt_time"]
-    __department_keywords: list = ["clinic", "department", "dept"]
+    __appointment_date_keywords: tuple[str] = ["appointment_date", "appt_date"]
+    __appointment_time_keywords: tuple[str] = ["appointment_time", "appt_time"]
+    __department_keywords: tuple[str] = ["clinic", "department", "dept"]
 
     def __init__(
         self,
@@ -56,7 +56,7 @@ class REDCapAppointment:
             ):
                 self.__appointment_time = clean_up_time(this_value)
 
-        self.__priority = self.__assign_priority(clinics=clinics)
+        self.__priority: REDCapClinic | None = self.__assign_priority(clinics=clinics)
 
     @staticmethod
     def applicable_header_fields(headers: list) -> list:
@@ -127,11 +127,15 @@ class REDCapAppointment:
             date_time_combined: str = (
                 self.__appointment_date + " " + self.__appointment_time
             )
-            datetime_obj = datetime.strptime(date_time_combined, "%Y-%m-%d %H:%M:%S")
+            datetime_obj = datetime.strptime(
+                date_time_combined, "%Y-%m-%d %H:%M:%S"
+            ).astimezone()
         except ValueError:
             #   Try a different format.
             try:
-                datetime_obj = datetime.strptime(date_time_combined.strip(), "%Y-%m-%d")
+                datetime_obj = datetime.strptime(
+                    date_time_combined.strip(), "%Y-%m-%d"
+                ).astimezone()
             except ValueError:
                 pass
         except TypeError:

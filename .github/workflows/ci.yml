@@ -40,11 +40,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
-      - name: Set up Environment
-        uses: ./.github/actions/python-poetry-env
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+            python-version: "3.11"
 
-      - name: Run Linters & Formatters
-        run: poetry run pre-commit run --all-files
+      - name: Install and Run Pre-commit
+        run: |
+          pip install pre-commit
+          pre-commit run --all-files
 
   test:
     name: Run Test Suite

@@ -1,3 +1,4 @@
+import logging
 from enum import Enum
 from typing import NamedTuple
 
@@ -29,47 +30,25 @@ class DecisionReview(Enum):
     def __lt__(self, other: object) -> bool: ...
 
 class REDCapReportReader:
-    __separator = None
+    __separator: str = ...
+    __row_index: int = ...
+    __report_contents: list[str] = ...
+    __log: logging.Logger = ...
 
-    def __init__(self) -> None:
-        self.__row_index = None
-        self.__report_contents = None
-        self.__log = None
-        ...
-
-    def __at_end(self) -> bool:
-        pass
-
+    def __init__(self) -> None: ...
+    def __at_end(self) -> bool: ...
     @classmethod
-    def __break_into_pieces(cls, data_line: str) -> list:
-        pass
-
+    def __break_into_pieces(cls, data_line: str) -> list: ...
     @staticmethod
     def convert_nulls(value: str) -> str | None: ...
     @staticmethod
-    def _find_column(data_line: str, keyword: str) -> int:
-        pass
-
-    def __next_line(self) -> str | None:
-        pass
-
-    def __open_file(self, report_filename: str) -> None:
-        pass
-
-    def __open_text(self, block_txt: str) -> None:
-        pass
-
-    def __read(self) -> pandas.DataFrame:
-        pass
-
-    def __read_decision(self) -> tuple:
-        pass
-
+    def _find_column(data_line: str, keyword: str) -> int: ...
+    def __next_line(self) -> str | None: ...
+    def __open_file(self, report_filename: str) -> None: ...
+    def __open_text(self, block_txt: str) -> None: ...
+    def __read(self) -> pandas.DataFrame: ...
+    def __read_decision(self) -> tuple: ...
     def read_file(self, report_filename: str) -> pandas.DataFrame: ...
-    def __read_pat_id(self) -> str:
-        pass
-
-    def __read_study_id(self) -> str:
-        pass
-
+    def __read_pat_id(self) -> str: ...
+    def __read_study_id(self) -> str: ...
     def read_text(self, block_txt: str) -> pandas.DataFrame: ...
