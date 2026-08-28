@@ -9,7 +9,6 @@ import re
 import pandas
 import pytest
 from faker import Faker
-from redcaputilities.string_cleanup import clean_up_phone
 
 
 @pytest.fixture(name="appointment_df")
@@ -650,6 +649,13 @@ def fixture_report_filename_blank():
     )
 
 
+@pytest.fixture(name="report_filename_facility")
+def fixture_report_filename_facility():
+    return os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), "test_patient_report_facility.txt"
+    )
+
+
 @pytest.fixture(name="report_filename_parent_child")
 def fixture_report_filename_parent_child():
     return os.path.join(
@@ -672,40 +678,41 @@ def fixture_report_filename_same():
     )
 
 
-@pytest.fixture(name="same_facility_dataframe")
-def fixture_same_facility_dataframe() -> pandas.DataFrame:
+@pytest.fixture(name="same_facility_dataframe_fixed")
+def fixture_same_facility_dataframe_fixed() -> pandas.DataFrame:
     """
-    Two separate patients that live at same facility with same phone number
+    Two separate patients that live at same facility with same address & phone number
     and same first names but everything else different.
 
     Return
     ------
     pandas.DataFrame
     """
-    fake: Faker = Faker()
     dataframes = []
 
-    birthdate_1: datetime.datetime = fake.date_of_birth(minimum_age=18, maximum_age=115)
-    birthdate_2: datetime.datetime = fake.date_of_birth(minimum_age=18, maximum_age=115)
+    birthdate_1: datetime.datetime = datetime.datetime(
+        2001, 1, 1, 00, 00, 00
+    ).astimezone()
+    birthdate_2: datetime.datetime = datetime.datetime(
+        1976, 7, 4, 00, 00, 00
+    ).astimezone()
 
-    # Strip off the extension.
-    common_phone_number: str = clean_up_phone(fake.phone_number())
-    common_phone_number: str = re.sub(r"x\d+", "", common_phone_number)
-    common_first_name = fake.first_name()
-    common_address: str = fake.street_address()
-    common_state_abbr: str = fake.state_abbr(include_territories=False)
-    common_zip: str = fake.zipcode_in_state(common_state_abbr)
+    # Donovan State Prison
+    common_phone_number: str = "619-661-6500"
+    common_first_name = "Richard"
+    common_address: str = "480 Alta Road"
+    common_zip: str = "92179"
 
     record = {
-        "MRN": fake.random_int(min=1000, max=100000),
-        "mrn": fake.random_int(min=1000, max=100000),
+        "MRN": 1234,
+        "mrn": 5678,
         "MRN_HX": "",
-        "study_id": fake.random_int(min=1000, max=50000),
-        "PAT_ID": fake.bothify(text="?#######", letters="ABCDEFGHJKLMNPQRSTUVWXYZ"),
+        "study_id": 9876,
+        "PAT_ID": "A54321",
         "PAT_FIRST_NAME": common_first_name,
         "first_name": common_first_name,
-        "PAT_LAST_NAME": fake.last_name(),
-        "last_name": fake.last_name(),
+        "PAT_LAST_NAME": "Donovan",
+        "last_name": "Ramirez",
         "ALIAS": "",
         "BIRTH_DATE": birthdate_1.strftime("%Y-%m-%d"),
         "dob": birthdate_2.strftime("%Y-%m-%d"),
@@ -715,8 +722,8 @@ def fixture_same_facility_dataframe() -> pandas.DataFrame:
         "street_address_line_2": "",
         "ZIP": common_zip,
         "zip_code": common_zip,
-        "EMAIL_ADDRESS": fake.email(),
-        "email_address": fake.email(),
+        "EMAIL_ADDRESS": "nonsense@gmail.com",
+        "email_address": "notreal@yahoo.com",
         "HOME_PHONE": common_phone_number,
         "WORK_PHONE": "",
         "Mobile_Phone": "",

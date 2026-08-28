@@ -74,7 +74,7 @@ addopts = """\
 pythonpath = [
   ".", "src", "src/redcapmatchresolver"
 ]
-testpaths= ["redcapmatchresolver"]
+testpaths= ["tests"]
 
 [tool.coverage.report]
 fail_under = 100
