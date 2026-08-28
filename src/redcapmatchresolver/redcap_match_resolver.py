@@ -619,7 +619,7 @@ class REDCapMatchResolver:
         num_wobblers: int = self.__redcap_writer.num_reports()
         self.__log.info(f"Number of wobbler cases: {num_wobblers}.")
 
-        now: str = datetime.today().strftime("%Y%m%d_%H%M%S")
+        now: str = datetime.datetime.now().astimezone().strftime("%Y%m%d_%H%M%S")
         filename: str = os.path.join(new_reports_directory, now + "_patient_report.txt")
         ensure_output_path_exists(filename)
 
