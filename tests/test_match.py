@@ -253,6 +253,43 @@ def test_match_record_ignore_list(same_facility_dataframe) -> None:
     assert score == 1
 
 
+def test_match_record_ignore_list_fixed(same_facility_dataframe_fixed) -> None:
+    row = same_facility_dataframe_fixed.iloc[0].copy()
+
+    #   Create two records with same address, phone number and first name, but everything else different.
+    match_record = MatchRecord(row, facility_addresses=[], facility_phone_numbers=[])
+    assert isinstance(match_record, MatchRecord)
+    score = match_record.score()
+    assert isinstance(score, int)
+    assert score == 2
+
+    #   Now add this address to ignore_list.
+    facility_addresses = [row["E_ADDR_CALCULATED"]]
+    match_record = MatchRecord(
+        row, facility_addresses=facility_addresses, facility_phone_numbers=[]
+    )
+    assert isinstance(match_record, MatchRecord)
+    result = match_record.is_match(criteria=3)
+    assert isinstance(result, MatchTuple)
+    assert hasattr(result, "bool")
+    assert not result.bool
+    assert hasattr(result, "summary")
+    assert isinstance(result.summary, str)
+    score = match_record.score()
+    assert isinstance(score, int)
+    assert score == 1
+
+    #   Now add this phone number to ignore_list but leave address BLANK.
+    facility_phone_numbers = [row["phone_number"]]
+    match_record = MatchRecord(
+        row, facility_addresses=[], facility_phone_numbers=facility_phone_numbers
+    )
+    assert isinstance(match_record, MatchRecord)
+    score = match_record.score()
+    assert isinstance(score, int)
+    assert score == 1
+
+
 def test_match_variable() -> None:
     match_variable_obj = MatchVariable(epic_value="Alice", redcap_value="Alice")
     assert isinstance(match_variable_obj, MatchVariable)
