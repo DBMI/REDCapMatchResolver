@@ -30,9 +30,12 @@ def test_appointment_corner_cases(
     full_datetime_string = (
         appointment_df.appointment_date[0] + " " + appointment_df.appointment_time[0]
     )
-    assert appointment_obj.date() == datetime.strptime(
-        full_datetime_string,
-        "%Y-%m-%d %H:%M:%S",
+    assert (
+        appointment_obj.date()
+        == datetime.strptime(
+            full_datetime_string,
+            "%Y-%m-%d %H:%M:%S",
+        ).astimezone()
     )
 
     appointment_obj = REDCapAppointment(df=appointment_df_malformed)
@@ -42,17 +45,23 @@ def test_appointment_corner_cases(
     #   Handle dd/mm/yyyy format.
     appointment_obj = REDCapAppointment(df=appointment_df_slashes)
     assert isinstance(appointment_obj, REDCapAppointment)
-    assert appointment_obj.date() == datetime.strptime(
-        full_datetime_string,
-        "%Y-%m-%d %H:%M:%S",
+    assert (
+        appointment_obj.date()
+        == datetime.strptime(
+            full_datetime_string,
+            "%Y-%m-%d %H:%M:%S",
+        ).astimezone()
     )
 
     #   Handle time missing.
     appointment_obj = REDCapAppointment(df=appointment_df_time_missing)
     assert isinstance(appointment_obj, REDCapAppointment)
-    assert appointment_obj.date() == datetime.strptime(
-        appointment_df.appointment_date[0],
-        "%Y-%m-%d",
+    assert (
+        appointment_obj.date()
+        == datetime.strptime(
+            appointment_df.appointment_date[0],
+            "%Y-%m-%d",
+        ).astimezone()
     )
 
 
@@ -96,8 +105,9 @@ def test_appointment_instantiation(appointment_df, clinics):
     full_datetime_string = (
         appointment_df.appointment_date[0] + " " + appointment_df.appointment_time[0]
     )
-    assert extracted_datetime == datetime.strptime(
-        full_datetime_string, "%Y-%m-%d %H:%M:%S"
+    assert (
+        extracted_datetime
+        == datetime.strptime(full_datetime_string, "%Y-%m-%d %H:%M:%S").astimezone()
     )
 
     #   Test .csv output.

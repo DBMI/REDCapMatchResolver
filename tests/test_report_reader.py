@@ -65,19 +65,19 @@ def test_crc_review_class() -> None:
     assert DecisionReview.MATCH != "Something"
 
     with pytest.raises(TypeError):
-        DecisionReview.MATCH > None
+        assert DecisionReview.MATCH > None
 
     with pytest.raises(TypeError):
-        None > DecisionReview.MATCH
+        assert None > DecisionReview.MATCH
 
     with pytest.raises(TypeError):
-        DecisionReview.MATCH > 1979
+        assert DecisionReview.MATCH > 1979
 
     with pytest.raises(TypeError):
-        1979 > DecisionReview.MATCH
+        assert 1979 > DecisionReview.MATCH
 
     with pytest.raises(TypeError):
-        DecisionReview.MATCH > "Something"
+        assert DecisionReview.MATCH > "Something"
 
 
 def test_reading_file(

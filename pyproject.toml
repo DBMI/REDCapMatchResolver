@@ -38,21 +38,10 @@ usaddress = "*"
 
 [tool.poetry.group.dev.dependencies]
 autoflake = "*"
-black = "*"
-data-science-types = "*"
-flake8 = "*"
-flake8-bugbear = "*"
-flake8-builtins = "*"
-flake8-comprehensions = "*"
-flake8-debugger = "*"
-flake8-eradicate = "*"
-flake8-logging = "*"
-isort = "*"
 make = "*"
 mkdocs = "*"
 mkdocstrings = "*"
 mkdocs-material = "*"
-mypy = "^2.3.0"
 openpyxl = "*"
 pandas = "*"
 pandas-stubs = "*"
@@ -63,9 +52,9 @@ pytest = "^7.2.0"
 pytest-github-actions-annotate-failures = "*"
 pytest-cov = "*"
 pyupgrade = "*"
-setuptools = "*"
+ruff = "*"
+setuptools = "<82"
 typing-extensions = "^4.16.0"
-tryceratops = "*"
 typing = "*"
 wheel = "*"
 
@@ -76,14 +65,6 @@ openpyxl = "^3.1.5"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.isort]
-profile = "black"
-src_paths = ["src", "tests"]
-
-[tool.black]
-target-version = ["py311"]
-include = '\.pyi?$'
 
 [tool.pytest.ini_options]
 addopts = """\
@@ -101,15 +82,3 @@ exclude_lines = [
     'if TYPE_CHECKING:',
     'pragma: no cover'
 ]
-
-[tool.mypy]
-disallow_untyped_defs = true
-no_implicit_optional = true
-strict_equality = true
-warn_unused_ignores = true
-warn_redundant_casts = true
-warn_return_any = true
-check_untyped_defs = true
-show_error_codes = true
-ignore_missing_imports = true
-disable_error_code = ["call-arg", "call-overload", "var-annotated"]

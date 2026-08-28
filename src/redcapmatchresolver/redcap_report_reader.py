@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import collections
 import io
+import logging
 import os
 import re
 from enum import Enum
@@ -140,12 +141,14 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
     Parses formatted patient report.
     """
 
-    __separator = "------"
+    __separator: str = "------"
 
     def __init__(self) -> None:
-        self.__log = setup_logging(log_filename="redcap_report_reader.log")
-        self.__report_contents = []  # type: ignore[var-annotated]
-        self.__row_index = 0
+        self.__log: logging.Logger = setup_logging(
+            log_filename="redcap_report_reader.log"
+        )
+        self.__report_contents: list = []  # type: ignore[var-annotated]
+        self.__row_index: int = 0
 
     def __at_end(self) -> bool:
         """Are we at the END of the report?"""
@@ -292,7 +295,7 @@ class REDCapReportReader:  # pylint: disable=too-few-public-methods
                 break
 
             #   Read "Same/Not Same" lines.
-            decision, reason = self.__read_decision()
+            decision = self.__read_decision()
 
             match_dict["DECISION"] = str(decision)
             this_row_df = pandas.DataFrame(match_dict, index=[match_index])

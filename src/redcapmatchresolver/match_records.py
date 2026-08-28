@@ -10,7 +10,8 @@ from redcaputilities.string_cleanup import clean_up_phone
 from .match_quality import MatchQuality
 
 MatchTuple = namedtuple(
-    typename="MatchTuple", field_names=["bool", "summary"]  # type: ignore[misc]
+    typename="MatchTuple",
+    field_names=["bool", "summary"],  # type: ignore[misc]
 )
 
 
@@ -70,7 +71,7 @@ class MatchRecord:
     """
 
     # These fields are used in generating the match summary.
-    COMMON_FIELDS: list = [
+    COMMON_FIELDS: tuple[CommonField] = [
         CommonField("C_ADDR_CALCULATED", "E_ADDR_CALCULATED", "R_ADDR_CALCULATED"),
         CommonField("C_DOB", "BIRTH_DATE", "dob"),
         CommonField("C_EMAIL", "EMAIL_ADDRESS", "email_address"),
@@ -79,7 +80,7 @@ class MatchRecord:
     FORMAT: str = "%-20s %-40s %-40s"
 
     #   These fields are used for computing the match score.
-    SCORE_FIELDS: list = [
+    SCORE_FIELDS: tuple[str] = [
         "C_ADDR_CALCULATED",
         "C_DOB",
         "C_EMAIL",
@@ -92,13 +93,13 @@ class MatchRecord:
     #   (Even though three matches would ordinarily receive a score of three,
     #    these fields are so valuable that we'll assign a bonus point so
     #    the score will be four & the records will automatically be matched.)
-    BONUS_SCORE_FIELDS_ADDRESS: list = [
+    BONUS_SCORE_FIELDS_ADDRESS: tuple[str] = [
         "C_ADDR_CALCULATED",
         "C_DOB",
         "C_NAME_CALCULATED",
     ]
 
-    BONUS_SCORE_FIELDS_PHONE: list = [
+    BONUS_SCORE_FIELDS_PHONE: tuple[str] = [
         "C_DOB",
         "C_NAME_CALCULATED",
         "C_PHONE_CALCULATED",
@@ -398,22 +399,20 @@ class MatchRecord:
         )
 
         #   If phone number is from a group facility, no need to search further.
-        if not match_variable.ignored():
-            if not match_variable.good_enough():
+        if not match_variable.ignored() and not match_variable.good_enough():
+            match_variable = MatchVariable(
+                epic_value=epic_work_phone,
+                redcap_value=redcap_phone,
+                ignore_list=facility_phone_numbers,
+            )
+
+            #   If phone number is from a group facility, no need to search further.
+            if not match_variable.ignored() and not match_variable.good_enough():
                 match_variable = MatchVariable(
-                    epic_value=epic_work_phone,
+                    epic_value=epic_mobile_phone,
                     redcap_value=redcap_phone,
                     ignore_list=facility_phone_numbers,
                 )
-
-            #   If phone number is from a group facility, no need to search further.
-            if not match_variable.ignored():
-                if not match_variable.good_enough():
-                    match_variable = MatchVariable(
-                        epic_value=epic_mobile_phone,
-                        redcap_value=redcap_phone,
-                        ignore_list=facility_phone_numbers,
-                    )
 
         self.__record["C_PHONE_CALCULATED"] = match_variable
 
@@ -442,11 +441,14 @@ class MatchRecord:
         match_variable = MatchVariable(epic_value=epic_name, redcap_value=redcap_name)
 
         # Don't bother making this comparison if there IS no alias.
-        if isinstance(epic_alias, str) and len(epic_alias) > 0:
-            if not match_variable.good_enough():
-                match_variable = MatchVariable(
-                    epic_value=epic_alias, redcap_value=redcap_name
-                )
+        if (
+            isinstance(epic_alias, str)
+            and len(epic_alias) > 0
+            and not match_variable.good_enough()
+        ):
+            match_variable = MatchVariable(
+                epic_value=epic_alias, redcap_value=redcap_name
+            )
 
         self.__record["C_NAME_CALCULATED"] = match_variable
 
@@ -475,11 +477,14 @@ class MatchRecord:
         match_variable = MatchVariable(epic_value=epic_mrn, redcap_value=redcap_mrn)
 
         #   Don't bother if historical MRN is None.
-        if isinstance(epic_mrn_historical, str) and len(epic_mrn_historical) > 0:
-            if not match_variable.good_enough():
-                match_variable = MatchVariable(
-                    epic_value=epic_mrn_historical, redcap_value=redcap_mrn
-                )
+        if (
+            isinstance(epic_mrn_historical, str)
+            and len(epic_mrn_historical) > 0
+            and not match_variable.good_enough()
+        ):
+            match_variable = MatchVariable(
+                epic_value=epic_mrn_historical, redcap_value=redcap_mrn
+            )
 
         self.__record["C_MRN_CALCULATED"] = match_variable
 

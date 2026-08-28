@@ -1,7 +1,6 @@
 # REDCapMatchResolver ![image info](./pictures/report_logo.png)
 
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-![Pylint](./.github/badges/pylint-badge.svg?dummy=8484744)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 ![Coverage Status](./.github/badges/coverage-badge.svg?dummy=8484744)
 ![GitHub last commit](https://img.shields.io/github/last-commit/dbmi/REDCapMatchResolver)
 

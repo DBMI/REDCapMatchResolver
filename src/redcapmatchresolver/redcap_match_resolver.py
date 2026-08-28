@@ -4,10 +4,10 @@ used to create/use a SQLite database from
 human-reviewed match reports.
 """
 
+import datetime
 import glob
 import os
 import sqlite3
-from datetime import datetime
 from itertools import repeat
 from logging import Logger
 from sqlite3 import Connection
@@ -27,7 +27,7 @@ class REDCapMatchResolver:
     we're not asking reviewers about the same patients over and over.
     """
 
-    def __init__(self, log: Logger, connection: sqlite3.Connection = None):
+    def __init__(self, log: Logger, connection: sqlite3.Connection | None = None):
         self.__log: Logger = log
 
         self.__database_fields_list: list = []  # type: ignore[var-annotated]
@@ -674,7 +674,7 @@ class REDCapMatchResolver:
         try:
             cur.execute(query_sql, [decision_enum_payload])
             rows = cur.fetchall()
-            return int(rows[0][0])  # noqa: TRY300
+            return int(rows[0][0])
         except (
             sqlite3.IntegrityError,
             sqlite3.InternalError,

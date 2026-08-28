@@ -3,6 +3,7 @@ Module: contains class REDCapReportWriter
 used to produce list of patient matches to be reviewed.
 """
 
+import logging
 import os
 from pathlib import Path
 
@@ -26,7 +27,9 @@ class REDCapReportWriter:  # pylint: disable=logging-fstring-interpolation
     )
 
     def __init__(self):
-        self.__log = setup_logging(log_filename="redcap_report_writer.log")
+        self.__log: logging.Logger = setup_logging(
+            log_filename="redcap_report_writer.log"
+        )
         self.__reports: list[str] = []
 
     def add_match(self, match: str) -> None:
