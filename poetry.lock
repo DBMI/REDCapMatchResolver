@@ -1588,7 +1588,7 @@ pyyaml = "*"
 
 [[package]]
 name = "redcaputilities"
-version = "1.4.6"
+version = "1.4.9"
 description = "Allows code reuse by other Python projects."
 optional = false
 python-versions = ">=3.11, <4.0"
