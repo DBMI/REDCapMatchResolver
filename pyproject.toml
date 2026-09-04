@@ -1,6 +1,6 @@
 [project]
 name = "redcapmatchresolver"
-version = "1.6.8"
+version = "1.6.9"
 description = "Assists with human review of possible patient matches."
 license = {file = 'LICENSE'}
 readme = "README.md"
